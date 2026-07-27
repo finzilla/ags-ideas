@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGS — Карта инвестиционных идей</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ====================== RESET & BASE ====================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 12px; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #FFFFFF;
+  color: #1F2937;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ====================== COLOR TOKENS ====================== */
+:root {
+  --primary: #F26522;
+  --primary-light: #FFF7ED;
+  --secondary: #1F3860;
+  --positive: #16A34A;
+  --negative: #DC2626;
+  --warning: #EAB308;
+  --bg: #FFFFFF;
+  --card-bg: #F9FAFB;
+  --table-header: #F3F4F6;
+  --hover-row: #FFF7ED;
+  --border: #E5E7EB;
+  --text: #1F2937;
+  --text-secondary: #6B7280;
+  --radius: 8px;
+  --radius-sm: 4px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ====================== HEADER ====================== */
+.header {
+  background: var(--secondary);
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-logo {
+  display: flex;
+  align-items: center;
+}
+.header-logo img {
+  height: 32px;
+  width: auto;
+}
+.header-title { font-size: 18px; font-weight: 600; }
+.header-subtitle { font-size: 12px; color: #94A3B8; margin-top: 2px; }
+.btn-refresh {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .2s;
+}
+.btn-refresh:hover { background: #d9571a; }
+.btn-refresh svg { width: 16px; height: 16px; }
+
+/* ====================== FALLBACK BANNER ====================== */
+.fallback-banner {
+  display: none;
+  background: #FEF3C7;
+  border-bottom: 2px solid var(--warning);
+  color: #92400E;
+  padding: 10px 24px;
+  font-size: 13px;
+  text-align: center;
+}
+.fallback-banner.visible { display: block; }
+
+/* ====================== CONTROLS ====================== */
+.controls {
+  padding: 16px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+}
+.search-input {
+  padding: 8px 12px 8px 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  width: 220px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") 10px center no-repeat;
+  transition: border-color .2s;
+}
+.search-input:focus { outline: none; border-color: var(--primary); }
+
+.filter-group { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.filter-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-right: 4px; white-space: nowrap; }
+.filter-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+.filter-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.industry-select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 12px;
+  background: #fff;
+  max-width: 180px;
+}
+.industry-select:focus { outline: none; border-color: var(--primary); }
+
+/* ====================== STATS CARDS ====================== */
+.stats-row {
+  padding: 16px 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.stat-card {
+  flex: 1 1 140px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  min-width: 130px;
+}
+.stat-card-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 500; letter-spacing: 0.5px; }
+.stat-card-value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+.stat-card-value.positive { color: var(--positive); }
+.stat-card-value.negative { color: var(--negative); }
+
+/* ====================== SOURCE STATS ====================== */
+.source-stats {
+  padding: 0 24px 12px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.source-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.source-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.source-dot.investory { background: var(--primary); }
+.source-dot.dua { background: var(--secondary); }
+.source-dot.ags { background: var(--positive); }
+
+/* ====================== MAIN LAYOUT ====================== */
+.main-container {
+  display: flex;
+  gap: 0;
+  padding: 0 24px 24px;
+}
+.table-section {
+  flex: 0 0 68%;
+  max-width: 68%;
+  overflow: hidden;
+}
+.detail-section {
+  flex: 0 0 32%;
+  max-width: 32%;
+  padding-left: 16px;
+}
+
+/* ====================== TABLE ====================== */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+thead th {
+  background: var(--table-header);
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+thead th:hover { color: var(--primary); }
+thead th .sort-arrow { margin-left: 3px; font-size: 10px; opacity: 0.5; }
+thead th.sorted .sort-arrow { opacity: 1; color: var(--primary); }
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+}
+tbody tr:hover { background: var(--hover-row); }
+tbody tr.selected {
+  background: var(--hover-row);
+  border-left: 3px solid var(--primary);
+}
+tbody td {
+  padding: 9px 8px;
+  vertical-align: middle;
+}
+td.right { text-align: center; }
+.ticker-cell { font-weight: 700; font-family: 'Courier New', monospace; font-size: 13px; }
+.company-cell { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.company-logo { width: 16px; height: 16px; border-radius: 3px; vertical-align: middle; margin-right: 4px; flex-shrink: 0; background: #F3F4F6; }
+.company-with-logo { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+.company-with-logo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sector-cell { font-size: 11px; color: var(--text-secondary); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.price-cell { font-family: 'Inter', sans-serif; white-space: nowrap; font-size: 0.85rem; }
+.price-bold { font-weight: 700; }
+.pct { font-weight: 600; white-space: nowrap; }
+.pct.positive { color: var(--positive); }
+.pct.negative { color: var(--negative); }
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-active { background: #DCFCE7; color: #166534; }
+.badge-closed { background: #F3F4F6; color: #6B7280; }
+.badge-low { background: #DCFCE7; color: #166534; }
+.badge-medium { background: #FEF9C3; color: #854D0E; }
+.badge-high { background: #FEE2E2; color: #991B1B; }
+.badge-stoploss { background: #1F2937; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
+@keyframes pulse-stoploss { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+.badge-investory { background: var(--primary); color: #fff; }
+.badge-dua { background: var(--secondary); color: #fff; }
+.badge-ags { background: var(--positive); color: #fff; }
+
+/* ====================== DETAIL PANEL ====================== */
+.detail-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.detail-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+.detail-empty svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.3; }
+.detail-company { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.detail-ticker { font-family: 'Courier New', monospace; color: var(--text-secondary); font-size: 14px; margin-bottom: 10px; }
+.detail-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.detail-big-pct {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.detail-big-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-bottom: 16px;
+}
+.detail-metric-label { font-size: 11px; color: var(--text-secondary); }
+.detail-metric-value { font-size: 13px; font-weight: 500; }
+.detail-metric-value.large { font-size: 15px; font-weight: 700; }
+.detail-comment {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: 12.5px;
+  color: var(--text);
+  margin-bottom: 12px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+.detail-comment-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+.btn-website {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background .2s;
+}
+.btn-website:hover { background: #d9571a; }
+
+/* ====================== FAB ====================== */
+.fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(242,101,34,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s, box-shadow .2s;
+  z-index: 100;
+}
+.fab:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(242,101,34,0.5); }
+
+/* ====================== MODAL ====================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.visible { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  width: 520px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--secondary); }
+.form-group { margin-bottom: 12px; }
+.form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); }
+.form-textarea { resize: vertical; min-height: 60px; }
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+.btn-copy {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background .2s;
+}
+.btn-copy:hover { background: #d9571a; }
+.btn-close-modal {
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .2s;
+}
+.btn-close-modal:hover { border-color: var(--text-secondary); }
+
+/* ====================== TOAST ====================== */
+.toast {
+  position: fixed;
+  bottom: 90px;
+  right: 28px;
+  background: var(--secondary);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 300;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+}
+.toast.visible { opacity: 1; transform: translateY(0); }
+
+/* ====================== LOADING ====================== */
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { margin-top: 14px; color: var(--text-secondary); font-size: 13px; }
+
+/* ====================== RESPONSIVE ====================== */
+@media (max-width: 1200px) {
+  .main-container { flex-direction: column; }
+  .table-section, .detail-section { flex: 1 1 100%; max-width: 100%; }
+  .detail-section { padding-left: 0; margin-top: 16px; }
+  .detail-panel { position: static; max-height: none; }
+}
+@media (max-width: 768px) {
+  .header { padding: 12px 16px; }
+  .controls { padding: 12px 16px; }
+  .stats-row { padding: 12px 16px; }
+  .main-container { padding: 0 16px 16px; }
+  .stat-card { flex: 1 1 calc(50% - 8px); }
+  .source-stats { padding: 0 16px 10px; flex-direction: column; gap: 6px; }
+  .search-input { width: 100%; }
+  .filter-group { width: 100%; }
+  .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* ====================== NAV TABS ====================== */
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  margin-left: 24px;
+}
+.nav-tab {
+  padding: 7px 20px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: #fff; border-color: rgba(255,255,255,0.5); }
+.nav-tab.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ====================== PORTFOLIO VIEW ====================== */
+.portfolio-controls {
+  padding: 16px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+}
+.portfolio-btn {
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.portfolio-btn:hover { border-color: var(--primary); color: var(--primary); }
+.portfolio-btn.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.portfolio-btn.primary:hover { background: #d9571a; }
+.portfolio-btn.danger {
+  color: var(--negative);
+  border-color: var(--negative);
+}
+.portfolio-btn.danger:hover { background: #FEE2E2; }
+
+.portfolio-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin: 0 24px 24px;
+}
+.portfolio-table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.portfolio-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.portfolio-empty svg { display: block; margin: 0 auto 12px; width: 48px; height: 48px; opacity: 0.3; }
+
+/* Portfolio status badges */
+.badge-pf-active { background: #DCFCE7; color: #166534; }
+.badge-pf-stoploss { background: #1F2937; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
+.badge-pf-target { background: #DCFCE7; color: #166534; }
+.badge-pf-closed { background: #F3F4F6; color: #6B7280; }
+
+/* ====================== REBALANCE PANEL ====================== */
+.rebalance-panel {
+  margin: 0 24px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+.rebalance-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--secondary);
+}
+.rebalance-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.rebalance-item:last-child { border-bottom: none; }
+.rebalance-item input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.rebalance-ok {
+  text-align: center;
+  padding: 20px;
+  color: var(--positive);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ====================== ADD-TO-PORTFOLIO COLUMN & BUTTON ====================== */
+.col-action {
+  width: 36px;
+  min-width: 36px;
+  text-align: center;
+  padding: 4px !important;
+}
+.btn-add-pf {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  padding: 0;
+  line-height: 1;
+}
+.btn-add-pf:hover { border-color: var(--primary); background: var(--primary-light); }
+.btn-add-pf.in-portfolio {
+  border-color: var(--positive);
+  background: #DCFCE7;
+  color: var(--positive);
+  cursor: default;
+}
+.btn-add-portfolio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .2s;
+  margin-top: 8px;
+}
+.btn-add-portfolio:hover { background: #d9571a; }
+.btn-add-portfolio.in-portfolio {
+  background: var(--positive);
+}
+.btn-add-portfolio.in-portfolio:hover { background: #15803D; }
+.btn-remove-text {
+  color: rgba(255,255,255,0.6);
+  font-weight: 400;
+  margin-left: 4px;
+  cursor: pointer;
+}
+.btn-remove-text:hover { color: #fff; }
+
+.btn-remove-pf {
+  background: none;
+  border: 1px solid var(--negative);
+  color: var(--negative);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-remove-pf:hover { background: #FEE2E2; }
+
+@media (max-width: 768px) {
+  .nav-tabs { margin-left: 0; margin-top: 8px; }
+  .portfolio-controls { padding: 12px 16px; }
+  .portfolio-table-wrapper { margin: 0 16px 16px; }
+  .rebalance-panel { margin: 0 16px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====================== HEADER ====================== -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo"><img src="assets/logo-light.png" alt="AGS"></div>
+    <div>
+      <div class="header-title">Карта инвестиционных идей</div>
+      <div class="header-subtitle">Данные обновляются из Google Sheets</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabIdeas" onclick="switchTab('ideas')">Идеи</button>
+      <button class="nav-tab" id="tabPortfolio" onclick="switchTab('portfolio')">Портфель</button>
+    </div>
+    <button class="btn-refresh" onclick="fetchData()" title="Обновить данные">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Обновить
+    </button>
+  </div>
+</div>
+
+<!-- ====================== VIEW: IDEAS ====================== -->
+<div id="viewIdeas">
+
+<!-- Fallback banner -->
+<div class="fallback-banner" id="fallbackBanner">
+  &#9888; Не удалось загрузить данные из Google Sheets. Показаны локальные данные.
+</div>
+
+<!-- ====================== CONTROLS ====================== -->
+<div class="controls">
+  <input type="text" class="search-input" id="searchInput" placeholder="Поиск по тикеру, компании, сектору...">
+
+  <div class="filter-group">
+    <span class="filter-label">Статус:</span>
+    <button class="filter-btn active" data-filter="status" data-value="all">Все</button>
+    <button class="filter-btn" data-filter="status" data-value="ACTIVE">Активные</button>
+    <button class="filter-btn" data-filter="status" data-value="CLOSED">Закрытые</button>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Источник:</span>
+    <button class="filter-btn active" data-filter="source" data-value="all">Все</button>
+    <button class="filter-btn" data-filter="source" data-value="InveStory">InveStory</button>
+    <button class="filter-btn" data-filter="source" data-value="ДУА">ДУА</button>
+    <button class="filter-btn" data-filter="source" data-value="AGS">AGS</button>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Риск:</span>
+    <button class="filter-btn active" data-filter="risk" data-value="all">Все</button>
+    <button class="filter-btn" data-filter="risk" data-value="low">Низкий</button>
+    <button class="filter-btn" data-filter="risk" data-value="medium">Средний</button>
+    <button class="filter-btn" data-filter="risk" data-value="high">Высокий</button>
+    <button class="filter-btn" data-filter="risk" data-value="stoploss">⛔ Stop Loss</button>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Индустрия:</span>
+    <select class="industry-select" id="industrySelect">
+      <option value="all">Все индустрии</option>
+    </select>
+  </div>
+</div>
+
+<!-- ====================== STATS CARDS ====================== -->
+<div class="stats-row" id="statsRow">
+  <div class="stat-card">
+    <div class="stat-card-label">В выборке</div>
+    <div class="stat-card-value" id="statCount">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Ср. потенциал</div>
+    <div class="stat-card-value" id="statPotential">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Ср. доходность</div>
+    <div class="stat-card-value" id="statPerf">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-label">Закрытых</div>
+    <div class="stat-card-value" id="statClosed">—</div>
+  </div>
+</div>
+
+<!-- ====================== SOURCE STATS ====================== -->
+<div class="source-stats" id="sourceStats"></div>
+
+<!-- ====================== MAIN CONTENT ====================== -->
+<div class="main-container">
+  <!-- Table -->
+  <div class="table-section" id="tableSection">
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="spinner"></div>
+      <div class="loading-text">Загрузка данных из Google Sheets...</div>
+    </div>
+    <div class="table-wrapper" id="tableWrapper" style="display:none;">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="date" class="sorted">Дата <span class="sort-arrow">&#9660;</span></th>
+            <th data-col="ticker">Тикер <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="company">Компания <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="sector">Сектор <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="price">Цена <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="target">Целевая <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="potential">Upside <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="perf">Тек. дох. <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="risk">Риск <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="status">Статус <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="source">Источник <span class="sort-arrow">&#9650;</span></th>
+            <th class="col-action" style="cursor:default;">➕</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-section">
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-empty" id="detailEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+        <div>Выберите идею из таблицы<br>для просмотра деталей</div>
+      </div>
+      <div id="detailContent" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /viewIdeas -->
+
+<!-- ====================== VIEW: PORTFOLIO ====================== -->
+<div id="viewPortfolio" style="display:none;">
+  <!-- Portfolio Stats -->
+  <div class="stats-row" id="portfolioStatsRow">
+    <div class="stat-card">
+      <div class="stat-card-label">Позиций в портфеле</div>
+      <div class="stat-card-value" id="pfStatCount">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Общий потенциал</div>
+      <div class="stat-card-value" id="pfStatPotential">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Общая доходность</div>
+      <div class="stat-card-value" id="pfStatPerf">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Требуют ребалансировки</div>
+      <div class="stat-card-value" id="pfStatRebal">0</div>
+    </div>
+  </div>
+
+  <!-- Portfolio Filters -->
+  <div class="controls-row" style="margin:0 24px;">
+    <div class="filter-group">
+      <span class="filter-label">Поиск:</span>
+      <input type="text" class="search-input" id="pfSearchInput" placeholder="Тикер, компания, сектор..." style="width:180px;" oninput="renderPortfolio()">
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Риск:</span>
+      <button class="filter-btn pf-filter active" data-pffilter="risk" data-value="all" onclick="togglePfFilter(this)">Все</button>
+      <button class="filter-btn pf-filter" data-pffilter="risk" data-value="low" onclick="togglePfFilter(this)">🟢 Низкий</button>
+      <button class="filter-btn pf-filter" data-pffilter="risk" data-value="medium" onclick="togglePfFilter(this)">🟡 Средний</button>
+      <button class="filter-btn pf-filter" data-pffilter="risk" data-value="high" onclick="togglePfFilter(this)">🔴 Высокий</button>
+      <button class="filter-btn pf-filter" data-pffilter="risk" data-value="stoploss" onclick="togglePfFilter(this)">⛔ Stop Loss</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Источник:</span>
+      <button class="filter-btn pf-filter active" data-pffilter="source" data-value="all" onclick="togglePfFilter(this)">Все</button>
+      <button class="filter-btn pf-filter" data-pffilter="source" data-value="InveStory" onclick="togglePfFilter(this)">InveStory</button>
+      <button class="filter-btn pf-filter" data-pffilter="source" data-value="ДУА" onclick="togglePfFilter(this)">ДУА</button>
+      <button class="filter-btn pf-filter" data-pffilter="source" data-value="AGS" onclick="togglePfFilter(this)">AGS</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Статус:</span>
+      <button class="filter-btn pf-filter active" data-pffilter="pfstatus" data-value="all" onclick="togglePfFilter(this)">Все</button>
+      <button class="filter-btn pf-filter" data-pffilter="pfstatus" data-value="active" onclick="togglePfFilter(this)">🟢 Активна</button>
+      <button class="filter-btn pf-filter" data-pffilter="pfstatus" data-value="stoploss" onclick="togglePfFilter(this)">⛔ Stop Loss</button>
+      <button class="filter-btn pf-filter" data-pffilter="pfstatus" data-value="target" onclick="togglePfFilter(this)">✅ Цель</button>
+      <button class="filter-btn pf-filter" data-pffilter="pfstatus" data-value="closed" onclick="togglePfFilter(this)">📦 Закрыта</button>
+    </div>
+    <div class="filter-group" style="flex-wrap:wrap;">
+      <span class="filter-label">Исключить секторы:</span>
+      <div id="pfSectorExclude" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+    </div>
+  </div>
+
+  <!-- Portfolio Controls -->
+  <div class="portfolio-controls">
+    <button class="portfolio-btn primary" onclick="addFilteredToPortfolio()">📥 Сформировать из фильтра</button>
+    <button class="portfolio-btn" onclick="toggleRebalancePanel()">🔄 Ребалансировать</button>
+    <button class="portfolio-btn" onclick="downloadPortfolioCSV()">📥 Скачать портфель</button>
+    <button class="portfolio-btn danger" onclick="clearPortfolio()">🗑 Очистить портфель</button>
+  </div>
+
+  <!-- Rebalance Panel (hidden) -->
+  <div class="rebalance-panel" id="rebalancePanel" style="display:none;">
+    <div class="rebalance-panel-title">Рекомендации по ребалансировке</div>
+    <div id="rebalanceContent"></div>
+    <div style="margin-top:14px;text-align:right;" id="rebalanceActions"></div>
+  </div>
+
+  <!-- Sector Chart -->
+  <div id="portfolioChart" style="display:none;padding:16px 24px;">
+    <div style="font-weight:600;font-size:1rem;margin-bottom:12px;color:#1F3860;">Распределение по секторам</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <svg id="sectorDonut" width="200" height="200" viewBox="0 0 200 200"></svg>
+      <div id="sectorLegend" style="display:flex;flex-direction:column;gap:4px;font-size:0.8rem;"></div>
+    </div>
+  </div>
+
+  <!-- Portfolio Table -->
+  <div id="portfolioTableArea"></div>
+</div><!-- /viewPortfolio -->
+
+<!-- ====================== FAB ====================== -->
+<button class="fab" onclick="openModal()" title="Предложить идею">💡</button>
+
+<!-- ====================== MODAL ====================== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">💡 Предложить инвестиционную идею</div>
+    <p style="color:#6B7280;font-size:0.85rem;margin-bottom:16px;">Заполните форму — идея будет отправлена на рассмотрение. После одобрения она появится в матрице.</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Ваше имя *</label>
+        <input type="text" class="form-input" id="formName" placeholder="Имя Фамилия" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="formEmail" placeholder="name@company.com" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Тикер *</label>
+        <input type="text" class="form-input" id="formTicker" placeholder="AAPL" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Компания *</label>
+        <input type="text" class="form-input" id="formCompany" placeholder="Apple Inc" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Сектор</label>
+        <input type="text" class="form-input" id="formSector" placeholder="Semiconductors">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Валюта</label>
+        <select class="form-select" id="formCurrency">
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="CNY">CNY</option>
+          <option value="HKD">HKD</option>
+          <option value="KZT">KZT</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Текущая цена *</label>
+        <input type="number" step="0.01" class="form-input" id="formOpen" placeholder="100.00" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Целевая цена *</label>
+        <input type="number" step="0.01" class="form-input" id="formTarget" placeholder="130.00" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Почему стоит купить? *</label>
+      <textarea class="form-textarea" id="formComment" placeholder="Опишите тезис: почему акция недооценена, какие катализаторы, на каком горизонте..." required></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-close-modal" onclick="closeModal()">Отмена</button>
+      <button class="btn-copy" onclick="submitIdea()">📩 Отправить на рассмотрение</button>
+    </div>
+    <div id="formStatus" style="display:none;text-align:center;padding:12px;margin-top:8px;border-radius:6px;font-size:0.9rem;"></div>
+  </div>
+</div>
+
+<!-- ====================== TOAST ====================== -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===========================================================================
+   FALLBACK DATA
+   =========================================================================== */
+const FALLBACK_DATA = [
+  {date:"2026-03-25",ticker:"HIMX",company:"Himax Technologies Inc",industry:"Technology",sector:"Semiconductors",currency:"USD",price:13.76,open:8.8,target:13.2,closed:12.7,source:"InveStory",share:"5%",perf:44.32,status:"CLOSED",potential:null,maxReturn:185.11,change:0.62,marketCap:2.39,website:"himax.com.tw",comment:"Идея формата: купить и забыть в долгосрочный портфель. Может сделать x2."},
+  {date:"2026-02-06",ticker:"IESC",company:"IES Holdings Inc",industry:"Industrials",sector:"Engineering & Construction",currency:"USD",price:665.66,open:408.95,target:540,closed:540,source:"InveStory",share:"5%",perf:32.05,status:"CLOSED",potential:null,maxReturn:96.60,change:2.74,marketCap:13.20,website:"IES.com",comment:"Инфраструктурный игрок в гонке ИИ с рекордным портфелем заказов."},
+  {date:"2026-02-20",ticker:"KSPI",company:"Kaspi.kz AO - ADR",industry:"Finance",sector:"Software - Infrastructure",currency:"USD",price:87.27,open:73.2,target:113,closed:null,source:"InveStory",share:"5%",perf:19.22,status:"ACTIVE",potential:29.48,maxReturn:35.40,change:-2.03,marketCap:16.54,website:"kaspi.kz",comment:"Ожидание возобновления дивидендов. Компания выглядит недооценённой."},
+  {date:"2026-04-17",ticker:"GOOGL",company:"Alphabet Inc Class A",industry:"Technology",sector:"Communication Services",currency:"USD",price:347.90,open:335,target:395,closed:null,source:"InveStory",share:"5%",perf:3.85,status:"ACTIVE",potential:13.54,maxReturn:21.97,change:0.22,marketCap:4234.72,website:"google.com",comment:"Качественный актив для покупки в долгую."},
+  {date:"2026-02-10",ticker:"VNOM",company:"Viper Energy Inc",industry:"Oil&Gas",sector:"Oil & Gas Midstream",currency:"USD",price:45.08,open:43.55,target:55,closed:null,source:"InveStory",share:"5%",perf:3.51,status:"ACTIVE",potential:22.01,maxReturn:17.41,change:0.49,marketCap:16.08,website:"viperenergy.com",comment:"Меньшая зависимость от цены на нефть, хорошая див доходность."},
+  {date:"2026-01-27",ticker:"AMZN",company:"Amazon.com Inc",industry:"Technology",sector:"Internet Retail",currency:"USD",price:243.75,open:238.08,target:305,closed:null,source:"InveStory",share:"5%",perf:2.38,status:"ACTIVE",potential:25.13,maxReturn:17.00,change:-1.52,marketCap:2621.83,website:"amazon.com",comment:"Упала на повышении планов по капитальным расходам. Отличная возможность для покупки."},
+  {date:"2026-03-27",ticker:"CSCO",company:"Cisco Systems Inc",industry:"Technology",sector:"Communication Equipment",currency:"USD",price:112.95,open:82,target:110,closed:125.4,source:"InveStory",share:"5%",perf:52.93,status:"CLOSED",potential:null,maxReturn:58.99,change:0.69,marketCap:444.91,website:"cisco.com",comment:"Тренды разворачиваются благоприятно для этой компании."},
+  {date:"2026-03-05",ticker:"NATKY",company:"Kazatomprom (GDR)",industry:"Nuclear",sector:"Energy",currency:"USD",price:68.00,open:81.2,target:110,closed:null,source:"InveStory",share:"5%",perf:-16.26,status:"ACTIVE",potential:61.76,maxReturn:14.48,change:4.12,marketCap:null,website:"kazatomprom.kz",comment:"Крупнейший в мире производитель первичного урана. 25% мировых поставок."},
+  {date:"2026-02-05",ticker:"MSFT",company:"Microsoft Corp",industry:"Technology",sector:"Software - Infrastructure",currency:"USD",price:388.92,open:392.32,target:550,closed:null,source:"InveStory",share:"5%",perf:-0.87,status:"ACTIVE",potential:41.42,maxReturn:41.58,change:-2.22,marketCap:2892.78,website:"microsoft.com",comment:"P/E ≈ 24, близко к историческому минимуму."},
+  {date:"2026-02-03",ticker:"TTWO",company:"Take-Two Interactive",industry:"Technology",sector:"Electronic Gaming",currency:"USD",price:232.86,open:206.61,target:300,closed:null,source:"InveStory",share:"5%",perf:12.71,status:"ACTIVE",potential:28.83,maxReturn:28.58,change:-1.30,marketCap:43.35,website:"take2games.com",comment:"ИИ ускоряет прототипирование и тестирование — позитив для игровых компаний."},
+  {date:"2026-02-26",ticker:"MELI",company:"MercadoLibre Inc",industry:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:1806.59,open:1790,target:2800,closed:null,source:"InveStory",share:"5%",perf:0.93,status:"ACTIVE",potential:54.99,maxReturn:42.37,change:-0.88,marketCap:91.58,website:"mercadolibre.com",comment:"Упала на 37% от максимума. Хорошая точка для набора позиции."},
+  {date:"2026-01-20",ticker:"CPNG",company:"Coupang Inc",industry:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:15.77,open:20.45,target:32,closed:null,source:"InveStory",share:"5%",perf:-22.89,status:"ACTIVE",potential:102.92,maxReturn:66.65,change:0.03,marketCap:28.31,website:"coupang.com",comment:"Компания с высокой бетой. При коррекциях падает сильнее остальных."},
+  {date:"2026-01-30",ticker:"BRX",company:"Brixmor Property Group",industry:"Real Estate",sector:"REIT - Retail",currency:"USD",price:32.64,open:30,target:35,closed:null,source:"ДУА",share:"5%",perf:8.80,status:"ACTIVE",potential:7.23,maxReturn:9.53,change:-0.15,marketCap:10.02,website:"brixmor.com",comment:"Крупнейший владелец открытых торговых центров в США. 350+ объектов."},
+  {date:"2026-04-06",ticker:"DOW",company:"Dow Inc",industry:"Materials",sector:"Chemicals",currency:"USD",price:31.38,open:40.7,target:55,closed:null,source:"InveStory",share:"5%",perf:-22.90,status:"ACTIVE",potential:75.27,maxReturn:5.01,change:2.99,marketCap:22.53,website:"dow.com",comment:"Бенефициар конфликта на Ближнем Востоке. Заходить лесенкой."},
+  {date:"2026-03-13",ticker:"KWEB",company:"KraneShares CSI China Internet ETF",industry:"ETF",sector:"China Internet",currency:"USD",price:26.52,open:30,target:39,closed:null,source:"InveStory",share:"5%",perf:-11.60,status:"ACTIVE",potential:47.06,maxReturn:44.57,change:-1.87,marketCap:null,website:"kraneshares.com",comment:"Ключевой ETF на китайских технологических гигантов."},
+  {date:"2026-01-29",ticker:"SPOT",company:"Spotify Technology SA",industry:"Technology",sector:"Internet Content",currency:"USD",price:475.78,open:462,target:700,closed:null,source:"ДУА",share:"5%",perf:2.98,status:"ACTIVE",potential:47.13,maxReturn:61.97,change:-3.54,marketCap:97.83,website:"spotify.com",comment:"Мировой лидер в сфере аудио-стриминга."},
+  {date:"2026-02-17",ticker:"ERO",company:"Ero Copper Corp",industry:"Materials",sector:"Copper",currency:"USD",price:27.47,open:29.93,target:45,closed:null,source:"InveStory",share:"5%",perf:-8.22,status:"ACTIVE",potential:63.82,maxReturn:32.98,change:2.23,marketCap:4.05,website:"erocopper.com",comment:"Коррекция 30% от максимумов. Потенциал роста меди сохраняется."},
+  {date:"2026-04-30",ticker:"V",company:"Visa Inc",industry:"Fintech",sector:"Credit Services",currency:"USD",price:355.56,open:330,target:410,closed:null,source:"InveStory",share:"5%",perf:7.75,status:"ACTIVE",potential:15.31,maxReturn:10.65,change:-0.07,marketCap:669.79,website:"visa.com",comment:"Ставка на рост глобальных цифровых платежей."},
+  {date:"2026-05-05",ticker:"IBIT",company:"iShares Bitcoin Trust ETF",industry:"Crypto",sector:"Bitcoin ETF",currency:"USD",price:37.39,open:45.4,target:60,closed:null,source:"InveStory",share:"5%",perf:-17.64,status:"ACTIVE",potential:60.47,maxReturn:58.19,change:-0.76,marketCap:169.62,website:"BTC.com",comment:"Крупнейший в мире биржевой фонд на биткоин от BlackRock."},
+  {date:"2026-05-08",ticker:"CRCL",company:"Circle Internet Group",industry:"Crypto",sector:"Capital Markets",currency:"USD",price:67.87,open:113.25,target:155,closed:null,source:"InveStory",share:"5%",perf:-40.07,status:"ACTIVE",potential:128.38,maxReturn:78.81,change:-4.52,marketCap:16.88,website:"circle.com",comment:"Компания, выпускающая стейблкоин USDC."},
+  {date:"2026-05-20",ticker:"NOK",company:"Nokia Oyj",industry:"Technology",sector:"Communication Equipment",currency:"USD",price:10.39,open:13.67,target:18,closed:null,source:"InveStory",share:"5%",perf:-23.99,status:"ACTIVE",potential:73.24,maxReturn:27.65,change:-2.26,marketCap:60.41,website:"nokia.com",comment:"Строитель критической инфраструктуры для сетей нового поколения."},
+  {date:"2026-05-28",ticker:"COPX",company:"Global X Copper Miners ETF",industry:"Materials",sector:"Copper Mining",currency:"USD",price:80.33,open:83,target:110,closed:null,source:"InveStory",share:"5%",perf:-3.22,status:"ACTIVE",potential:36.94,maxReturn:20.47,change:2.67,marketCap:null,website:"globalxetfs.com",comment:"ETF на крупнейших медедобытчиков мира."},
+  {date:"2026-06-01",ticker:"ARKG",company:"ARK Genomic Revolution ETF",industry:"Healthcare",sector:"Genomics",currency:"USD",price:33.40,open:34,target:45,closed:null,source:"InveStory",share:"5%",perf:-1.76,status:"ACTIVE",potential:34.73,maxReturn:-75.74,change:-0.60,marketCap:null,website:"ark-funds.com",comment:"Генная терапия, редактирование ДНК, ИИ в разработке лекарств."},
+  {date:"2026-06-02",ticker:"TSEM",company:"Tower Semiconductor Ltd",industry:"Technology",sector:"Semiconductors",currency:"USD",price:250.54,open:228,target:350,closed:null,source:"ДУА",share:"5%",perf:9.89,status:"ACTIVE",potential:39.70,maxReturn:40.32,change:-0.15,marketCap:28.40,website:"towersemi.com",comment:"Монополист в ИИ-инфраструктуре. Потенциал роста 2-3x."},
+  {date:"2026-06-03",ticker:"CLF",company:"Cleveland-Cliffs Inc",industry:"Materials",sector:"Steel",currency:"USD",price:9.53,open:12.5,target:17,closed:null,source:"InveStory",share:"5%",perf:-23.76,status:"ACTIVE",potential:78.38,maxReturn:33.60,change:2.97,marketCap:5.43,website:"clevelandcliffs.com",comment:"Ставка на восстановление американской стали и промышленную политику США."},
+  {date:"2026-06-04",ticker:"AVGO",company:"Broadcom Inc",industry:"Technology",sector:"Semiconductors",currency:"USD",price:393.30,open:392.9,target:500,closed:360,source:"InveStory",share:"5%",perf:-8.37,status:"CLOSED",potential:null,maxReturn:25.99,change:1.76,marketCap:1867.54,website:"broadcom.com",comment:"Лидер в полупроводниках и инфраструктурном софте для ИИ."},
+  {date:"2026-06-25",ticker:"003816",company:"CGN Power Co Ltd",industry:"Nuclear",sector:"Energy",currency:"CNY",price:4.11,open:3.96,target:6,closed:null,source:"AGS",share:"5%",perf:3.79,status:"ACTIVE",potential:45.99,maxReturn:24.75,change:1.23,marketCap:219.64,website:"en.cgnpc.com.cn",comment:"Крупнейший оператор атомной генерации в Китае. 55% атомной мощности."},
+  {date:"2026-06-26",ticker:"VISN",company:"Vistance Networks Inc",industry:"Technology",sector:"Communication Equipment",currency:"USD",price:12.15,open:12,target:15,closed:null,source:"InveStory",share:"5%",perf:1.25,status:"ACTIVE",potential:23.46,maxReturn:66.25,change:-2.64,marketCap:2.75,website:"vistancenetworks.com",comment:"Бывшая Commscope. Реструктуризация: продажа активов, гашение долга."},
+  {date:"2026-06-27",ticker:"RKT",company:"Rocket Companies Inc",industry:"Fintech",sector:"Mortgage Finance",currency:"USD",price:13.49,open:14.6,target:19,closed:null,source:"InveStory",share:"5%",perf:-7.60,status:"ACTIVE",potential:40.85,maxReturn:66.85,change:-1.21,marketCap:38.14,website:"rocketcompanies.com",comment:"Крупнейшая ипотечная и финтех-группа США. Rocket Mortgage, Redfin, Mr. Cooper."}
+];
+
+/* ===========================================================================
+   GLOBAL STATE
+   =========================================================================== */
+let allData = [];
+let filteredData = [];
+let selectedIdx = -1; // index into filteredData
+let sortCol = 'date';
+let sortDir = 'desc';
+let filters = {
+  status: new Set(['all']),
+  source: new Set(['all']),
+  risk: new Set(['all']),
+  industry: 'all',
+  search: ''
+};
+
+/* ===========================================================================
+   CSV PARSING
+   =========================================================================== */
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+        else { inQuotes = false; }
+      } else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { result.push(current.trim()); current = ''; }
+      else { current += ch; }
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function parseNum(val) {
+  if (val == null || val === '' || val === '#N/A' || val === 'N/A') return null;
+  const s = String(val).replace(/[$%,\s]/g, '');
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+
+function parseDate(val) {
+  if (!val) return null;
+  // Try ISO first
+  const iso = new Date(val);
+  if (!isNaN(iso.getTime()) && String(val).includes('-')) return iso;
+  // Try DD.MM.YYYY or DD/MM/YYYY
+  const parts = val.split(/[./]/);
+  if (parts.length === 3) {
+    const d = new Date(parts[2], parts[1] - 1, parts[0]);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}.${mm}.${d.getFullYear()}`;
+}
+
+function csvToData(csvText) {
+  const lines = csvText.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+
+  // Build header map from first row
+  const headerCols = parseCSVLine(lines[0]);
+  const ci = {};
+  headerCols.forEach((h, i) => { ci[h.replace(/"/g, '').trim()] = i; });
+
+  function col(row, name) {
+    const idx = ci[name];
+    return idx != null ? (row[idx] || '').replace(/"/g, '').trim() : '';
+  }
+
+  const data = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCSVLine(lines[i]);
+    const ticker = col(cols, 'Stock ticker');
+    const sourceVal = col(cols, 'Source');
+    const dateVal = col(cols, 'Date');
+
+    if (sourceVal === 'Average' || sourceVal === 'Summ') break;
+    if (!dateVal && i > 1) break;
+    if (!ticker || ticker === 'CASH' || ticker === '#N/A') continue;
+
+    const statusRaw = col(cols, 'Status').toUpperCase();
+    data.push({
+      date: dateVal,
+      ticker: ticker,
+      company: col(cols, 'Company name'),
+      industry: col(cols, 'Industry'),
+      sector: col(cols, 'Sector'),
+      currency: col(cols, 'Currency'),
+      price: parseNum(col(cols, 'Current price $')),
+      open: parseNum(col(cols, 'Open price')),
+      target: parseNum(col(cols, 'Target price')),
+      downside: parseNum(col(cols, 'Downside price')),
+      closed: parseNum(col(cols, 'Closed price')),
+      source: sourceVal,
+      share: col(cols, 'Share'),
+      perf: parseNum(col(cols, 'Perfomance')),
+      status: statusRaw === 'CLOSED' ? 'CLOSED' : 'ACTIVE',
+      potential: parseNum(col(cols, 'Potential')),
+      maxReturn: parseNum(col(cols, 'Maximum return')),
+      change: parseNum(col(cols, 'Change % from previous close')),
+      marketCap: parseNum(col(cols, 'Market cap (B USD)')),
+      website: col(cols, 'Website'),
+      comment: col(cols, 'Comments')
+    });
+  }
+  return data;
+}
+
+/* ===========================================================================
+   RISK CALCULATION
+   =========================================================================== */
+function calcRisk(item) {
+  // If downside price is set, use Upside/Downside ratio
+  if (item.downside != null && item.price != null && item.target != null && item.price > 0) {
+    const upside = item.target - item.price;
+    const downside = item.price - item.downside;
+    item._downsidePct = (downside / item.price) * 100;
+    item._upsidePct = upside > 0 ? (upside / item.price) * 100 : 0;
+
+    // Price is AT or BELOW downside → STOP LOSS
+    if (item.price <= item.downside) {
+      item._riskRatio = null;
+      return 'stoploss';
+    }
+
+    if (upside > 0) {
+      const ratio = downside / upside;
+      item._riskRatio = ratio;
+      if (ratio > 1.0) return 'high';
+      if (ratio > 0.5) return 'medium';
+      return 'low';
+    }
+  }
+  // Fallback: use potential magnitude
+  let base;
+  if (item.status === 'CLOSED') {
+    const perf = item.perf != null ? Math.abs(item.perf) : 0;
+    if (perf > 60) base = 'high';
+    else if (perf >= 25) base = 'medium';
+    else base = 'low';
+  } else {
+    const pot = item.potential != null ? Math.abs(item.potential) : 0;
+    if (pot > 60) base = 'high';
+    else if (pot >= 25) base = 'medium';
+    else base = 'low';
+  }
+  // Bump up if performance is very negative
+  if (item.perf != null && item.perf < -15) {
+    if (base === 'low') base = 'medium';
+    else if (base === 'medium') base = 'high';
+  }
+  return base;
+}
+
+function riskLabel(r) {
+  if (r === 'stoploss') return '⛔ Stop Loss';
+  if (r === 'high') return '🔴 Высокий';
+  if (r === 'medium') return '🟡 Средний';
+  return '🟢 Низкий';
+}
+function riskBadgeClass(r) {
+  if (r === 'stoploss') return 'badge-stoploss';
+  if (r === 'high') return 'badge-high';
+  if (r === 'medium') return 'badge-medium';
+  return 'badge-low';
+}
+
+/* ===========================================================================
+   DATA LOADING
+   =========================================================================== */
+const SHEET_ID = '1iJXP-R3brvSTxfTzvljPRtyPoh-HTvAc29KQP7SiaE0';
+
+/* ---- Google Visualization JSONP (bypasses CORS) ---- */
+let _gvizCallbackId = 0;
+function fetchViaGviz() {
+  return new Promise((resolve, reject) => {
+    const cbName = '_gvizCb' + (++_gvizCallbackId);
+    const timeout = setTimeout(() => { reject(new Error('JSONP timeout')); delete window[cbName]; }, 12000);
+
+    window[cbName] = function(resp) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      try {
+        if (resp.status === 'error') throw new Error(resp.errors?.[0]?.message || 'gviz error');
+        resolve(gvizToData(resp.table));
+      } catch(e) { reject(e); }
+    };
+
+    const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+      '/gviz/tq?tqx=responseHandler:' + cbName + '&sheet=Portfolio%20NS';
+    const s = document.createElement('script');
+    s.src = url;
+    s.onerror = () => { clearTimeout(timeout); reject(new Error('script load failed')); };
+    document.head.appendChild(s);
+  });
+}
+
+/* Parse gviz JSON table into our data format */
+function gvizToData(table) {
+  const cols = table.cols.map(c => (c.label || '').trim());
+  const rows = table.rows || [];
+  const data = [];
+
+  // Build column index map
+  const ci = {};
+  cols.forEach((name, i) => { ci[name] = i; });
+
+  function gv(row, colName) {
+    const idx = ci[colName];
+    if (idx == null) return null;
+    const cell = row.c?.[idx];
+    if (!cell) return null;
+    return cell.v != null ? cell.v : (cell.f || null);
+  }
+  function gvStr(row, colName) {
+    const v = gv(row, colName);
+    return v != null ? String(v).trim() : '';
+  }
+  function gvNum(row, colName) {
+    const v = gv(row, colName);
+    if (v == null) return null;
+    if (typeof v === 'number') return v;
+    const s = String(v).replace(/[$,%\s]/g, '');
+    const n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+  /* For percentage columns: gviz returns 0.05 for "5.00%", need to *100 */
+  function gvPct(row, colName) {
+    // First try formatted value (e.g. "44.32%")
+    const idx = ci[colName];
+    if (idx == null) return null;
+    const cell = row.c?.[idx];
+    if (!cell) return null;
+    if (cell.f) {
+      const s = String(cell.f).replace(/[%,\s]/g, '');
+      const n = parseFloat(s);
+      if (!isNaN(n)) return n;
+    }
+    // Fallback to raw value * 100
+    if (cell.v != null && typeof cell.v === 'number') return cell.v * 100;
+    return null;
+  }
+
+  for (const row of rows) {
+    const ticker = gvStr(row, 'Stock ticker');
+    const src = gvStr(row, 'Source');
+    const dateVal = gvStr(row, 'Date');
+
+    // Stop conditions
+    if (src === 'Average' || src === 'Summ') break;
+    if (!ticker || ticker === 'CASH' || ticker === '#N/A') continue;
+    if (!dateVal) continue;
+
+    // Format date — gviz may return "Date(2026,2,25)" or "2026-03-25"
+    let dateStr = dateVal;
+    const dm = String(gv(row, 'Date')).match(/Date\((\d+),(\d+),(\d+)\)/);
+    if (dm) {
+      dateStr = dm[1] + '-' + String(+dm[2]+1).padStart(2,'0') + '-' + dm[3].padStart(2,'0');
+    }
+    // Also check formatted value
+    const dateCell = row.c?.[ci['Date']];
+    if (dateCell?.f) dateStr = dateCell.f;
+
+    const statusRaw = gvStr(row, 'Status').toUpperCase();
+
+    data.push({
+      date: dateStr,
+      ticker: ticker,
+      company: gvStr(row, 'Company name'),
+      industry: gvStr(row, 'Industry'),
+      sector: gvStr(row, 'Sector'),
+      currency: gvStr(row, 'Currency'),
+      price: gvNum(row, 'Current price $'),
+      open: gvNum(row, 'Open price'),
+      target: gvNum(row, 'Target price'),
+      downside: gvNum(row, 'Downside price'),
+      closed: gvNum(row, 'Closed price'),
+      source: src,
+      share: gvStr(row, 'Share') || '5%',
+      perf: gvPct(row, 'Perfomance'),
+      status: statusRaw === 'CLOSED' ? 'CLOSED' : 'ACTIVE',
+      potential: gvPct(row, 'Potential'),
+      maxReturn: gvPct(row, 'Maximum return'),
+      change: gvPct(row, 'Change % from previous close'),
+      marketCap: gvNum(row, 'Market cap (B USD)'),
+      website: gvStr(row, 'Website'),
+      comment: gvStr(row, 'Comments')
+    });
+  }
+  return data;
+}
+
+async function fetchData() {
+  const loading = document.getElementById('loadingOverlay');
+  const tableWrap = document.getElementById('tableWrapper');
+  const banner = document.getElementById('fallbackBanner');
+  loading.style.display = 'flex';
+  tableWrap.style.display = 'none';
+  banner.classList.remove('visible');
+
+  let data = null;
+
+  // Attempt 1 — JSONP via Google Visualization (bypasses CORS)
+  try {
+    console.log('[AGS] Fetching via Google Visualization JSONP…');
+    data = await fetchViaGviz();
+    if (!data || data.length === 0) throw new Error('No rows parsed');
+    console.log('[AGS] Loaded', data.length, 'rows via JSONP');
+  } catch (e) {
+    console.warn('[AGS] JSONP fetch failed:', e.message);
+  }
+
+  // Attempt 2 — direct fetch (works when hosted on a server with CORS ok)
+  if (!data || data.length === 0) {
+    try {
+      const csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=Portfolio%20NS';
+      console.log('[AGS] Fetching CSV from:', csvUrl);
+      const resp = await fetch(csvUrl);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const csv = await resp.text();
+      data = csvToData(csv);
+      if (data.length === 0) throw new Error('No rows parsed');
+      console.log('[AGS] Loaded', data.length, 'rows from CSV');
+    } catch (e) {
+      console.warn('[AGS] CSV fetch failed:', e.message);
+    }
+  }
+
+  // Fallback — embedded data
+  if (!data || data.length === 0) {
+    console.log('[AGS] Using fallback embedded data');
+    data = FALLBACK_DATA.map(d => ({ ...d }));
+    banner.classList.add('visible');
+  }
+
+  // Enrich data
+  data.forEach(item => {
+    item._date = parseDate(item.date);
+    item._risk = calcRisk(item);
+  });
+
+  allData = data;
+  populateIndustryFilter();
+  applyFilters();
+  loading.style.display = 'none';
+  tableWrap.style.display = '';
+}
+
+/* ===========================================================================
+   INDUSTRY FILTER
+   =========================================================================== */
+function populateIndustryFilter() {
+  const sel = document.getElementById('industrySelect');
+  const industries = [...new Set(allData.map(d => d.industry).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">Все индустрии</option>';
+  industries.forEach(ind => {
+    const opt = document.createElement('option');
+    opt.value = ind;
+    opt.textContent = ind;
+    sel.appendChild(opt);
+  });
+}
+
+/* ===========================================================================
+   FILTERING & SORTING
+   =========================================================================== */
+function applyFilters() {
+  const s = filters.search.toLowerCase();
+  filteredData = allData.filter(item => {
+    if (!filters.status.has('all') && !filters.status.has(item.status)) return false;
+    if (!filters.source.has('all') && !filters.source.has(item.source)) return false;
+    if (!filters.risk.has('all') && !filters.risk.has(item._risk)) return false;
+    if (filters.industry !== 'all' && item.industry !== filters.industry) return false;
+    if (s) {
+      const hay = [item.ticker, item.company, item.sector, item.industry].join(' ').toLowerCase();
+      if (!hay.includes(s)) return false;
+    }
+    return true;
+  });
+  applySort();
+}
+
+function applySort() {
+  filteredData.sort((a, b) => {
+    let va, vb;
+    switch (sortCol) {
+      case 'date': va = a._date ? a._date.getTime() : 0; vb = b._date ? b._date.getTime() : 0; break;
+      case 'ticker': va = a.ticker; vb = b.ticker; break;
+      case 'company': va = a.company; vb = b.company; break;
+      case 'sector': va = a.sector; vb = b.sector; break;
+      case 'price': va = a.price || 0; vb = b.price || 0; break;
+      case 'target': va = a.target || 0; vb = b.target || 0; break;
+      case 'potential': va = a.potential || 0; vb = b.potential || 0; break;
+      case 'perf': va = a.perf || 0; vb = b.perf || 0; break;
+      case 'risk': { const rk = { low: 0, medium: 1, high: 2, stoploss: 3 }; va = rk[a._risk] ?? 0; vb = rk[b._risk] ?? 0; break; }
+      case 'status': va = a.status; vb = b.status; break;
+      case 'source': va = a.source; vb = b.source; break;
+      default: va = 0; vb = 0;
+    }
+    if (typeof va === 'string') {
+      const cmp = va.localeCompare(vb);
+      return sortDir === 'asc' ? cmp : -cmp;
+    }
+    return sortDir === 'asc' ? va - vb : vb - va;
+  });
+  renderTable();
+  updateStats();
+}
+
+/* ===========================================================================
+   TABLE RENDERING
+   =========================================================================== */
+function fmtPct(val) {
+  if (val == null) return '—';
+  return (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
+}
+function pctClass(val) {
+  if (val == null) return '';
+  return val >= 0 ? 'positive' : 'negative';
+}
+function fmtPrice(val) {
+  if (val == null) return '—';
+  return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function logoUrl(ticker, website) {
+  // Use financialmodelingprep for stock logos by ticker
+  // For tickers with ":" (like SHE:003816) or non-standard, fallback to website favicon
+  if (ticker && !ticker.includes(':')) {
+    return 'https://financialmodelingprep.com/image-stock/' + encodeURIComponent(ticker) + '.png';
+  }
+  // Fallback: use website domain favicon via Google
+  if (website) {
+    let domain = website.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    return 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=32';
+  }
+  return '';
+}
+function companyCell(item) {
+  const src = logoUrl(item.ticker, item.website);
+  const img = src ? `<img class="company-logo" src="${src}" alt="" onerror="this.style.display='none'">` : '';
+  return `<div class="company-with-logo" title="${esc(item.company)}">${img}<span>${esc(item.company)}</span></div>`;
+}
+function sourceBadgeClass(src) {
+  if (src === 'InveStory') return 'badge-investory';
+  if (src === 'ДУА') return 'badge-dua';
+  if (src === 'AGS') return 'badge-ags';
+  return '';
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  if (filteredData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#6B7280;">Нет данных, соответствующих фильтрам</td></tr>';
+    return;
+  }
+  let html = '';
+  filteredData.forEach((item, idx) => {
+    const sel = idx === selectedIdx ? ' selected' : '';
+    const potentialVal = item.status === 'CLOSED' ? item.perf : item.potential;
+    const inPf = isInPortfolio(item.ticker);
+    const pfBtnHtml = inPf
+      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="event.stopPropagation();removeFromPortfolio('${esc(item.ticker)}');renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">✅</button>`
+      : `<button class="btn-add-pf" title="Добавить в портфель" onclick="event.stopPropagation();addToPortfolio(filteredData[${idx}]);renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">➕</button>`;
+    html += `<tr class="${sel}" onclick="selectRow(${idx})">
+      <td>${formatDate(item._date)}</td>
+      <td class="ticker-cell">${esc(item.ticker)}</td>
+      <td class="company-cell">${companyCell(item)}</td>
+      <td class="sector-cell" title="${esc(item.sector)}">${esc(item.sector)}</td>
+      <td class="right price-cell price-bold">${fmtPrice(item.price)}</td>
+      <td class="right price-cell">${fmtPrice(item.target)}</td>
+      <td class="right pct ${pctClass(potentialVal)}">${fmtPct(potentialVal)}</td>
+      <td class="right pct ${pctClass(item.perf)}">${fmtPct(item.perf)}</td>
+      <td><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
+      <td><span class="badge ${item.status === 'ACTIVE' ? 'badge-active' : 'badge-closed'}">${item.status === 'ACTIVE' ? 'Активна' : 'Закрыта'}</span></td>
+      <td><span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span></td>
+      <td class="col-action">${pfBtnHtml}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ===========================================================================
+   STATS
+   =========================================================================== */
+function updateStats() {
+  const total = filteredData.length;
+  const active = filteredData.filter(d => d.status === 'ACTIVE');
+  const closed = filteredData.filter(d => d.status === 'CLOSED');
+  const down = filteredData.filter(d => d.perf != null && d.perf < 0);
+
+  document.getElementById('statCount').textContent = total;
+
+  // Average potential of active ideas
+  const potentials = active.filter(d => d.potential != null).map(d => d.potential);
+  const avgPot = potentials.length ? potentials.reduce((a, b) => a + b, 0) / potentials.length : null;
+  const potEl = document.getElementById('statPotential');
+  if (avgPot != null) {
+    potEl.textContent = (avgPot >= 0 ? '+' : '') + avgPot.toFixed(1) + '%';
+    potEl.className = 'stat-card-value ' + (avgPot >= 0 ? 'positive' : 'negative');
+  } else { potEl.textContent = '—'; potEl.className = 'stat-card-value'; }
+
+  // Average performance
+  const perfs = filteredData.filter(d => d.perf != null).map(d => d.perf);
+  const avgPerf = perfs.length ? perfs.reduce((a, b) => a + b, 0) / perfs.length : null;
+  const perfEl = document.getElementById('statPerf');
+  if (avgPerf != null) {
+    perfEl.textContent = (avgPerf >= 0 ? '+' : '') + avgPerf.toFixed(1) + '%';
+    perfEl.className = 'stat-card-value ' + (avgPerf >= 0 ? 'positive' : 'negative');
+  } else { perfEl.textContent = '—'; perfEl.className = 'stat-card-value'; }
+
+  document.getElementById('statClosed').textContent = closed.length;
+
+  // Source stats
+  updateSourceStats();
+}
+
+function updateSourceStats() {
+  const container = document.getElementById('sourceStats');
+  const sources = ['InveStory', 'ДУА', 'AGS'];
+  const dotClasses = { 'InveStory': 'investory', 'ДУА': 'dua', 'AGS': 'ags' };
+  let html = '';
+  sources.forEach(src => {
+    const items = filteredData.filter(d => d.source === src);
+    if (items.length === 0) return;
+    const perfs = items.filter(d => d.perf != null);
+    const avgPerf = perfs.length ? (perfs.reduce((a, b) => a + b.perf, 0) / perfs.length).toFixed(1) : '—';
+    const pos = perfs.filter(d => d.perf >= 0).length;
+    const neg = perfs.filter(d => d.perf < 0).length;
+    html += `<div class="source-stat-item">
+      <span class="source-dot ${dotClasses[src]}"></span>
+      <span><strong>${esc(src)}</strong>: ${items.length} идей | ср. доходность: <span class="${parseFloat(avgPerf) >= 0 ? 'pct positive' : 'pct negative'}">${avgPerf}%</span> | плюсовых: ${pos}, отрицательных: ${neg}</span>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+/* ===========================================================================
+   ROW SELECTION & DETAIL PANEL
+   =========================================================================== */
+function selectRow(idx) {
+  selectedIdx = idx;
+  renderTable();
+  showDetail(filteredData[idx]);
+}
+
+function showDetail(item) {
+  document.getElementById('detailEmpty').style.display = 'none';
+  const c = document.getElementById('detailContent');
+  c.style.display = '';
+
+  const isClosed = item.status === 'CLOSED';
+  const bigVal = isClosed ? item.perf : item.potential;
+  const bigLabel = isClosed ? 'Доходность (закрыта)' : 'Потенциал';
+  const bigColor = bigVal != null ? (bigVal >= 0 ? 'var(--positive)' : 'var(--negative)') : 'var(--text)';
+
+  let metricsHTML = `
+    <div><div class="detail-metric-label">Сектор</div><div class="detail-metric-value">${esc(item.sector) || '—'}</div></div>
+    <div><div class="detail-metric-label">Индустрия</div><div class="detail-metric-value">${esc(item.industry) || '—'}</div></div>
+    <div><div class="detail-metric-label">Валюта</div><div class="detail-metric-value">${esc(item.currency) || '—'}</div></div>
+    <div><div class="detail-metric-label">Цена входа</div><div class="detail-metric-value">${fmtPrice(item.open)}</div></div>
+    <div><div class="detail-metric-label">Текущая цена</div><div class="detail-metric-value large">${fmtPrice(item.price)}</div></div>
+    <div><div class="detail-metric-label">Целевая цена</div><div class="detail-metric-value">${fmtPrice(item.target)}</div></div>`;
+
+  if (isClosed && item.closed != null) {
+    metricsHTML += `<div><div class="detail-metric-label">Цена закрытия</div><div class="detail-metric-value">${fmtPrice(item.closed)}</div></div>`;
+  }
+
+  metricsHTML += `
+    <div><div class="detail-metric-label">Потенциал</div><div class="detail-metric-value pct ${pctClass(item.potential)}">${fmtPct(item.potential)}</div></div>
+    <div><div class="detail-metric-label">Доходность</div><div class="detail-metric-value pct ${pctClass(item.perf)}">${fmtPct(item.perf)}</div></div>
+    <div><div class="detail-metric-label">Макс. доходность</div><div class="detail-metric-value pct ${pctClass(item.maxReturn)}">${fmtPct(item.maxReturn)}</div></div>
+    <div><div class="detail-metric-label">Изменение за день</div><div class="detail-metric-value pct ${pctClass(item.change)}">${fmtPct(item.change)}</div></div>`;
+
+  // Downside / Risk block
+  if (item.downside != null) {
+    metricsHTML += `<div><div class="detail-metric-label">Даунсайд (цена)</div><div class="detail-metric-value">${fmtPrice(item.downside)}</div></div>`;
+    if (item._downsidePct != null) {
+      metricsHTML += `<div><div class="detail-metric-label">Даунсайд риск</div><div class="detail-metric-value pct negative">-${item._downsidePct.toFixed(1)}%</div></div>`;
+    }
+    if (item._upsidePct != null) {
+      metricsHTML += `<div><div class="detail-metric-label">Апсайд</div><div class="detail-metric-value pct positive">+${item._upsidePct.toFixed(1)}%</div></div>`;
+    }
+    if (item._riskRatio != null) {
+      const ratioColor = item._riskRatio > 1 ? 'negative' : item._riskRatio > 0.5 ? '' : 'positive';
+      metricsHTML += `<div><div class="detail-metric-label">Риск/Доходность</div><div class="detail-metric-value pct ${ratioColor}">${item._riskRatio.toFixed(2)}</div></div>`;
+    }
+  }
+
+  metricsHTML += `
+    <div><div class="detail-metric-label">Market Cap</div><div class="detail-metric-value">${item.marketCap != null ? '$' + item.marketCap.toFixed(2) + ' млрд' : '—'}</div></div>
+    <div><div class="detail-metric-label">Доля в портфеле</div><div class="detail-metric-value">${esc(item.share) || '—'}</div></div>
+    <div><div class="detail-metric-label">Дата открытия</div><div class="detail-metric-value">${formatDate(item._date)}</div></div>
+    <div><div class="detail-metric-label">Источник</div><div class="detail-metric-value"><span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span></div></div>`;
+
+  let websiteBtn = '';
+  if (item.website) {
+    let href = item.website;
+    if (!href.startsWith('http')) href = 'https://' + href;
+    websiteBtn = `<a class="btn-website" href="${esc(href)}" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Перейти на сайт
+    </a>`;
+  }
+
+  // Portfolio button for detail panel
+  const inPf = isInPortfolio(item.ticker);
+  let pfDetailBtn = '';
+  if (inPf) {
+    pfDetailBtn = `<button class="btn-add-portfolio in-portfolio" onclick="removeFromPortfolio('${esc(item.ticker)}');renderTable();showDetail(filteredData[selectedIdx]);">✅ В портфеле <span class="btn-remove-text">• Убрать</span></button>`;
+  } else {
+    pfDetailBtn = `<button class="btn-add-portfolio" onclick="addToPortfolio(filteredData[selectedIdx]);renderTable();showDetail(filteredData[selectedIdx]);">➕ Добавить в портфель</button>`;
+  }
+
+  c.innerHTML = `
+    <div class="detail-company">${esc(item.company)}</div>
+    <div class="detail-ticker">${esc(item.ticker)}</div>
+    <div class="detail-badges">
+      <span class="badge ${item.status === 'ACTIVE' ? 'badge-active' : 'badge-closed'}">${item.status === 'ACTIVE' ? 'Активна' : 'Закрыта'}</span>
+      <span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span>
+      <span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span>
+    </div>
+    <div class="detail-big-pct" style="color:${bigColor}">${bigVal != null ? fmtPct(bigVal) : '—'}</div>
+    <div class="detail-big-label">${bigLabel}</div>
+    <div class="detail-grid">${metricsHTML}</div>
+    ${item.comment ? `<div class="detail-comment-title">Комментарий</div><div class="detail-comment">${esc(item.comment)}</div>` : ''}
+    ${websiteBtn}
+    <div style="margin-top:8px;">${pfDetailBtn}</div>`;
+}
+
+/* ===========================================================================
+   FILTER BUTTON HANDLERS
+   =========================================================================== */
+/* Ideas tab filters — multi-select (not portfolio filters which use .pf-filter) */
+document.querySelectorAll('.filter-btn:not(.pf-filter)').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filterType = btn.dataset.filter;
+    if (!filterType) return;
+    const value = btn.dataset.value;
+    const set = filters[filterType];
+
+    if (!(set instanceof Set)) {
+      // Non-set filters (industry uses dropdown)
+      filters[filterType] = value;
+      document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]:not(.pf-filter)`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    } else if (value === 'all') {
+      set.clear();
+      set.add('all');
+      document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]:not(.pf-filter)`).forEach(b => {
+        b.classList.toggle('active', b.dataset.value === 'all');
+      });
+    } else {
+      set.delete('all');
+      if (set.has(value)) {
+        set.delete(value);
+        if (set.size === 0) set.add('all');
+      } else {
+        set.add(value);
+      }
+      document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]:not(.pf-filter)`).forEach(b => {
+        b.classList.toggle('active', set.has(b.dataset.value));
+      });
+    }
+
+    selectedIdx = -1;
+    applyFilters();
+    document.getElementById('detailEmpty').style.display = '';
+    document.getElementById('detailContent').style.display = 'none';
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', function () {
+  filters.search = this.value;
+  selectedIdx = -1;
+  applyFilters();
+});
+
+document.getElementById('industrySelect').addEventListener('change', function () {
+  filters.industry = this.value;
+  selectedIdx = -1;
+  applyFilters();
+  document.getElementById('detailEmpty').style.display = '';
+  document.getElementById('detailContent').style.display = 'none';
+});
+
+/* ===========================================================================
+   SORT HANDLERS
+   =========================================================================== */
+document.querySelectorAll('thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortCol = col;
+      sortDir = 'asc';
+    }
+    // Update UI
+    document.querySelectorAll('thead th').forEach(t => {
+      t.classList.remove('sorted');
+      const arrow = t.querySelector('.sort-arrow');
+      if (arrow) arrow.innerHTML = '&#9650;';
+    });
+    th.classList.add('sorted');
+    th.querySelector('.sort-arrow').innerHTML = sortDir === 'asc' ? '&#9650;' : '&#9660;';
+    applySort();
+  });
+});
+
+/* ===========================================================================
+   MODAL
+   =========================================================================== */
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('visible');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+}
+document.getElementById('modalOverlay').addEventListener('click', function (e) {
+  if (e.target === this) closeModal();
+});
+
+function submitIdea() {
+  const name = document.getElementById('formName').value.trim();
+  const email = document.getElementById('formEmail').value.trim();
+  const ticker = document.getElementById('formTicker').value.trim();
+  const company = document.getElementById('formCompany').value.trim();
+  const sector = document.getElementById('formSector').value.trim();
+  const currency = document.getElementById('formCurrency').value;
+  const price = document.getElementById('formOpen').value.trim();
+  const target = document.getElementById('formTarget').value.trim();
+  const comment = document.getElementById('formComment').value.trim();
+  const statusEl = document.getElementById('formStatus');
+
+  if (!name || !email || !ticker || !company || !price || !target || !comment) {
+    statusEl.style.display = 'block';
+    statusEl.style.background = '#FEE2E2';
+    statusEl.style.color = '#991B1B';
+    statusEl.textContent = 'Заполните все обязательные поля';
+    return;
+  }
+
+  const potential = ((parseFloat(target) - parseFloat(price)) / parseFloat(price) * 100).toFixed(1);
+
+  // Build email body
+  const subject = encodeURIComponent(`Новая инвест-идея: ${ticker} (${company})`);
+  const body = encodeURIComponent(
+    `Новая инвестиционная идея на рассмотрение\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `От: ${name} (${email})\n` +
+    `Дата: ${new Date().toLocaleDateString('ru-RU')}\n\n` +
+    `Тикер: ${ticker}\n` +
+    `Компания: ${company}\n` +
+    `Сектор: ${sector || 'не указан'}\n` +
+    `Валюта: ${currency}\n` +
+    `Текущая цена: ${price}\n` +
+    `Целевая цена: ${target}\n` +
+    `Потенциал: +${potential}%\n\n` +
+    `Тезис:\n${comment}\n\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `Отправлено из Карты инвестиционных идей AGS`
+  );
+
+  // Open email client
+  const mailto = `mailto:n.selivanov@abylaigs.kz?subject=${subject}&body=${body}`;
+  window.open(mailto, '_blank');
+
+  // Also copy to clipboard as backup
+  const clipText = `${ticker} | ${company} | ${currency} ${price} → ${target} (+${potential}%)\n${comment}\n\nОт: ${name} (${email})`;
+  navigator.clipboard.writeText(clipText).catch(() => {});
+
+  // Show success
+  statusEl.style.display = 'block';
+  statusEl.style.background = '#DCFCE7';
+  statusEl.style.color = '#166534';
+  statusEl.textContent = '✅ Идея отправлена на рассмотрение! Также скопирована в буфер обмена.';
+
+  showToast('Идея отправлена на рассмотрение');
+
+  // Reset form after delay
+  setTimeout(() => {
+    document.getElementById('formName').value = '';
+    document.getElementById('formEmail').value = '';
+    document.getElementById('formTicker').value = '';
+    document.getElementById('formCompany').value = '';
+    document.getElementById('formSector').value = '';
+    document.getElementById('formOpen').value = '';
+    document.getElementById('formTarget').value = '';
+    document.getElementById('formComment').value = '';
+    statusEl.style.display = 'none';
+  }, 3000);
+}
+
+/* ===========================================================================
+   TOAST
+   =========================================================================== */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+
+/* ===========================================================================
+   PORTFOLIO — localStorage
+   =========================================================================== */
+const PF_KEY = 'ags_portfolio';
+
+function loadPortfolio() {
+  try {
+    const raw = localStorage.getItem(PF_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function savePortfolio(arr) {
+  localStorage.setItem(PF_KEY, JSON.stringify(arr));
+}
+function isInPortfolio(ticker) {
+  return loadPortfolio().some(p => p.ticker === ticker);
+}
+function addToPortfolio(item) {
+  if (!item || !item.ticker) return;
+  const pf = loadPortfolio();
+  if (pf.some(p => p.ticker === item.ticker)) return;
+  pf.push({
+    ticker: item.ticker,
+    addedAt: new Date().toISOString().slice(0, 10),
+    entryPrice: item.open != null ? item.open : item.price
+  });
+  savePortfolio(pf);
+  showToast('Добавлено в портфель: ' + item.ticker);
+}
+function removeFromPortfolio(ticker) {
+  let pf = loadPortfolio();
+  pf = pf.filter(p => p.ticker !== ticker);
+  savePortfolio(pf);
+  showToast('Удалено из портфеля: ' + ticker);
+}
+
+function getPortfolioData() {
+  const pf = loadPortfolio();
+  return pf.map(p => {
+    const live = allData.find(d => d.ticker === p.ticker);
+    return { ...p, live: live || null };
+  }).filter(p => p.live);
+}
+
+/* ===========================================================================
+   TAB SWITCHING
+   =========================================================================== */
+function switchTab(tab) {
+  document.getElementById('viewIdeas').style.display = tab === 'ideas' ? '' : 'none';
+  document.getElementById('viewPortfolio').style.display = tab === 'portfolio' ? '' : 'none';
+  document.getElementById('tabIdeas').classList.toggle('active', tab === 'ideas');
+  document.getElementById('tabPortfolio').classList.toggle('active', tab === 'portfolio');
+  if (tab === 'portfolio') renderPortfolio();
+}
+
+/* ===========================================================================
+   PORTFOLIO RENDERING
+   =========================================================================== */
+function portfolioStatus(item, pfEntry) {
+  // item is the live data from allData
+  if (item.price != null && item.downside != null && item.price <= item.downside) {
+    return { label: '⛔ Stop Loss', cls: 'badge-pf-stoploss', key: 'stoploss' };
+  }
+  if (item.price != null && item.target != null && item.price >= item.target) {
+    return { label: '✅ Цель', cls: 'badge-pf-target', key: 'target' };
+  }
+  if (item.status === 'CLOSED') {
+    return { label: '📦 Закрыта', cls: 'badge-pf-closed', key: 'closed' };
+  }
+  return { label: '🟢 Активна', cls: 'badge-pf-active', key: 'active' };
+}
+
+/* ---- Portfolio multi-select filter state ---- */
+const pfFilters = { risk: new Set(['all']), source: new Set(['all']), pfstatus: new Set(['all']), search: '' };
+
+function togglePfFilter(btn) {
+  const group = btn.dataset.pffilter;
+  const value = btn.dataset.value;
+  const set = pfFilters[group];
+
+  if (value === 'all') {
+    // "Все" resets the group
+    set.clear();
+    set.add('all');
+  } else {
+    set.delete('all');
+    if (set.has(value)) {
+      set.delete(value);
+      if (set.size === 0) set.add('all'); // nothing selected → back to All
+    } else {
+      set.add(value);
+    }
+  }
+
+  // Update button styles — multi-select: multiple can be active
+  document.querySelectorAll(`.pf-filter[data-pffilter="${group}"]`).forEach(b => {
+    b.classList.toggle('active', set.has(b.dataset.value));
+  });
+
+  renderPortfolio();
+}
+
+function filterPortfolioData(pfData) {
+  const s = (document.getElementById('pfSearchInput')?.value || '').toLowerCase();
+
+  return pfData.filter(p => {
+    const item = p.live;
+    const st = portfolioStatus(item, p);
+
+    // Search
+    if (s) {
+      const hay = [item.ticker, item.company, item.sector, item.industry].join(' ').toLowerCase();
+      if (!hay.includes(s)) return false;
+    }
+    // Risk multi-select
+    if (!pfFilters.risk.has('all') && !pfFilters.risk.has(item._risk)) return false;
+    // Source multi-select
+    if (!pfFilters.source.has('all') && !pfFilters.source.has(item.source)) return false;
+    // Portfolio status multi-select
+    if (!pfFilters.pfstatus.has('all') && !pfFilters.pfstatus.has(st.key)) return false;
+    // Sector exclusion
+    if (pfExcludedSectors.has(item.sector)) return false;
+
+    return true;
+  });
+}
+
+const pfExcludedSectors = new Set();
+
+function renderSectorExclusions(pfDataAll) {
+  const container = document.getElementById('pfSectorExclude');
+  if (!container) return;
+  const sectors = [...new Set(pfDataAll.map(p => p.live.sector).filter(Boolean))].sort();
+  container.innerHTML = '';
+  sectors.forEach(sec => {
+    const id = 'exc_' + sec.replace(/\W/g, '_');
+    const label = document.createElement('label');
+    label.style.cssText = 'display:inline-flex;align-items:center;gap:3px;font-size:0.75rem;padding:2px 6px;background:#F3F4F6;border-radius:4px;cursor:pointer;user-select:none;';
+    label.innerHTML = `<input type="checkbox" id="${id}" style="margin:0;width:12px;height:12px;" ${pfExcludedSectors.has(sec)?'checked':''} onchange="toggleSectorExclude('${sec.replace(/'/g,"\\'")}',this.checked)"><span>${sec}</span>`;
+    container.appendChild(label);
+  });
+}
+
+function toggleSectorExclude(sector, excluded) {
+  if (excluded) pfExcludedSectors.add(sector);
+  else pfExcludedSectors.delete(sector);
+  renderPortfolio();
+}
+
+const CHART_COLORS = ['#F26522','#1F3860','#16A34A','#DC2626','#EAB308','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316','#6366F1','#14B8A6','#E11D48','#A855F7','#0EA5E9'];
+
+function renderSectorChart(pfDataAll) {
+  const chartDiv = document.getElementById('portfolioChart');
+  if (!chartDiv) return;
+  if (pfDataAll.length === 0) { chartDiv.style.display = 'none'; return; }
+  chartDiv.style.display = '';
+
+  // Count by sector
+  const sectorMap = {};
+  pfDataAll.forEach(p => {
+    const sec = p.live.sector || 'Другое';
+    sectorMap[sec] = (sectorMap[sec] || 0) + 1;
+  });
+
+  const sectors = Object.entries(sectorMap).sort((a,b) => b[1] - a[1]);
+  const total = pfDataAll.length;
+
+  // Draw donut
+  const svg = document.getElementById('sectorDonut');
+  const legend = document.getElementById('sectorLegend');
+  const cx = 100, cy = 100, r = 80, inner = 50;
+  let startAngle = -Math.PI / 2;
+  let paths = '';
+  let legendHTML = '';
+
+  sectors.forEach(([sec, count], i) => {
+    const pct = count / total;
+    const angle = pct * 2 * Math.PI;
+    const endAngle = startAngle + angle;
+    const largeArc = angle > Math.PI ? 1 : 0;
+    const color = CHART_COLORS[i % CHART_COLORS.length];
+
+    // Outer arc
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    // Inner arc
+    const x3 = cx + inner * Math.cos(endAngle);
+    const y3 = cy + inner * Math.sin(endAngle);
+    const x4 = cx + inner * Math.cos(startAngle);
+    const y4 = cy + inner * Math.sin(startAngle);
+
+    if (sectors.length === 1) {
+      // Full circle
+      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+      paths += `<circle cx="${cx}" cy="${cy}" r="${inner}" fill="white"/>`;
+    } else {
+      paths += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${largeArc} 0 ${x4} ${y4} Z" fill="${color}" stroke="white" stroke-width="1.5"/>`;
+    }
+
+    legendHTML += `<div style="display:flex;align-items:center;gap:6px;">
+      <span style="width:12px;height:12px;border-radius:2px;background:${color};flex-shrink:0;"></span>
+      <span>${sec}</span>
+      <span style="color:#6B7280;margin-left:auto;">${count} (${(pct*100).toFixed(0)}%)</span>
+    </div>`;
+
+    startAngle = endAngle;
+  });
+
+  // Center text
+  paths += `<text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="22" font-weight="700" fill="#1F3860">${total}</text>`;
+  paths += `<text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="#6B7280">позиций</text>`;
+
+  svg.innerHTML = paths;
+  legend.innerHTML = legendHTML;
+}
+
+function renderPortfolio() {
+  const pfDataAll = getPortfolioData();
+  const area = document.getElementById('portfolioTableArea');
+
+  // Populate sector exclusion checkboxes
+  renderSectorExclusions(pfDataAll);
+
+  // Stats — from ALL portfolio (before filtering)
+  document.getElementById('pfStatCount').textContent = pfDataAll.length;
+
+  if (pfDataAll.length === 0) {
+    document.getElementById('pfStatPotential').textContent = '—';
+    document.getElementById('pfStatPotential').className = 'stat-card-value';
+    document.getElementById('pfStatPerf').textContent = '—';
+    document.getElementById('pfStatPerf').className = 'stat-card-value';
+    document.getElementById('pfStatRebal').textContent = '0';
+    renderSectorChart([]);
+    area.innerHTML = `<div class="portfolio-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+      <div>Портфель пуст.<br>Добавьте идеи из вкладки «Идеи» или нажмите «Сформировать из фильтра».</div>
+    </div>`;
+    return;
+  }
+
+  // Stats from all portfolio
+  const potentials = pfDataAll.filter(p => p.live.potential != null && p.live.status === 'ACTIVE').map(p => p.live.potential);
+  const avgPot = potentials.length ? potentials.reduce((a,b)=>a+b,0)/potentials.length : null;
+  const potEl = document.getElementById('pfStatPotential');
+  if (avgPot != null) {
+    potEl.textContent = (avgPot >= 0 ? '+' : '') + avgPot.toFixed(1) + '%';
+    potEl.className = 'stat-card-value ' + (avgPot >= 0 ? 'positive' : 'negative');
+  } else { potEl.textContent = '—'; potEl.className = 'stat-card-value'; }
+
+  const perfs = pfDataAll.filter(p => p.live.perf != null).map(p => p.live.perf);
+  const avgPerf = perfs.length ? perfs.reduce((a,b)=>a+b,0)/perfs.length : null;
+  const perfEl = document.getElementById('pfStatPerf');
+  if (avgPerf != null) {
+    perfEl.textContent = (avgPerf >= 0 ? '+' : '') + avgPerf.toFixed(1) + '%';
+    perfEl.className = 'stat-card-value ' + (avgPerf >= 0 ? 'positive' : 'negative');
+  } else { perfEl.textContent = '—'; perfEl.className = 'stat-card-value'; }
+
+  let rebalCount = 0;
+  pfDataAll.forEach(p => { if (portfolioStatus(p.live, p).key !== 'active') rebalCount++; });
+  document.getElementById('pfStatRebal').textContent = rebalCount;
+
+  // Render sector donut chart
+  renderSectorChart(pfDataAll);
+
+  // Apply filters
+  const pfData = filterPortfolioData(pfDataAll);
+
+  if (pfData.length === 0) {
+    area.innerHTML = `<div class="portfolio-empty" style="padding:30px;">
+      <div>Нет позиций, соответствующих фильтрам (всего в портфеле: ${pfDataAll.length})</div>
+    </div>`;
+    return;
+  }
+
+  // Render table
+  let html = `<div class="portfolio-table-wrapper"><table>
+    <thead><tr>
+      <th>Тикер</th>
+      <th>Компания</th>
+      <th>Сектор</th>
+      <th style="text-align:center">Вход</th>
+      <th style="text-align:center">Цена</th>
+      <th style="text-align:center">Цель</th>
+      <th style="text-align:center">Downside</th>
+      <th style="text-align:center">Upside</th>
+      <th style="text-align:center">Тек. дох.</th>
+      <th style="text-align:center">Риск</th>
+      <th style="text-align:center">Статус</th>
+      <th style="text-align:center">Действие</th>
+    </tr></thead><tbody>`;
+
+  pfData.forEach(p => {
+    const item = p.live;
+    const st = portfolioStatus(item, p);
+    const potVal = item.status === 'CLOSED' ? item.perf : item.potential;
+    html += `<tr>
+      <td class="ticker-cell">${esc(item.ticker)}</td>
+      <td class="company-cell">${companyCell(item)}</td>
+      <td class="sector-cell" title="${esc(item.sector)}">${esc(item.sector)}</td>
+      <td class="right price-cell">${fmtPrice(p.entryPrice)}</td>
+      <td class="right price-cell price-bold">${fmtPrice(item.price)}</td>
+      <td class="right price-cell">${fmtPrice(item.target)}</td>
+      <td class="right price-cell">${fmtPrice(item.downside)}</td>
+      <td class="right pct ${pctClass(potVal)}">${fmtPct(potVal)}</td>
+      <td class="right pct ${pctClass(item.perf)}">${fmtPct(item.perf)}</td>
+      <td style="text-align:center"><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
+      <td style="text-align:center"><span class="badge ${st.cls}">${st.label}</span></td>
+      <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('${esc(item.ticker)}');renderPortfolio();">✕ Убрать</button></td>
+    </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  area.innerHTML = html;
+}
+
+/* ===========================================================================
+   PORTFOLIO ACTIONS
+   =========================================================================== */
+function downloadPortfolioCSV() {
+  const pfData = getPortfolioData();
+  if (pfData.length === 0) { showToast('Портфель пуст'); return; }
+
+  const headers = ['Тикер','Компания','Сектор','Индустрия','Валюта','Цена входа','Текущая цена','Целевая цена','Downside','Потенциал %','Доходность %','Риск','Статус','Источник','Дата добавления'];
+
+  let csv = '﻿'; // BOM for Excel
+  csv += headers.join(';') + '\n';
+
+  pfData.forEach(p => {
+    const item = p.live;
+    const st = portfolioStatus(item, p);
+    const potVal = item.status === 'CLOSED' ? item.perf : item.potential;
+    const row = [
+      item.ticker,
+      '"' + (item.company||'').replace(/"/g,'""') + '"',
+      item.sector || '',
+      item.industry || '',
+      item.currency || '',
+      p.entryPrice || '',
+      item.price || '',
+      item.target || '',
+      item.downside || '',
+      potVal != null ? potVal.toFixed(2) : '',
+      item.perf != null ? item.perf.toFixed(2) : '',
+      riskLabel(item._risk).replace(/[🟢🟡🔴⛔]\s?/g,''),
+      st.label.replace(/[🟢⛔✅📦]\s?/g,''),
+      item.source || '',
+      p.addedAt || ''
+    ];
+    csv += row.join(';') + '\n';
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'AGS_Portfolio_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Портфель скачан');
+}
+
+function addFilteredToPortfolio() {
+  // Add all currently filtered ACTIVE ideas from the Ideas tab
+  const activeFiltered = filteredData.filter(d => d.status === 'ACTIVE');
+  if (activeFiltered.length === 0) {
+    showToast('Нет активных идей в текущем фильтре');
+    return;
+  }
+  const pf = loadPortfolio();
+  let added = 0;
+  const today = new Date().toISOString().slice(0, 10);
+  activeFiltered.forEach(item => {
+    if (!pf.some(p => p.ticker === item.ticker)) {
+      pf.push({
+        ticker: item.ticker,
+        addedAt: today,
+        entryPrice: item.open != null ? item.open : item.price
+      });
+      added++;
+    }
+  });
+  savePortfolio(pf);
+  showToast('Добавлено в портфель: ' + added + ' позиций');
+  renderPortfolio();
+}
+
+function clearPortfolio() {
+  if (!confirm('Очистить весь портфель?')) return;
+  savePortfolio([]);
+  showToast('Портфель очищен');
+  document.getElementById('rebalancePanel').style.display = 'none';
+  renderPortfolio();
+}
+
+function toggleRebalancePanel() {
+  const panel = document.getElementById('rebalancePanel');
+  if (panel.style.display === 'none') {
+    renderRebalancePanel();
+    panel.style.display = '';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function renderRebalancePanel() {
+  const pfData = getPortfolioData();
+  const content = document.getElementById('rebalanceContent');
+  const actions = document.getElementById('rebalanceActions');
+  let items = [];
+
+  pfData.forEach(p => {
+    const item = p.live;
+    const st = portfolioStatus(item, p);
+    if (st.key === 'stoploss') {
+      items.push({
+        ticker: item.ticker,
+        html: `⛔ <strong>${esc(item.ticker)}</strong> ($${fmtPrice(item.price)} &lt; downside $${fmtPrice(item.downside)}) — убрать из портфеля`,
+        type: 'stoploss'
+      });
+    } else if (st.key === 'target') {
+      items.push({
+        ticker: item.ticker,
+        html: `✅ <strong>${esc(item.ticker)}</strong> ($${fmtPrice(item.price)} ≥ target $${fmtPrice(item.target)}) — фиксировать прибыль`,
+        type: 'target'
+      });
+    } else if (st.key === 'closed') {
+      items.push({
+        ticker: item.ticker,
+        html: `📦 <strong>${esc(item.ticker)}</strong> — идея закрыта`,
+        type: 'closed'
+      });
+    }
+  });
+
+  if (items.length === 0) {
+    content.innerHTML = '<div class="rebalance-ok">✅ Портфель в порядке — ребалансировка не требуется</div>';
+    actions.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  items.forEach((it, i) => {
+    html += `<div class="rebalance-item">
+      <input type="checkbox" id="rebal_${i}" data-ticker="${esc(it.ticker)}" checked>
+      <label for="rebal_${i}">${it.html}</label>
+    </div>`;
+  });
+  content.innerHTML = html;
+  actions.innerHTML = `<button class="portfolio-btn primary" onclick="applyRebalance()">Применить выбранные</button>`;
+}
+
+function applyRebalance() {
+  const checkboxes = document.querySelectorAll('#rebalanceContent input[type="checkbox"]:checked');
+  let removed = 0;
+  checkboxes.forEach(cb => {
+    const ticker = cb.dataset.ticker;
+    if (ticker) {
+      let pf = loadPortfolio();
+      pf = pf.filter(p => p.ticker !== ticker);
+      savePortfolio(pf);
+      removed++;
+    }
+  });
+  showToast('Убрано из портфеля: ' + removed + ' позиций');
+  document.getElementById('rebalancePanel').style.display = 'none';
+  renderPortfolio();
+  // Also refresh the ideas table in case it's visible later
+  renderTable();
+}
+
+/* ===========================================================================
+   INIT
+   =========================================================================== */
+fetchData();
+</script>
+</body>
+</html>
