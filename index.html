@@ -804,6 +804,13 @@ td.right { text-align: center; }
 <!-- ====================== SOURCE STATS ====================== -->
 <div class="source-stats" id="sourceStats"></div>
 
+<!-- ====================== PORTFOLIO QUICK ACTIONS (Ideas tab) ====================== -->
+<div style="padding:0 24px 8px;display:flex;gap:8px;align-items:center;">
+  <button class="portfolio-btn primary" onclick="addFilteredToPortfolio();showToast('Идеи добавлены в портфель');" style="font-size:0.75rem;padding:5px 12px;">📥 Все в портфель</button>
+  <button class="portfolio-btn danger" onclick="if(confirm('Очистить весь портфель?')){clearPortfolio();renderTable();}" style="font-size:0.75rem;padding:5px 12px;">🗑 Очистить портфель</button>
+  <span style="font-size:0.75rem;color:#6B7280;" id="pfQuickCount"></span>
+</div>
+
 <!-- ====================== MAIN CONTENT ====================== -->
 <div class="main-container">
   <!-- Table -->
@@ -1608,6 +1615,9 @@ function renderTable() {
     </tr>`;
   });
   tbody.innerHTML = html;
+  // Update portfolio quick count in Ideas tab
+  const pfqc = document.getElementById('pfQuickCount');
+  if (pfqc) { const pf = loadPortfolio(); pfqc.textContent = pf.length > 0 ? `В портфеле: ${pf.length} шт.` : ''; }
 }
 
 function esc(s) {
@@ -2174,7 +2184,7 @@ function loadClientInfo() {
   } catch(e) {}
 }
 
-const CHART_COLORS = ['#0A1638','#8B6A4E','#C6CEC8','#1A2D5A','#B08968','#D4DCD6','#2A3D6A','#A0845E','#0A1638','#8B6A4E','#C6CEC8','#1A2D5A','#B08968','#D4DCD6','#2A3D6A'];
+const CHART_COLORS = ['#0A1638','#8B6A4E','#C6CEC8','#1A2D5A','#B08968','#D4DCD6','#2A3D6A','#A0845E','#3A4D7A','#C9A882','#9BADA0','#4A5D8A','#D4B896','#7A8D80','#5A6D9A','#E0C8AA','#ADBFB2','#6A7DAA','#D0B090','#8A9D90'];
 
 function renderSectorChart(pfDataAll) {
   const chartDiv = document.getElementById('portfolioChart');
@@ -2290,11 +2300,12 @@ function renderPortfolio() {
   pfDataAll.forEach(p => { if (portfolioStatus(p.live, p).key !== 'active') rebalCount++; });
   document.getElementById('pfStatRebal').textContent = rebalCount;
 
-  // Render sector donut chart
-  renderSectorChart(pfDataAll);
-
   // Apply filters
   const pfData = filterPortfolioData(pfDataAll);
+
+  // Render sector donut chart from FILTERED data
+  calcPortfolioWeights(pfData);
+  renderSectorChart(pfData);
 
   if (pfData.length === 0) {
     area.innerHTML = `<div class="portfolio-empty" style="padding:30px;">
@@ -2307,9 +2318,9 @@ function renderPortfolio() {
   let html = `<div class="portfolio-table-wrapper"><table>
     <thead><tr>
       <th>Тикер</th>
-      <th>ISIN</th>
       <th>Компания</th>
       <th>Сектор</th>
+      <th>ISIN</th>
       <th style="text-align:center">Вход</th>
       <th style="text-align:center">Цена</th>
       <th style="text-align:center">Цель</th>
@@ -2318,7 +2329,6 @@ function renderPortfolio() {
       <th style="text-align:center">Тек. дох.</th>
       <th style="text-align:center">Доля</th>
       <th style="text-align:center">Риск</th>
-      <th style="text-align:center">Статус</th>
       <th style="text-align:center">Действие</th>
     </tr></thead><tbody>`;
 
@@ -2329,9 +2339,9 @@ function renderPortfolio() {
     const weightInputStyle = p.lockedWeight ? 'width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid #8B6A4E;border-radius:3px;font-family:Manrope,sans-serif;background:#F0F2F0;' : 'width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid #ccc;border-radius:3px;font-family:Manrope,sans-serif;';
     html += `<tr>
       <td class="ticker-cell">${esc(item.ticker)}</td>
-      <td style="text-align:center;font-size:0.75rem;color:#6B7280;">${esc(item.isin) || '—'}</td>
       <td class="company-cell">${companyCell(item)}</td>
       <td class="sector-cell" title="${esc(item.sector)}">${esc(item.sector)}</td>
+      <td style="font-size:0.75rem;color:#6B7280;">${esc(item.isin) || '—'}</td>
       <td class="right price-cell">${fmtPrice(p.entryPrice)}</td>
       <td class="right price-cell price-bold">${fmtPrice(item.price)}</td>
       <td class="right price-cell">${fmtPrice(item.target)}</td>
@@ -2352,7 +2362,6 @@ function renderPortfolio() {
         </div>
       </td>
       <td style="text-align:center"><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
-      <td style="text-align:center"><span class="badge ${st.cls}">${st.label}</span></td>
       <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('${esc(item.ticker)}');renderPortfolio();">✕ Убрать</button></td>
     </tr>`;
   });
@@ -2441,7 +2450,6 @@ function downloadPortfolioHTML() {
       <td style="text-align:right">${item.target != null ? item.target.toFixed(2) : '—'}</td>
       <td style="text-align:right;color:${potVal >= 0 ? '#16A34A' : '#DC2626'}">${potVal != null ? (potVal >= 0 ? '+' : '') + potVal.toFixed(2) + '%' : '—'}</td>
       <td style="text-align:center">${p._weight.toFixed(1)}%</td>
-      <td style="text-align:center;font-size:11px;">${st.label}</td>
     </tr>`;
   });
 
@@ -2492,7 +2500,7 @@ function downloadPortfolioHTML() {
   <h2>Состав портфеля</h2>
   <table>
     <thead><tr>
-      <th>Тикер</th><th>ISIN</th><th>Компания</th><th>Сектор</th><th>Цена</th><th>Цель</th><th>Upside</th><th>Доля</th><th>Статус</th>
+      <th>Тикер</th><th>ISIN</th><th>Компания</th><th>Сектор</th><th>Цена</th><th>Цель</th><th>Upside</th><th>Доля</th>
     </tr></thead>
     <tbody>${tableRows}</tbody>
   </table>
