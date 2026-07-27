@@ -6,33 +6,33 @@
 <title>AGS — Карта инвестиционных идей</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ====================== RESET & BASE ====================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 12px; }
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Manrope', sans-serif;
   background: #FFFFFF;
-  color: #1F2937;
+  color: #0A1638;
   line-height: 1.5;
   min-height: 100vh;
 }
 
 /* ====================== COLOR TOKENS ====================== */
 :root {
-  --primary: #F26522;
-  --primary-light: #FFF7ED;
-  --secondary: #1F3860;
+  --primary: #C6CEC8;
+  --primary-light: #F0F2F0;
+  --secondary: #0A1638;
   --positive: #16A34A;
   --negative: #DC2626;
   --warning: #EAB308;
   --bg: #FFFFFF;
   --card-bg: #F9FAFB;
   --table-header: #F3F4F6;
-  --hover-row: #FFF7ED;
+  --hover-row: #F0F2F0;
   --border: #E5E7EB;
-  --text: #1F2937;
+  --text: #0A1638;
   --text-secondary: #6B7280;
   --radius: 8px;
   --radius-sm: 4px;
@@ -62,7 +62,7 @@ body {
 .header-title { font-size: 18px; font-weight: 600; }
 .header-subtitle { font-size: 12px; color: #94A3B8; margin-top: 2px; }
 .btn-refresh {
-  background: var(--primary);
+  background: #8B6A4E;
   color: #fff;
   border: none;
   padding: 8px 18px;
@@ -76,7 +76,7 @@ body {
   gap: 6px;
   transition: background .2s;
 }
-.btn-refresh:hover { background: #d9571a; }
+.btn-refresh:hover { background: #7A5C42; }
 .btn-refresh svg { width: 16px; height: 16px; }
 
 /* ====================== FALLBACK BANNER ====================== */
@@ -129,9 +129,9 @@ body {
 }
 .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
 .filter-btn.active {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
+  background: #C6CEC8;
+  color: #0A1638;
+  border-color: #C6CEC8;
 }
 .industry-select {
   padding: 6px 10px;
@@ -258,7 +258,7 @@ td.right { text-align: center; }
 .company-with-logo { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
 .company-with-logo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sector-cell { font-size: 11px; color: var(--text-secondary); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.price-cell { font-family: 'Inter', sans-serif; white-space: nowrap; font-size: 0.85rem; }
+.price-cell { font-family: 'Manrope', sans-serif; white-space: nowrap; font-size: 0.85rem; }
 .price-bold { font-weight: 700; }
 .pct { font-weight: 600; white-space: nowrap; }
 .pct.positive { color: var(--positive); }
@@ -278,11 +278,11 @@ td.right { text-align: center; }
 .badge-low { background: #DCFCE7; color: #166534; }
 .badge-medium { background: #FEF9C3; color: #854D0E; }
 .badge-high { background: #FEE2E2; color: #991B1B; }
-.badge-stoploss { background: #1F2937; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
+.badge-stoploss { background: #0A1638; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
 @keyframes pulse-stoploss { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
-.badge-investory { background: var(--primary); color: #fff; }
-.badge-dua { background: var(--secondary); color: #fff; }
-.badge-ags { background: var(--positive); color: #fff; }
+.badge-investory { background: #8B6A4E; color: #fff; }
+.badge-dua { background: #0A1638; color: #fff; }
+.badge-ags { background: #C6CEC8; color: #0A1638; }
 
 /* ====================== DETAIL PANEL ====================== */
 .detail-panel {
@@ -346,7 +346,7 @@ td.right { text-align: center; }
   font-weight: 500;
   transition: background .2s;
 }
-.btn-website:hover { background: #d9571a; }
+.btn-website:hover { background: #0A1638; }
 
 /* ====================== FAB ====================== */
 .fab {
@@ -356,19 +356,19 @@ td.right { text-align: center; }
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #8B6A4E;
   color: #fff;
   border: none;
   font-size: 28px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(242,101,34,0.4);
+  box-shadow: 0 4px 12px rgba(139,106,78,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform .2s, box-shadow .2s;
   z-index: 100;
 }
-.fab:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(242,101,34,0.5); }
+.fab:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(139,106,78,0.5); }
 
 /* ====================== MODAL ====================== */
 .modal-overlay {
@@ -413,7 +413,7 @@ td.right { text-align: center; }
   justify-content: flex-end;
 }
 .btn-copy {
-  background: var(--primary);
+  background: #8B6A4E;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -424,7 +424,7 @@ td.right { text-align: center; }
   font-weight: 500;
   transition: background .2s;
 }
-.btn-copy:hover { background: #d9571a; }
+.btn-copy:hover { background: #7A5C42; }
 .btn-close-modal {
   background: #fff;
   color: var(--text);
@@ -556,7 +556,7 @@ td.right { text-align: center; }
   color: #fff;
   border-color: var(--primary);
 }
-.portfolio-btn.primary:hover { background: #d9571a; }
+.portfolio-btn.primary:hover { background: #A8B2AA; }
 .portfolio-btn.danger {
   color: var(--negative);
   border-color: var(--negative);
@@ -586,7 +586,7 @@ td.right { text-align: center; }
 
 /* Portfolio status badges */
 .badge-pf-active { background: #DCFCE7; color: #166534; }
-.badge-pf-stoploss { background: #1F2937; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
+.badge-pf-stoploss { background: #0A1638; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
 .badge-pf-target { background: #DCFCE7; color: #166534; }
 .badge-pf-closed { background: #F3F4F6; color: #6B7280; }
 
@@ -672,7 +672,7 @@ td.right { text-align: center; }
   transition: background .2s;
   margin-top: 8px;
 }
-.btn-add-portfolio:hover { background: #d9571a; }
+.btn-add-portfolio:hover { background: #A8B2AA; }
 .btn-add-portfolio.in-portfolio {
   background: var(--positive);
 }
@@ -708,13 +708,21 @@ td.right { text-align: center; }
 </head>
 <body>
 
+<div id="loginOverlay" style="position:fixed;inset:0;z-index:9999;background:#0A1638;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;">
+  <img src="assets/logo-light.png" alt="AGS" style="height:48px;margin-bottom:32px;">
+  <div style="color:#C6CEC8;font-size:14px;margin-bottom:12px;">Введите пароль для доступа</div>
+  <input type="password" id="loginPassword" placeholder="Пароль" style="width:240px;padding:10px 16px;border:1px solid #C6CEC8;border-radius:6px;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;font-family:'Manrope',sans-serif;text-align:center;outline:none;" onkeydown="if(event.key==='Enter')checkPassword()">
+  <button onclick="checkPassword()" style="margin-top:12px;width:240px;padding:10px;background:#C6CEC8;color:#0A1638;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;">Войти</button>
+  <div id="loginError" style="color:#DC2626;font-size:12px;margin-top:8px;height:16px;"></div>
+</div>
+
 <!-- ====================== HEADER ====================== -->
 <div class="header">
   <div class="header-left">
     <div class="header-logo"><img src="assets/logo-light.png" alt="AGS"></div>
     <div>
       <div class="header-title">Карта инвестиционных идей</div>
-      <div class="header-subtitle">Данные обновляются из Google Sheets</div>
+      <div class="header-subtitle"></div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -915,7 +923,7 @@ td.right { text-align: center; }
 
   <!-- Sector Chart -->
   <div id="portfolioChart" style="display:none;padding:16px 24px;">
-    <div style="font-weight:600;font-size:1rem;margin-bottom:12px;color:#1F3860;">Распределение по секторам</div>
+    <div style="font-weight:600;font-size:1rem;margin-bottom:12px;color:#0A1638;">Распределение по секторам</div>
     <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
       <svg id="sectorDonut" width="200" height="200" viewBox="0 0 200 200"></svg>
       <div id="sectorLegend" style="display:flex;flex-direction:column;gap:4px;font-size:0.8rem;"></div>
@@ -996,6 +1004,27 @@ td.right { text-align: center; }
 <div class="toast" id="toast"></div>
 
 <script>
+/* === PASSWORD PROTECTION === */
+const SITE_PASSWORD = '8888';
+
+function checkPassword() {
+  const input = document.getElementById('loginPassword').value;
+  if (input === SITE_PASSWORD) {
+    document.getElementById('loginOverlay').style.display = 'none';
+    sessionStorage.setItem('ags_auth', 'true');
+  } else {
+    document.getElementById('loginError').textContent = 'Неверный пароль';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+  }
+}
+// Auto-login if already authenticated in this session
+if (sessionStorage.getItem('ags_auth') === 'true') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('loginOverlay').style.display = 'none';
+  });
+}
+
 /* ===========================================================================
    FALLBACK DATA
    =========================================================================== */
@@ -2001,7 +2030,7 @@ function toggleSectorExclude(sector, excluded) {
   renderPortfolio();
 }
 
-const CHART_COLORS = ['#F26522','#1F3860','#16A34A','#DC2626','#EAB308','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316','#6366F1','#14B8A6','#E11D48','#A855F7','#0EA5E9'];
+const CHART_COLORS = ['#0A1638','#8B6A4E','#C6CEC8','#1A2D5A','#B08968','#D4DCD6','#2A3D6A','#A0845E','#0A1638','#8B6A4E','#C6CEC8','#1A2D5A','#B08968','#D4DCD6','#2A3D6A'];
 
 function renderSectorChart(pfDataAll) {
   const chartDiv = document.getElementById('portfolioChart');
@@ -2063,7 +2092,7 @@ function renderSectorChart(pfDataAll) {
   });
 
   // Center text
-  paths += `<text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="22" font-weight="700" fill="#1F3860">${total}</text>`;
+  paths += `<text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="22" font-weight="700" fill="#0A1638">${total}</text>`;
   paths += `<text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="#6B7280">позиций</text>`;
 
   svg.innerHTML = paths;
