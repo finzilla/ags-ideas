@@ -1616,11 +1616,9 @@ function updateSourceStats() {
     if (items.length === 0) return;
     const perfs = items.filter(d => d.perf != null);
     const avgPerf = perfs.length ? (perfs.reduce((a, b) => a + b.perf, 0) / perfs.length).toFixed(1) : '—';
-    const pos = perfs.filter(d => d.perf >= 0).length;
-    const neg = perfs.filter(d => d.perf < 0).length;
     html += `<div class="source-stat-item">
       <span class="source-dot ${dotClasses[src]}"></span>
-      <span><strong>${esc(src)}</strong>: ${items.length} идей | ср. доходность: <span class="${parseFloat(avgPerf) >= 0 ? 'pct positive' : 'pct negative'}">${avgPerf}%</span> | плюсовых: ${pos}, отрицательных: ${neg}</span>
+      <span><strong>${esc(src)}</strong>: ${items.length} идей | ср. доходность: <span class="${parseFloat(avgPerf) >= 0 ? 'pct positive' : 'pct negative'}">${avgPerf}%</span></span>
     </div>`;
   });
   container.innerHTML = html;
@@ -2413,14 +2411,27 @@ function downloadPortfolioHTML() {
     : 'assets/logo-light.png';
 
   const upsideStr = weightedUpside != null ? (weightedUpside >= 0 ? '+' : '') + weightedUpside.toFixed(1) + '%' : '—';
-  const amountStr = clientAmount ? Number(clientAmount).toLocaleString() + ' ' + esc(clientCurrency) : '—';
   const dateStr = new Date().toLocaleDateString('ru-RU');
+
+  // Build info rows — only include filled fields
+  let infoRows = '';
+  const rawName = document.getElementById('clientName')?.value.trim() || '';
+  const rawAmount = document.getElementById('clientAmount')?.value.trim() || '';
+  if (rawName) {
+    infoRows += `<span class="info-label">Клиент:</span><span class="info-value">${esc(rawName)}</span>`;
+  }
+  if (rawAmount) {
+    infoRows += `<span class="info-label">Сумма:</span><span class="info-value">${Number(rawAmount).toLocaleString()} ${esc(clientCurrency)}</span>`;
+  }
+  infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
+  infoRows += `<span class="info-label">Позиций:</span><span class="info-value">${pfData.length}</span>`;
+  infoRows += `<span class="info-label">Ср. Upside:</span><span class="info-value accent">${upsideStr}</span>`;
 
   const html = `<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Портфель — ${esc(clientName)}</title>
+<title>${rawName ? 'Портфель — ' + esc(rawName) : 'Инвестиционный портфель AGS'}</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -2486,18 +2497,7 @@ function downloadPortfolioHTML() {
     <div class="info-chart-row">
       <div class="info-block">
         <h2>Информация</h2>
-        <div class="info-grid">
-          <span class="info-label">Клиент:</span>
-          <span class="info-value">${esc(clientName)}</span>
-          <span class="info-label">Сумма:</span>
-          <span class="info-value">${amountStr}</span>
-          <span class="info-label">Дата:</span>
-          <span class="info-value">${dateStr}</span>
-          <span class="info-label">Позиций:</span>
-          <span class="info-value">${pfData.length}</span>
-          <span class="info-label">Ср. Upside:</span>
-          <span class="info-value accent">${upsideStr}</span>
-        </div>
+        <div class="info-grid">${infoRows}</div>
       </div>
       <div class="chart-block">
         <h2>По секторам</h2>
