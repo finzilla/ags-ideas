@@ -1062,19 +1062,30 @@ function fetchPassword() {
 }
 
 async function checkPassword() {
-  const input = document.getElementById('loginPassword').value;
+  const input = document.getElementById('loginPassword').value.trim();
+  const errEl = document.getElementById('loginError');
+
+  if (!input) { errEl.textContent = 'Введите пароль'; return; }
+
   // Load password from Google Sheet if not loaded yet
   if (SITE_PASSWORD === null) {
-    document.getElementById('loginError').textContent = 'Проверяю...';
+    errEl.textContent = 'Загрузка...';
     SITE_PASSWORD = await fetchPassword();
+    console.log('[AGS] Password loaded, length:', SITE_PASSWORD?.length);
   }
-  if (input === SITE_PASSWORD) {
+
+  // Compare as strings, trim both sides
+  const pwd = String(SITE_PASSWORD).trim();
+  const inp = String(input).trim();
+
+  if (inp === pwd) {
     document.getElementById('loginOverlay').style.display = 'none';
     sessionStorage.setItem('ags_auth', 'true');
   } else {
-    document.getElementById('loginError').textContent = 'Неверный пароль';
+    errEl.textContent = 'Неверный пароль';
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginPassword').focus();
+    console.log('[AGS] Password mismatch. Expected length:', pwd.length, 'Got length:', inp.length);
   }
 }
 
