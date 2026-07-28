@@ -2455,6 +2455,15 @@ function downloadPortfolioHTML() {
 
   const amountLine = clientAmount ? `<p>Сумма инвестирования: <strong>${Number(clientAmount).toLocaleString()} ${esc(clientCurrency)}</strong></p>` : '';
 
+  // Logo URL — works on GitHub Pages or locally
+  const logoURL = window.location.href.includes('github.io')
+    ? 'https://finzilla.github.io/ags-ideas/assets/logo-light.png'
+    : 'assets/logo-light.png';
+
+  const upsideStr = weightedUpside != null ? (weightedUpside >= 0 ? '+' : '') + weightedUpside.toFixed(1) + '%' : '—';
+  const amountStr = clientAmount ? Number(clientAmount).toLocaleString() + ' ' + esc(clientCurrency) : '—';
+  const dateStr = new Date().toLocaleDateString('ru-RU');
+
   const html = `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -2462,60 +2471,118 @@ function downloadPortfolioHTML() {
 <title>Портфель — ${esc(clientName)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: 'Manrope', sans-serif; color: #0A1638; padding: 32px; max-width: 900px; margin: 0 auto; }
-  h1 { font-size: 20px; margin-bottom: 4px; }
-  h2 { font-size: 15px; color: #8B6A4E; margin: 24px 0 12px; }
-  .meta { color: #6B7280; font-size: 13px; margin-bottom: 24px; }
-  .meta p { margin: 2px 0; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-  th { background: #0A1638; color: white; padding: 6px 8px; text-align: left; font-weight: 600; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Manrope', sans-serif; color: #0A1638; max-width: 960px; margin: 0 auto; }
+
+  /* Banner header */
+  .banner {
+    background: linear-gradient(135deg, #A0785A 0%, #B8956E 30%, #A07858 50%, #C4A882 70%, #A89070 100%);
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0 0 12px 12px;
+  }
+  .banner img { height: 36px; }
+  .banner-text { color: rgba(255,255,255,0.7); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Main content */
+  .content { padding: 24px 36px; }
+
+  /* Info + chart row */
+  .info-chart-row { display: flex; gap: 32px; align-items: flex-start; margin-bottom: 24px; }
+  .info-block { flex: 1; }
+  .info-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12px; }
+  .info-label { color: #6B7280; }
+  .info-value { font-weight: 600; }
+  .info-value.accent { color: #8B6A4E; font-size: 14px; }
+
+  .chart-block { flex-shrink: 0; text-align: center; }
+  .chart-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-area { display: flex; align-items: center; gap: 16px; }
+
+  /* Table */
+  .section-title { font-size: 13px; color: #8B6A4E; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: #0A1638; color: white; padding: 6px 8px; text-align: left; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
   td { padding: 5px 8px; border-bottom: 1px solid #E5E7EB; }
   tr:nth-child(even) td { background: #F9FAFB; }
-  .chart-section { display: flex; gap: 24px; align-items: flex-start; margin: 16px 0; }
-  .summary { background: #F0F2F0; padding: 12px 16px; border-radius: 8px; margin: 16px 0; font-size: 13px; }
-  .summary strong { color: #8B6A4E; }
-  .footer { margin-top: 32px; font-size: 11px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 12px; }
-  @media print { body { padding: 16px; } }
+  .pos { color: #16A34A; }
+  .neg { color: #DC2626; }
+
+  /* Footer */
+  .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
+
+  @media print {
+    body { max-width: 100%; }
+    .banner { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
 </style>
 </head>
 <body>
-  <h1>AGS — Инвестиционный портфель</h1>
-  <div class="meta">
-    <p>Клиент: <strong>${esc(clientName)}</strong></p>
-    ${amountLine}
-    <p>Дата формирования: ${new Date().toLocaleDateString('ru-RU')}</p>
-    <p>Позиций в портфеле: ${pfData.length}</p>
+  <!-- Banner with logo -->
+  <div class="banner">
+    <img src="${logoURL}" alt="AGS" onerror="this.parentElement.innerHTML='<div style=\\'color:white;font-size:24px;font-weight:700;\\'>AGS</div><div class=\\'banner-text\\'>Abylai Global Solutions</div>'">
+    <div class="banner-text">Инвестиционный портфель</div>
   </div>
 
-  <div class="summary">
-    Средневзвешенный Upside: <strong>${weightedUpside != null ? (weightedUpside >= 0 ? '+' : '') + weightedUpside.toFixed(1) + '%' : '—'}</strong>
+  <div class="content">
+    <!-- Client info + chart in one row -->
+    <div class="info-chart-row">
+      <div class="info-block">
+        <h2>Информация</h2>
+        <div class="info-grid">
+          <span class="info-label">Клиент:</span>
+          <span class="info-value">${esc(clientName)}</span>
+          <span class="info-label">Сумма:</span>
+          <span class="info-value">${amountStr}</span>
+          <span class="info-label">Дата:</span>
+          <span class="info-value">${dateStr}</span>
+          <span class="info-label">Позиций:</span>
+          <span class="info-value">${pfData.length}</span>
+          <span class="info-label">Ср. Upside:</span>
+          <span class="info-value accent">${upsideStr}</span>
+        </div>
+      </div>
+      <div class="chart-block">
+        <h2>По секторам</h2>
+        <div class="chart-area">
+          ${svgHTML}
+          <div style="font-size:11px;text-align:left;">${legendHTML}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio table -->
+    <div class="section-title">Состав портфеля</div>
+    <table>
+      <thead><tr>
+        <th>Тикер</th><th>ISIN</th><th>Компания</th><th>Сектор</th><th style="text-align:right">Цена</th><th style="text-align:right">Цель</th><th style="text-align:right">Upside</th><th style="text-align:center">Доля</th>
+      </tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+
+    <div class="footer">
+      Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
+      Документ подготовлен автоматически и не является индивидуальной инвестиционной рекомендацией.
+      Инвестирование сопряжено с рисками, включая риск частичной или полной потери капитала.
+    </div>
   </div>
 
-  <h2>Распределение по секторам</h2>
-  <div class="chart-section">
-    ${svgHTML}
-    <div style="font-size:12px;">${legendHTML}</div>
-  </div>
-
-  <h2>Состав портфеля</h2>
-  <table>
-    <thead><tr>
-      <th>Тикер</th><th>ISIN</th><th>Компания</th><th>Сектор</th><th>Цена</th><th>Цель</th><th>Upside</th><th>Доля</th>
-    </tr></thead>
-    <tbody>${tableRows}</tbody>
-  </table>
-
-  <div class="footer">
-    Abylai Global Solutions LTD. Документ подготовлен автоматически и не является индивидуальной инвестиционной рекомендацией.<br>
-    Инвестирование сопряжено с рисками, включая риск потери капитала.
-  </div>
+  <script>
+    // Auto-trigger print dialog for PDF save
+    setTimeout(() => { window.print(); }, 800);
+  </script>
 </body>
 </html>`;
 
   const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
-  showToast('Сводка открыта — нажмите Ctrl+P для печати в PDF');
+  showToast('Откроется окно печати — выберите «Сохранить как PDF»');
 }
 
 function addFilteredToPortfolio() {
