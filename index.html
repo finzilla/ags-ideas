@@ -708,13 +708,7 @@ td.right { text-align: center; }
 </head>
 <body>
 
-<div id="loginOverlay" style="position:fixed;inset:0;z-index:9999;background:#0A1638;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;">
-  <img src="assets/logo-light.png" alt="AGS" style="height:48px;margin-bottom:32px;">
-  <div style="color:#C6CEC8;font-size:14px;margin-bottom:12px;">Введите пароль для доступа</div>
-  <input type="password" id="loginPassword" placeholder="Пароль" style="width:240px;padding:10px 16px;border:1px solid #C6CEC8;border-radius:6px;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;font-family:'Manrope',sans-serif;text-align:center;outline:none;" onkeydown="if(event.key==='Enter')checkPassword()">
-  <button onclick="checkPassword()" style="margin-top:12px;width:240px;padding:10px;background:#C6CEC8;color:#0A1638;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;">Войти</button>
-  <div id="loginError" style="color:#DC2626;font-size:12px;margin-top:8px;height:16px;"></div>
-</div>
+<!-- Password protection removed -->
 
 <!-- ====================== HEADER ====================== -->
 <div class="header">
@@ -1036,26 +1030,7 @@ td.right { text-align: center; }
 /* === GOOGLE SHEET ID === */
 const SHEET_ID = '1iJXP-R3brvSTxfTzvljPRtyPoh-HTvAc29KQP7SiaE0';
 
-/* === PASSWORD PROTECTION === */
-/* Чтобы сменить пароль — измени значение ниже и перезалей файл */
-const SITE_PASSWORD = '8888';
-
-function checkPassword() {
-  var input = document.getElementById('loginPassword').value.trim();
-  if (input === SITE_PASSWORD) {
-    document.getElementById('loginOverlay').style.display = 'none';
-    sessionStorage.setItem('ags_auth', 'true');
-  } else {
-    document.getElementById('loginError').textContent = 'Неверный пароль';
-    document.getElementById('loginPassword').value = '';
-    document.getElementById('loginPassword').focus();
-  }
-}
-if (sessionStorage.getItem('ags_auth') === 'true') {
-  document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('loginOverlay').style.display = 'none';
-  });
-}
+/* Password protection removed */
 
 /* ===========================================================================
    FALLBACK DATA
