@@ -2517,16 +2517,14 @@ function downloadPortfolioHTML() {
     </div>
   </div>
 
-  <script>
-    // Auto-trigger print dialog for PDF save
-    setTimeout(() => { window.print(); }, 800);
-  </script>
 </body>
 </html>`;
 
   const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
+  // Auto-trigger print dialog for PDF save
+  setTimeout(function() { try { w.print(); } catch(e) {} }, 800);
   showToast('Откроется окно печати — выберите «Сохранить как PDF»');
 }
 
