@@ -1036,67 +1036,26 @@ td.right { text-align: center; }
 /* === GOOGLE SHEET ID === */
 const SHEET_ID = '1iJXP-R3brvSTxfTzvljPRtyPoh-HTvAc29KQP7SiaE0';
 
-/* === PASSWORD PROTECTION (пароль тянется из Google Sheet, лист "Config", ячейка A1) === */
-const CONFIG_SHEET = 'Config';
-let SITE_PASSWORD = null; // loaded from Google Sheet
+/* === PASSWORD PROTECTION === */
+/* Чтобы сменить пароль — измени значение ниже и перезалей файл */
+const SITE_PASSWORD = '8888';
 
-function fetchPassword() {
-  return new Promise((resolve) => {
-    const cbName = '_pwCb' + Date.now();
-    const timeout = setTimeout(() => { resolve('8888'); delete window[cbName]; }, 5000);
-    window[cbName] = function(resp) {
-      clearTimeout(timeout);
-      delete window[cbName];
-      try {
-        const val = resp.table?.rows?.[0]?.c?.[0]?.v;
-        resolve(val != null ? String(val).trim() : '8888');
-      } catch(e) { resolve('8888'); }
-    };
-    const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
-      '/gviz/tq?tqx=responseHandler:' + cbName + '&sheet=' + encodeURIComponent(CONFIG_SHEET) + '&range=A1';
-    const s = document.createElement('script');
-    s.src = url;
-    s.onerror = () => { clearTimeout(timeout); resolve('8888'); };
-    document.head.appendChild(s);
-  });
-}
-
-async function checkPassword() {
-  const input = document.getElementById('loginPassword').value.trim();
-  const errEl = document.getElementById('loginError');
-
-  if (!input) { errEl.textContent = 'Введите пароль'; return; }
-
-  // Load password from Google Sheet if not loaded yet
-  if (SITE_PASSWORD === null) {
-    errEl.textContent = 'Загрузка...';
-    SITE_PASSWORD = await fetchPassword();
-    console.log('[AGS] Password loaded, length:', SITE_PASSWORD?.length);
-  }
-
-  // Compare as strings, trim both sides
-  const pwd = String(SITE_PASSWORD).trim();
-  const inp = String(input).trim();
-
-  if (inp === pwd) {
+function checkPassword() {
+  var input = document.getElementById('loginPassword').value.trim();
+  if (input === SITE_PASSWORD) {
     document.getElementById('loginOverlay').style.display = 'none';
     sessionStorage.setItem('ags_auth', 'true');
   } else {
-    errEl.textContent = 'Неверный пароль';
+    document.getElementById('loginError').textContent = 'Неверный пароль';
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginPassword').focus();
-    console.log('[AGS] Password mismatch. Expected length:', pwd.length, 'Got length:', inp.length);
   }
 }
-
-// Auto-login if already authenticated in this session
 if (sessionStorage.getItem('ags_auth') === 'true') {
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('loginOverlay').style.display = 'none';
   });
 }
-// Pre-fetch password in background
-fetchPassword().then(pw => { SITE_PASSWORD = pw; });
 
 /* ===========================================================================
    FALLBACK DATA
