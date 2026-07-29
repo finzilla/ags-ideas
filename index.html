@@ -1959,6 +1959,9 @@ function switchTab(tab) {
   document.getElementById('viewPortfolio').style.display = tab === 'portfolio' ? '' : 'none';
   document.getElementById('tabIdeas').classList.toggle('active', tab === 'ideas');
   document.getElementById('tabPortfolio').classList.toggle('active', tab === 'portfolio');
+  // Hide "Предложить идею" button on Portfolio tab
+  const fab = document.querySelector('.fab');
+  if (fab) fab.style.display = tab === 'portfolio' ? 'none' : 'flex';
   if (tab === 'portfolio') renderPortfolio();
 }
 
@@ -2211,6 +2214,9 @@ function renderSectorChart(pfDataAll) {
   legend.innerHTML = legendHTML;
 }
 
+/* Global: currently visible (filtered) portfolio — used by exports */
+let pfVisibleData = [];
+
 function renderPortfolio() {
   const pfDataAll = getPortfolioData();
   const area = document.getElementById('portfolioTableArea');
@@ -2218,13 +2224,9 @@ function renderPortfolio() {
   // Populate sector exclusion checkboxes
   renderSectorExclusions(pfDataAll);
 
-  // Calculate weights for ALL portfolio
-  calcPortfolioWeights(pfDataAll);
-
-  // Stats — from ALL portfolio (before filtering)
-  document.getElementById('pfStatCount').textContent = pfDataAll.length;
-
   if (pfDataAll.length === 0) {
+    pfVisibleData = [];
+    document.getElementById('pfStatCount').textContent = '0';
     document.getElementById('pfStatPotential').textContent = '—';
     document.getElementById('pfStatPotential').className = 'stat-card-value';
     document.getElementById('pfStatPerf').textContent = '—';
@@ -2238,15 +2240,23 @@ function renderPortfolio() {
     return;
   }
 
-  // Weighted average upside
-  const weightedUpside = calcWeightedUpside(pfDataAll);
+  // Apply filters FIRST — everything below works on the visible set
+  calcPortfolioWeights(pfDataAll);
+  const pfData = filterPortfolioData(pfDataAll);
+  calcPortfolioWeights(pfData);   // redistribute weights across visible only
+  pfVisibleData = pfData;          // store for exports
+
+  // Stats — from VISIBLE (filtered) portfolio
+  document.getElementById('pfStatCount').textContent = pfData.length;
+
+  const weightedUpside = calcWeightedUpside(pfData);
   const potEl = document.getElementById('pfStatPotential');
   if (weightedUpside != null) {
     potEl.textContent = (weightedUpside >= 0 ? '+' : '') + weightedUpside.toFixed(1) + '%';
     potEl.className = 'stat-card-value ' + (weightedUpside >= 0 ? 'positive' : 'negative');
   } else { potEl.textContent = '—'; potEl.className = 'stat-card-value'; }
 
-  const perfs = pfDataAll.filter(p => p.live.perf != null).map(p => p.live.perf);
+  const perfs = pfData.filter(p => p.live.perf != null).map(p => p.live.perf);
   const avgPerf = perfs.length ? perfs.reduce((a,b)=>a+b,0)/perfs.length : null;
   const perfEl = document.getElementById('pfStatPerf');
   if (avgPerf != null) {
@@ -2255,14 +2265,10 @@ function renderPortfolio() {
   } else { perfEl.textContent = '—'; perfEl.className = 'stat-card-value'; }
 
   let rebalCount = 0;
-  pfDataAll.forEach(p => { if (portfolioStatus(p.live, p).key !== 'active') rebalCount++; });
+  pfData.forEach(p => { if (portfolioStatus(p.live, p).key !== 'active') rebalCount++; });
   document.getElementById('pfStatRebal').textContent = rebalCount;
 
-  // Apply filters
-  const pfData = filterPortfolioData(pfDataAll);
-
   // Render sector donut chart from FILTERED data
-  calcPortfolioWeights(pfData);
   renderSectorChart(pfData);
 
   if (pfData.length === 0) {
@@ -2339,7 +2345,8 @@ function renderPortfolio() {
    PORTFOLIO ACTIONS
    =========================================================================== */
 function downloadPortfolioCSV() {
-  const pfData = getPortfolioData();
+  // Use currently visible (filtered) portfolio
+  const pfData = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
   if (pfData.length === 0) { showToast('Портфель пуст'); return; }
 
   const headers = ['Тикер','ISIN','Компания','Сектор','Страна','Валюта','Цена входа','Текущая цена','Целевая цена','Downside','Upside %','Доходность %','Доля %','Риск','Источник','Дата добавления'];
@@ -2384,7 +2391,8 @@ function downloadPortfolioCSV() {
 }
 
 function downloadPortfolioHTML() {
-  const pfData = getPortfolioData();
+  // Use currently visible (filtered) portfolio
+  const pfData = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
   if (pfData.length === 0) { showToast('Портфель пуст'); return; }
 
   calcPortfolioWeights(pfData);
