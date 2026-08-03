@@ -1189,13 +1189,12 @@ td.right { text-align: center; }
         <div class="model-legend" id="mdlSectorLegend"></div>
       </div>
     </div>
-    <div class="model-chart-box" id="mdlRatingBox">
-      <div class="model-chart-title">По рейтингам</div>
-      <div class="model-chart-inner">
-        <svg id="mdlRatingDonut" width="160" height="160" viewBox="0 0 160 160"></svg>
-        <div class="model-legend" id="mdlRatingLegend"></div>
-      </div>
-    </div>
+  </div>
+
+  <!-- Horizontal bar chart: ratings + asset classes -->
+  <div class="model-chart-box" id="mdlRatingBox" style="margin:0 24px 16px;padding:14px 18px;">
+    <div class="model-chart-title" style="margin-bottom:10px;">Структура по рейтингам и классам активов</div>
+    <div id="mdlRatingBars"></div>
   </div>
 
   <!-- Tables -->
@@ -1628,7 +1627,8 @@ function gvizToData(table) {
       website: gvStr(row, 'Website'),
       comment: gvStr(row, 'Comments'),
       isin: gvStr(row, 'ISIN'),
-      model: gvStr(row, 'Model')
+      model: gvStr(row, 'Model'),
+      sheetWeight: gvNum(row, 'Доля')
     });
   }
   return data;
@@ -1749,7 +1749,8 @@ function bondsGvizToData(table) {
       couponsPerYear: num(row, 'Купонов/год'),
       callable: str(row, 'Callable'),
       passFilter: num(row, 'Проходит фильтр'),
-      rank: num(row, 'Ранг')
+      rank: num(row, 'Ранг'),
+      sheetWeight: num(row, 'Доля')
     });
   }
   return out;
@@ -3153,10 +3154,13 @@ function buildModelPortfolio() {
   // --- Assign weights ---
   const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
   const bondShare = 100 - stockShare;
-  const bw = modelState.bonds.length ? bondShare / modelState.bonds.length : 0;
-  const sw = modelState.stocks.length ? stockShare / modelState.stocks.length : 0;
-  modelState.bonds.forEach(b => b._weight = bw);
-  modelState.stocks.forEach(s => s._weight = sw);
+
+  // Copy items so manual edits don't mutate the source pools
+  modelState.bonds = modelState.bonds.map(b => ({ ...b }));
+  modelState.stocks = modelState.stocks.map(s => ({ ...s }));
+
+  distributeModelWeights(modelState.bonds, bondShare);
+  distributeModelWeights(modelState.stocks, stockShare);
 
   modelBuilt = true;
 
@@ -3165,6 +3169,142 @@ function buildModelPortfolio() {
   }
 
   renderModels();
+}
+
+/* ---- Weight distribution with manual/sheet overrides ----
+   Priority: manual (locked on site) > sheetWeight (Google Sheets "Доля") > equal split */
+function distributeModelWeights(items, totalShare) {
+  if (!items.length) return;
+
+  let fixedSum = 0;
+  let freeCount = 0;
+
+  items.forEach(it => {
+    const fixed = (it._lockedWeight && it._manualWeight != null)
+      ? it._manualWeight
+      : (it.sheetWeight != null && it.sheetWeight > 0 ? it.sheetWeight : null);
+    if (fixed != null) { it._fixed = fixed; fixedSum += fixed; }
+    else { it._fixed = null; freeCount++; }
+  });
+
+  const remaining = Math.max(0, totalShare - fixedSum);
+  const auto = freeCount > 0 ? remaining / freeCount : 0;
+
+  items.forEach(it => {
+    it._weight = it._fixed != null ? it._fixed : auto;
+  });
+}
+
+/* Manual weight edit on the model page */
+function setModelWeight(kind, key, value) {
+  const arr = kind === 'bond' ? modelState.bonds : modelState.stocks;
+  const item = arr.find(x => (kind === 'bond' ? x.isin : x.ticker) === key);
+  if (!item) return;
+  item._manualWeight = Math.max(0, Math.min(100, parseFloat(value) || 0));
+  item._lockedWeight = true;
+  recalcModelWeights();
+}
+
+function toggleModelWeightLock(kind, key, locked) {
+  const arr = kind === 'bond' ? modelState.bonds : modelState.stocks;
+  const item = arr.find(x => (kind === 'bond' ? x.isin : x.ticker) === key);
+  if (!item) return;
+  item._lockedWeight = locked;
+  if (!locked) item._manualWeight = null;
+  recalcModelWeights();
+}
+
+function recalcModelWeights() {
+  const t = modelState.type;
+  const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
+  distributeModelWeights(modelState.bonds, 100 - stockShare);
+  distributeModelWeights(modelState.stocks, stockShare);
+  renderModels();
+}
+
+/* Weight cell HTML with input + lock checkbox */
+function weightCellHTML(kind, key, item) {
+  const locked = !!item._lockedWeight;
+  const fromSheet = !locked && item.sheetWeight != null && item.sheetWeight > 0;
+  const border = locked ? '#8B6A4E' : (fromSheet ? '#C6CEC8' : '#ccc');
+  const bg = locked ? '#F0F2F0' : (fromSheet ? '#FAFBFA' : '#fff');
+  const title = fromSheet ? 'Доля задана в Google Sheets' : 'Зафиксировать долю';
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:2px;">
+    <input type="number" step="0.1" min="0" max="100" value="${(item._weight||0).toFixed(1)}"
+      style="width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid ${border};border-radius:3px;background:${bg};font-family:Manrope,sans-serif;"
+      onchange="setModelWeight('${kind}','${esc(key)}',this.value)">
+    <label style="cursor:pointer;font-size:0.7rem;" title="${title}">
+      <input type="checkbox" ${locked ? 'checked' : ''}
+        onchange="toggleModelWeightLock('${kind}','${esc(key)}',this.checked)"
+        style="width:12px;height:12px;">🔒
+    </label>
+  </div>`;
+}
+
+/* ---- Horizontal bar chart: ratings + asset classes ---- */
+function renderRatingBars(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  const bonds = modelState.bonds;
+  const stocks = modelState.stocks;
+
+  // Build rows: ratings (bonds) + asset class rows
+  const rows = [];
+
+  // Rating breakdown from bonds — sorted best→worst
+  const ratingMap = {};
+  bonds.forEach(b => {
+    const r = b.rating || 'Без рейтинга';
+    ratingMap[r] = (ratingMap[r] || 0) + (b._weight || 0);
+  });
+  Object.entries(ratingMap)
+    .sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]))
+    .forEach(([label, w]) => {
+      const ig = isInvestmentGrade(label);
+      rows.push({ label, weight: w, color: ig ? '#0A1638' : '#8B6A4E', group: 'rating' });
+    });
+
+  // Asset class rows
+  const stockETF = stocks.filter(s => isETF(s)).reduce((sum, s) => sum + (s._weight || 0), 0);
+  const stockEq  = stocks.filter(s => !isETF(s)).reduce((sum, s) => sum + (s._weight || 0), 0);
+  const bondTotal = bonds.reduce((sum, b) => sum + (b._weight || 0), 0);
+
+  if (rows.length > 0) rows.push({ divider: true });
+  if (bondTotal > 0) rows.push({ label: 'Облигации', weight: bondTotal, color: '#1A2D5A', group: 'class' });
+  if (stockEq > 0)   rows.push({ label: 'Акции',      weight: stockEq,   color: '#8B6A4E', group: 'class' });
+  if (stockETF > 0)  rows.push({ label: 'ETF',        weight: stockETF,  color: '#C6CEC8', group: 'class' });
+
+  if (rows.length === 0) { el.innerHTML = '<div style="color:#94A3B8;font-size:0.85rem;">Нет данных</div>'; return; }
+
+  const maxW = Math.max(...rows.filter(r => !r.divider).map(r => r.weight), 1);
+
+  let html = '<div style="display:flex;flex-direction:column;gap:5px;">';
+  rows.forEach(r => {
+    if (r.divider) {
+      html += '<div style="height:1px;background:#E5E7EB;margin:4px 0;"></div>';
+      return;
+    }
+    const pct = (r.weight / maxW) * 100;
+    const isClass = r.group === 'class';
+    html += `<div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:110px;flex-shrink:0;font-size:0.8rem;${isClass ? 'font-weight:600;' : ''}color:#0A1638;text-align:right;">${esc(r.label)}</div>
+      <div style="flex:1;height:${isClass ? 18 : 15}px;background:#F3F4F6;border-radius:3px;overflow:hidden;position:relative;">
+        <div style="width:${pct.toFixed(1)}%;height:100%;background:${r.color};border-radius:3px;transition:width .3s;"></div>
+      </div>
+      <div style="width:52px;flex-shrink:0;font-size:0.8rem;${isClass ? 'font-weight:600;' : ''}color:#0A1638;">${r.weight.toFixed(1)}%</div>
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* Detect ETF: sector/name markers or known ETF tickers */
+function isETF(s) {
+  const hay = [s.sector, s.company, s.country, s.model].join(' ').toUpperCase();
+  if (hay.includes('ETF')) return true;
+  const knownETF = ['KWEB','IBIT','COPX','ARKG','SPY','QQQ','VOO','IVV','VTI','GLD','SLV','TLT','EEM','XLE','XLF','XLK'];
+  return knownETF.includes(String(s.ticker || '').toUpperCase());
 }
 
 /* ---- Generic donut renderer ---- */
@@ -3321,12 +3461,8 @@ function renderModels() {
   renderDonut('mdlCountryDonut', 'mdlCountryLegend', modelCountryMap(), totalPos + ' поз.');
   renderDonut('mdlSectorDonut', 'mdlSectorLegend', modelSectorMap(), totalPos + ' поз.');
   const ratingBox = document.getElementById('mdlRatingBox');
-  if (bonds.length > 0) {
-    if (ratingBox) ratingBox.style.display = '';
-    renderDonut('mdlRatingDonut', 'mdlRatingLegend', modelRatingMap(), bonds.length + ' обл.');
-  } else {
-    if (ratingBox) ratingBox.style.display = 'none';
-  }
+  if (ratingBox) ratingBox.style.display = '';
+  renderRatingBars('mdlRatingBars');
 
   // Bonds table
   if (bonds.length > 0) {
@@ -3394,7 +3530,7 @@ function buildBondsTableHTML(bonds) {
       <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
       <td style="text-align:center;">${fmtNum(b.price)}</td>
       <td style="text-align:center;">${fmtNum(b.duration)}</td>
-      <td style="text-align:center;font-weight:600;">${(b._weight||0).toFixed(1)}%</td>
+      <td style="text-align:center;">${weightCellHTML('bond', b.isin, b)}</td>
     </tr>`;
   });
   html += '</tbody></table></div>';
@@ -3419,7 +3555,7 @@ function buildStocksTableHTML(stocks) {
       <td style="text-align:center;" class="price-cell price-bold">${fmtPrice(s.price)}</td>
       <td style="text-align:center;" class="price-cell">${fmtPrice(s.target)}</td>
       <td style="text-align:center;" class="pct ${pctClass(s.potential)}">${fmtPct(s.potential)}</td>
-      <td style="text-align:center;font-weight:600;">${(s._weight||0).toFixed(1)}%</td>
+      <td style="text-align:center;">${weightCellHTML('stock', s.ticker, s)}</td>
     </tr>`;
   });
   html += '</tbody></table></div>';
@@ -3485,8 +3621,16 @@ function downloadModelHTML() {
   }
   const chartsHTML =
     chartBlock('По странам', 'mdlCountryDonut', 'mdlCountryLegend', true) +
-    chartBlock('По секторам', 'mdlSectorDonut', 'mdlSectorLegend', true) +
-    chartBlock('По рейтингам', 'mdlRatingDonut', 'mdlRatingLegend', bonds.length > 0);
+    chartBlock('По секторам', 'mdlSectorDonut', 'mdlSectorLegend', true);
+
+  // Horizontal bar chart block (ratings + asset classes)
+  const barsEl = document.getElementById('mdlRatingBars');
+  const barsHTML = barsEl && barsEl.innerHTML.trim()
+    ? `<div style="margin-top:18px;">
+        <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Структура по рейтингам и классам активов</h2>
+        ${barsEl.innerHTML}
+      </div>`
+    : '';
 
   // Bonds page
   let bondsPage = '';
@@ -3635,6 +3779,7 @@ function downloadModelHTML() {
     </div>
 
     <div class="charts-row">${chartsHTML}</div>
+    ${barsHTML}
 
     ${bondsPage}
     ${stocksPage}
