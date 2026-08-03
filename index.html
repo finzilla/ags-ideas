@@ -699,11 +699,131 @@ td.right { text-align: center; }
 }
 .btn-remove-pf:hover { background: #FEE2E2; }
 
+/* ====================== MODEL PORTFOLIOS ====================== */
+.model-config {
+  margin: 16px 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 24px;
+}
+.model-config-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+.model-config-row:last-child { margin-bottom: 0; }
+.model-config-group { display: flex; flex-direction: column; gap: 4px; }
+.model-config-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+.model-config-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-bottom: 12px;
+}
+.model-input {
+  padding: 7px 10px;
+  border: 1px solid #C6CEC8;
+  border-radius: var(--radius-sm);
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: #fff;
+}
+.model-input:focus { outline: none; border-color: #8B6A4E; }
+
+.model-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 220px;
+  height: 5px;
+  border-radius: 3px;
+  background: #E5E7EB;
+  outline: none;
+  cursor: pointer;
+}
+.model-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #8B6A4E;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(139,106,78,0.5);
+  cursor: pointer;
+}
+.model-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #8B6A4E;
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+.model-slider::-moz-range-track { height: 5px; border-radius: 3px; background: #E5E7EB; }
+
+.model-charts-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 0 24px 16px;
+  align-items: flex-start;
+}
+.model-chart-box {
+  flex: 1 1 260px;
+  min-width: 240px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.model-chart-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 10px;
+}
+.model-chart-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.model-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  flex: 1 1 110px;
+  min-width: 110px;
+}
+.model-table-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--secondary);
+  margin: 4px 24px 10px;
+}
+.model-empty {
+  text-align: center;
+  padding: 50px 24px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .nav-tabs { margin-left: 0; margin-top: 8px; }
   .portfolio-controls { padding: 12px 16px; }
   .portfolio-table-wrapper { margin: 0 16px 16px; }
   .rebalance-panel { margin: 0 16px 16px; }
+  .model-config { margin: 12px 16px; padding: 14px 16px; }
+  .model-charts-row { padding: 0 16px 12px; }
+  .model-table-title { margin: 4px 16px 8px; }
 }
 </style>
 </head>
@@ -724,6 +844,7 @@ td.right { text-align: center; }
     <div class="nav-tabs">
       <button class="nav-tab active" id="tabIdeas" onclick="switchTab('ideas')">Идеи</button>
       <button class="nav-tab" id="tabPortfolio" onclick="switchTab('portfolio')">Портфель</button>
+      <button class="nav-tab" id="tabModels" onclick="switchTab('models')">Модельные портфели</button>
     </div>
     <button class="btn-refresh" onclick="fetchData()" title="Обновить данные">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -960,6 +1081,138 @@ td.right { text-align: center; }
   <div id="portfolioTableArea"></div>
 </div><!-- /viewPortfolio -->
 
+<!-- ====================== VIEW: MODEL PORTFOLIOS ====================== -->
+<div id="viewModels" style="display:none;">
+
+  <!-- Configurator -->
+  <div class="model-config">
+    <div class="model-config-title">Конструктор модельного портфеля</div>
+
+    <div class="model-config-row">
+      <div class="model-config-group">
+        <span class="model-config-label">Тип портфеля</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="filter-btn" id="mdlTypeConservative" onclick="setModelType('conservative')">Консервативный</button>
+          <button class="filter-btn active" id="mdlTypeBalanced" onclick="setModelType('balanced')">Сбалансированный</button>
+          <button class="filter-btn" id="mdlTypeAggressive" onclick="setModelType('aggressive')">Агрессивный</button>
+        </div>
+      </div>
+
+      <div class="model-config-group" id="mdlShareGroup">
+        <span class="model-config-label" id="mdlShareLabel">Доля акций: 40%</span>
+        <input type="range" class="model-slider" id="mdlStockShare" min="0" max="100" step="5" value="40" oninput="onStockShareChange(this.value)">
+      </div>
+    </div>
+
+    <div class="model-config-row">
+      <div class="model-config-group">
+        <span class="model-config-label">Валюта облигаций</span>
+        <select class="model-input" id="mdlCurrency" onchange="onModelCurrencyChange(this.value)">
+          <option value="all">Все</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="KZT">KZT</option>
+        </select>
+      </div>
+      <div class="model-config-group">
+        <span class="model-config-label">Кол-во облигаций</span>
+        <input type="number" class="model-input" id="mdlBondCount" min="3" max="30" value="10" style="width:110px;" onchange="onModelCountChange()">
+      </div>
+      <div class="model-config-group">
+        <span class="model-config-label">Кол-во акций</span>
+        <input type="number" class="model-input" id="mdlStockCount" min="3" max="30" value="10" style="width:110px;" onchange="onModelCountChange()">
+      </div>
+    </div>
+
+    <div class="model-config-row">
+      <div class="model-config-group">
+        <span class="model-config-label">ФИО клиента</span>
+        <input type="text" class="model-input" id="mdlClientName" placeholder="Иванов Иван Иванович" style="width:230px;" oninput="saveModelClientInfo()">
+      </div>
+      <div class="model-config-group">
+        <span class="model-config-label">Сумма инвестирования</span>
+        <input type="number" class="model-input" id="mdlClientAmount" placeholder="100000" style="width:150px;" oninput="saveModelClientInfo()">
+      </div>
+      <div class="model-config-group">
+        <span class="model-config-label">Валюта</span>
+        <select class="model-input" id="mdlClientCurrency" style="width:100px;" onchange="saveModelClientInfo()">
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="KZT">KZT</option>
+          <option value="CNY">CNY</option>
+          <option value="HKD">HKD</option>
+        </select>
+      </div>
+      <div class="model-config-group">
+        <span class="model-config-label">&nbsp;</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="portfolio-btn primary" onclick="buildModelPortfolio()">🔄 Собрать портфель</button>
+          <button class="portfolio-btn" onclick="downloadModelHTML()">📄 Сводка клиенту</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="mdlStatsRow">
+    <div class="stat-card">
+      <div class="stat-card-label" id="mdlStat1Label">Позиций</div>
+      <div class="stat-card-value" id="mdlStat1">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label" id="mdlStat2Label">Ср. YTM</div>
+      <div class="stat-card-value" id="mdlStat2">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label" id="mdlStat3Label">Ср. дюрация</div>
+      <div class="stat-card-value" id="mdlStat3">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label" id="mdlStat4Label">Ср. рейтинг</div>
+      <div class="stat-card-value" id="mdlStat4">—</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="model-charts-row" id="mdlChartsRow" style="display:none;">
+    <div class="model-chart-box" id="mdlCountryBox">
+      <div class="model-chart-title">По странам</div>
+      <div class="model-chart-inner">
+        <svg id="mdlCountryDonut" width="160" height="160" viewBox="0 0 160 160"></svg>
+        <div class="model-legend" id="mdlCountryLegend"></div>
+      </div>
+    </div>
+    <div class="model-chart-box" id="mdlSectorBox">
+      <div class="model-chart-title">По секторам</div>
+      <div class="model-chart-inner">
+        <svg id="mdlSectorDonut" width="160" height="160" viewBox="0 0 160 160"></svg>
+        <div class="model-legend" id="mdlSectorLegend"></div>
+      </div>
+    </div>
+    <div class="model-chart-box" id="mdlRatingBox">
+      <div class="model-chart-title">По рейтингам</div>
+      <div class="model-chart-inner">
+        <svg id="mdlRatingDonut" width="160" height="160" viewBox="0 0 160 160"></svg>
+        <div class="model-legend" id="mdlRatingLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables -->
+  <div id="mdlBondsSection" style="display:none;">
+    <div class="model-table-title">Облигации</div>
+    <div id="mdlBondsTable"></div>
+  </div>
+  <div id="mdlStocksSection" style="display:none;">
+    <div class="model-table-title">Акции</div>
+    <div id="mdlStocksTable"></div>
+  </div>
+
+  <div class="model-empty" id="mdlEmpty">
+    Настройте параметры и нажмите «🔄 Собрать портфель».
+  </div>
+</div><!-- /viewModels -->
+
 <!-- ====================== FAB ====================== -->
 <button class="fab" onclick="openModal()" title="Предложить идею"><span style="font-size:1.2rem;">💡</span> Предложить идею</button>
 
@@ -1074,6 +1327,7 @@ const FALLBACK_DATA = [
    GLOBAL STATE
    =========================================================================== */
 let allData = [];
+let allBonds = [];
 let filteredData = [];
 let selectedIdx = -1; // index into filteredData
 let sortCol = 'date';
@@ -1187,7 +1441,8 @@ function csvToData(csvText) {
       marketCap: parseNum(col(cols, 'Market cap (B USD)')),
       website: col(cols, 'Website'),
       comment: col(cols, 'Comments'),
-      isin: col(cols, 'ISIN')
+      isin: col(cols, 'ISIN'),
+      model: col(cols, 'Model')
     });
   }
   return data;
@@ -1372,7 +1627,8 @@ function gvizToData(table) {
       marketCap: gvNum(row, 'Market cap (B USD)'),
       website: gvStr(row, 'Website'),
       comment: gvStr(row, 'Comments'),
-      isin: gvStr(row, 'ISIN')
+      isin: gvStr(row, 'ISIN'),
+      model: gvStr(row, 'Model')
     });
   }
   return data;
@@ -1432,6 +1688,116 @@ async function fetchData() {
   applyFilters();
   loading.style.display = 'none';
   tableWrap.style.display = '';
+}
+
+/* ===========================================================================
+   BONDS — parsing & loading
+   =========================================================================== */
+/* Numbers in the Bonds sheet are stored as TEXT with comma decimals and % signs */
+function parseRuNum(val) {
+  if (val == null || val === '') return null;
+  const s = String(val).replace(/%/g, '').replace(/\s/g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+
+function bondsGvizToData(table) {
+  const cols = (table.cols || []).map(c => (c.label || '').trim());
+  const rows = table.rows || [];
+  const ci = {};
+  cols.forEach((name, i) => { if (name) ci[name] = i; });
+
+  function raw(row, colName) {
+    const idx = ci[colName];
+    if (idx == null) return null;
+    const cell = row.c?.[idx];
+    if (!cell) return null;
+    if (cell.f != null && cell.f !== '') return cell.f;
+    return cell.v != null ? cell.v : null;
+  }
+  function str(row, colName) {
+    const v = raw(row, colName);
+    return v != null ? String(v).trim() : '';
+  }
+  function num(row, colName) {
+    const idx = ci[colName];
+    if (idx == null) return null;
+    const cell = row.c?.[idx];
+    if (!cell) return null;
+    if (typeof cell.v === 'number') return cell.v;
+    return parseRuNum(cell.f != null ? cell.f : cell.v);
+  }
+
+  const out = [];
+  for (const row of rows) {
+    const name = str(row, 'Название');
+    if (!name) continue;
+    out.push({
+      name: name,
+      isin: str(row, 'ISIN'),
+      currency: str(row, 'Валюта'),
+      country: str(row, 'Страна'),
+      countryRu: str(row, 'Страна (рус)'),
+      sector: str(row, 'Сектор'),
+      sectorRu: str(row, 'Сектор (рус)'),
+      rating: str(row, 'Рейтинг'),
+      ytm: num(row, 'YTM'),
+      coupon: num(row, 'Купон'),
+      price: num(row, 'Цена, %'),
+      duration: num(row, 'Дюрация'),
+      minLot: num(row, 'Мин. лот'),
+      couponsPerYear: num(row, 'Купонов/год'),
+      callable: str(row, 'Callable'),
+      passFilter: num(row, 'Проходит фильтр'),
+      rank: num(row, 'Ранг')
+    });
+  }
+  return out;
+}
+
+let _bondsCallbackId = 0;
+function fetchBonds() {
+  return new Promise((resolve, reject) => {
+    const cbName = '_bondsCb' + (++_bondsCallbackId);
+    const timeout = setTimeout(() => { reject(new Error('JSONP timeout')); delete window[cbName]; }, 12000);
+
+    window[cbName] = function(resp) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      try {
+        if (resp.status === 'error') throw new Error(resp.errors?.[0]?.message || 'gviz error');
+        const bonds = bondsGvizToData(resp.table);
+        allBonds = bonds;
+        console.log('[AGS] Loaded', bonds.length, 'bonds');
+        resolve(bonds);
+      } catch(e) { reject(e); }
+    };
+
+    const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+      '/gviz/tq?tqx=responseHandler:' + cbName + '&headers=1&sheet=Bonds';
+    const s = document.createElement('script');
+    s.src = url;
+    s.onerror = () => { clearTimeout(timeout); reject(new Error('script load failed')); };
+    document.head.appendChild(s);
+  });
+}
+
+/* ===========================================================================
+   CREDIT RATING HELPERS
+   =========================================================================== */
+const RATING_ORDER = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-','BB+','BB','BB-','B+','B','B-','CCC+','CCC','CCC-','CC','C','D'];
+
+function ratingScore(r) {
+  if (!r) return 99;
+  const idx = RATING_ORDER.indexOf(String(r).trim().toUpperCase());
+  return idx === -1 ? 99 : idx;
+}
+function isInvestmentGrade(r) { return ratingScore(r) <= RATING_ORDER.indexOf('BBB-'); }
+function avgRating(bonds) {
+  const scores = bonds.map(b => ratingScore(b.rating)).filter(s => s < 99);
+  if (!scores.length) return '—';
+  const avg = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  return RATING_ORDER[Math.min(avg, RATING_ORDER.length-1)] || '—';
 }
 
 /* ===========================================================================
@@ -1957,12 +2323,17 @@ function getPortfolioData() {
 function switchTab(tab) {
   document.getElementById('viewIdeas').style.display = tab === 'ideas' ? '' : 'none';
   document.getElementById('viewPortfolio').style.display = tab === 'portfolio' ? '' : 'none';
+  const vm = document.getElementById('viewModels');
+  if (vm) vm.style.display = tab === 'models' ? '' : 'none';
   document.getElementById('tabIdeas').classList.toggle('active', tab === 'ideas');
   document.getElementById('tabPortfolio').classList.toggle('active', tab === 'portfolio');
-  // Hide "Предложить идею" button on Portfolio tab
+  const tm = document.getElementById('tabModels');
+  if (tm) tm.classList.toggle('active', tab === 'models');
+  // Hide "Предложить идею" button on Portfolio / Models tabs
   const fab = document.querySelector('.fab');
-  if (fab) fab.style.display = tab === 'portfolio' ? 'none' : 'flex';
+  if (fab) fab.style.display = (tab === 'portfolio' || tab === 'models') ? 'none' : 'flex';
   if (tab === 'portfolio') renderPortfolio();
+  if (tab === 'models') renderModels();
 }
 
 /* ===========================================================================
@@ -2671,9 +3042,625 @@ function applyRebalance() {
 }
 
 /* ===========================================================================
+   MODEL PORTFOLIOS
+   =========================================================================== */
+let modelState = { type: 'balanced', stockShare: 40, currency: 'all', bondCount: 10, stockCount: 10, bonds: [], stocks: [] };
+let modelBuilt = false;
+
+const MODEL_TYPE_LABELS = {
+  conservative: 'Консервативный',
+  balanced: 'Сбалансированный',
+  aggressive: 'Агрессивный'
+};
+
+/* ---- Client info for the models tab ---- */
+const MDL_CLIENT_KEY = 'ags_model_client';
+function saveModelClientInfo() {
+  const info = {
+    name: document.getElementById('mdlClientName')?.value || '',
+    amount: document.getElementById('mdlClientAmount')?.value || '',
+    currency: document.getElementById('mdlClientCurrency')?.value || 'USD'
+  };
+  localStorage.setItem(MDL_CLIENT_KEY, JSON.stringify(info));
+}
+function loadModelClientInfo() {
+  try {
+    const info = JSON.parse(localStorage.getItem(MDL_CLIENT_KEY) || '{}');
+    if (info.name) document.getElementById('mdlClientName').value = info.name;
+    if (info.amount) document.getElementById('mdlClientAmount').value = info.amount;
+    if (info.currency) document.getElementById('mdlClientCurrency').value = info.currency;
+  } catch(e) {}
+}
+
+/* ---- Configurator handlers ---- */
+function setModelType(type) {
+  modelState.type = type;
+  ['conservative','balanced','aggressive'].forEach(t => {
+    const btn = document.getElementById('mdlType' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) btn.classList.toggle('active', t === type);
+  });
+  updateModelConfigVisibility();
+}
+
+function updateModelConfigVisibility() {
+  const shareGroup = document.getElementById('mdlShareGroup');
+  if (shareGroup) shareGroup.style.display = modelState.type === 'balanced' ? '' : 'none';
+  const bondGroup = document.getElementById('mdlBondCount')?.parentElement;
+  const stockGroup = document.getElementById('mdlStockCount')?.parentElement;
+  const currGroup = document.getElementById('mdlCurrency')?.parentElement;
+  if (bondGroup) bondGroup.style.display = modelState.type === 'aggressive' ? 'none' : '';
+  if (currGroup) currGroup.style.display = modelState.type === 'aggressive' ? 'none' : '';
+  if (stockGroup) stockGroup.style.display = modelState.type === 'conservative' ? 'none' : '';
+}
+
+function onStockShareChange(val) {
+  modelState.stockShare = parseInt(val, 10) || 0;
+  const lbl = document.getElementById('mdlShareLabel');
+  if (lbl) lbl.textContent = 'Доля акций: ' + modelState.stockShare + '%';
+}
+
+function onModelCurrencyChange(val) { modelState.currency = val; }
+
+function onModelCountChange() {
+  const bc = parseInt(document.getElementById('mdlBondCount')?.value, 10);
+  const sc = parseInt(document.getElementById('mdlStockCount')?.value, 10);
+  modelState.bondCount = isNaN(bc) ? 10 : Math.max(3, Math.min(30, bc));
+  modelState.stockCount = isNaN(sc) ? 10 : Math.max(3, Math.min(30, sc));
+}
+
+/* ---- Portfolio construction ---- */
+function buildModelPortfolio() {
+  onModelCountChange();
+  const t = modelState.type;
+
+  // --- BONDS selection ---
+  let bondPool = allBonds.filter(b => b.passFilter === 1);
+  if (modelState.currency !== 'all') bondPool = bondPool.filter(b => b.currency === modelState.currency);
+
+  if (t === 'conservative') {
+    bondPool = bondPool.filter(b => isInvestmentGrade(b.rating));
+  } else if (t === 'balanced') {
+    bondPool = bondPool.filter(b => ratingScore(b.rating) <= RATING_ORDER.indexOf('BB-'));
+  }
+  bondPool.sort((a,b) => {
+    const ra = a.rank != null ? a.rank : 999;
+    const rb = b.rank != null ? b.rank : 999;
+    if (ra !== rb) return ra - rb;
+    return (b.ytm||0) - (a.ytm||0);
+  });
+
+  // --- STOCKS selection ---
+  const modelTag = t === 'aggressive' ? 'Aggr' : 'Bal';
+  let stockPool = allData.filter(d => {
+    if (d.status !== 'ACTIVE') return false;
+    if (!d.model) return true; // if Model column not filled, include all active
+    return String(d.model).toLowerCase().includes(modelTag.toLowerCase());
+  });
+  stockPool.sort((a,b) => (b.potential||0) - (a.potential||0));
+
+  // --- Compose per type ---
+  if (t === 'conservative') {
+    modelState.bonds = bondPool.slice(0, modelState.bondCount);
+    modelState.stocks = [];
+  } else if (t === 'aggressive') {
+    modelState.bonds = [];
+    modelState.stocks = stockPool.slice(0, modelState.stockCount);
+  } else {
+    modelState.bonds = bondPool.slice(0, modelState.bondCount);
+    modelState.stocks = stockPool.slice(0, modelState.stockCount);
+  }
+
+  // --- Assign weights ---
+  const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
+  const bondShare = 100 - stockShare;
+  const bw = modelState.bonds.length ? bondShare / modelState.bonds.length : 0;
+  const sw = modelState.stocks.length ? stockShare / modelState.stocks.length : 0;
+  modelState.bonds.forEach(b => b._weight = bw);
+  modelState.stocks.forEach(s => s._weight = sw);
+
+  modelBuilt = true;
+
+  if (modelState.bonds.length === 0 && modelState.stocks.length === 0) {
+    showToast('Нет инструментов, подходящих под заданные параметры');
+  }
+
+  renderModels();
+}
+
+/* ---- Generic donut renderer ---- */
+function renderDonut(svgId, legendId, dataMap, centerLabel) {
+  const svg = document.getElementById(svgId);
+  const legend = document.getElementById(legendId);
+  if (!svg) return;
+
+  const entries = Object.entries(dataMap).filter(e => e[1] > 0).sort((a,b) => b[1] - a[1]);
+  const total = entries.reduce((s, e) => s + e[1], 0);
+
+  if (entries.length === 0 || total <= 0) {
+    svg.innerHTML = '';
+    if (legend) legend.innerHTML = '<div style="color:#6B7280;">Нет данных</div>';
+    return;
+  }
+
+  const cx = 80, cy = 80, r = 64, inner = 40;
+  let startAngle = -Math.PI / 2;
+  let paths = '';
+  let legendHTML = '';
+
+  entries.forEach(([name, weight], i) => {
+    const pct = weight / total;
+    const angle = pct * 2 * Math.PI;
+    const endAngle = startAngle + angle;
+    const largeArc = angle > Math.PI ? 1 : 0;
+    const color = CHART_COLORS[i % CHART_COLORS.length];
+
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const x3 = cx + inner * Math.cos(endAngle);
+    const y3 = cy + inner * Math.sin(endAngle);
+    const x4 = cx + inner * Math.cos(startAngle);
+    const y4 = cy + inner * Math.sin(startAngle);
+
+    if (entries.length === 1) {
+      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+      paths += `<circle cx="${cx}" cy="${cy}" r="${inner}" fill="white"/>`;
+    } else {
+      paths += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${largeArc} 0 ${x4} ${y4} Z" fill="${color}" stroke="white" stroke-width="1.5"/>`;
+    }
+
+    legendHTML += `<div style="display:flex;align-items:center;gap:5px;">
+      <span style="width:9px;height:9px;border-radius:2px;background:${color};flex-shrink:0;"></span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(name)}">${esc(name)}</span>
+      <span style="color:#6B7280;margin-left:auto;flex-shrink:0;">${weight.toFixed(1)}%</span>
+    </div>`;
+
+    startAngle = endAngle;
+  });
+
+  paths += `<text x="${cx}" y="${cy+2}" text-anchor="middle" font-size="11" fill="#6B7280" font-family="Manrope, sans-serif">${esc(centerLabel || '')}</text>`;
+
+  svg.innerHTML = paths;
+  if (legend) legend.innerHTML = legendHTML;
+}
+
+/* ---- Weighted helpers ---- */
+function weightedAvg(items, getter) {
+  let sum = 0, w = 0;
+  items.forEach(it => {
+    const v = getter(it);
+    const wt = it._weight || 0;
+    if (v != null && wt > 0) { sum += v * wt; w += wt; }
+  });
+  return w > 0 ? sum / w : null;
+}
+
+function modelCountryMap() {
+  const m = {};
+  modelState.bonds.forEach(b => {
+    const k = b.countryRu || b.country || 'Другое';
+    m[k] = (m[k] || 0) + (b._weight || 0);
+  });
+  modelState.stocks.forEach(s => {
+    const k = s.country || 'Другое';
+    m[k] = (m[k] || 0) + (s._weight || 0);
+  });
+  return m;
+}
+function modelSectorMap() {
+  const m = {};
+  modelState.bonds.forEach(b => {
+    const k = b.sectorRu || b.sector || 'Другое';
+    m[k] = (m[k] || 0) + (b._weight || 0);
+  });
+  modelState.stocks.forEach(s => {
+    const k = s.sector || 'Другое';
+    m[k] = (m[k] || 0) + (s._weight || 0);
+  });
+  return m;
+}
+function modelRatingMap() {
+  const m = {};
+  modelState.bonds.forEach(b => {
+    const k = b.rating || 'Без рейтинга';
+    m[k] = (m[k] || 0) + (b._weight || 0);
+  });
+  return m;
+}
+
+function fmtNum(v, dec) {
+  if (v == null) return '—';
+  return v.toFixed(dec == null ? 2 : dec);
+}
+
+/* ---- Rendering ---- */
+function renderModels() {
+  loadModelClientInfo();
+  updateModelConfigVisibility();
+  const slider = document.getElementById('mdlStockShare');
+  if (slider) slider.value = modelState.stockShare;
+  onStockShareChange(modelState.stockShare);
+
+  const empty = document.getElementById('mdlEmpty');
+  const chartsRow = document.getElementById('mdlChartsRow');
+  const bondsSection = document.getElementById('mdlBondsSection');
+  const stocksSection = document.getElementById('mdlStocksSection');
+
+  const bonds = modelState.bonds;
+  const stocks = modelState.stocks;
+  const hasAny = bonds.length > 0 || stocks.length > 0;
+
+  if (!modelBuilt || !hasAny) {
+    if (empty) {
+      empty.style.display = '';
+      empty.textContent = modelBuilt
+        ? 'Нет инструментов, подходящих под заданные параметры. Измените фильтры и попробуйте снова.'
+        : 'Настройте параметры и нажмите «🔄 Собрать портфель».';
+    }
+    if (chartsRow) chartsRow.style.display = 'none';
+    if (bondsSection) bondsSection.style.display = 'none';
+    if (stocksSection) stocksSection.style.display = 'none';
+    setModelStats(null);
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+
+  setModelStats({
+    count: bonds.length + stocks.length,
+    ytm: weightedAvg(bonds, b => b.ytm),
+    duration: weightedAvg(bonds, b => b.duration),
+    rating: avgRating(bonds),
+    upside: weightedAvg(stocks, s => s.potential)
+  });
+
+  // Charts
+  if (chartsRow) chartsRow.style.display = '';
+  const totalPos = bonds.length + stocks.length;
+  renderDonut('mdlCountryDonut', 'mdlCountryLegend', modelCountryMap(), totalPos + ' поз.');
+  renderDonut('mdlSectorDonut', 'mdlSectorLegend', modelSectorMap(), totalPos + ' поз.');
+  const ratingBox = document.getElementById('mdlRatingBox');
+  if (bonds.length > 0) {
+    if (ratingBox) ratingBox.style.display = '';
+    renderDonut('mdlRatingDonut', 'mdlRatingLegend', modelRatingMap(), bonds.length + ' обл.');
+  } else {
+    if (ratingBox) ratingBox.style.display = 'none';
+  }
+
+  // Bonds table
+  if (bonds.length > 0) {
+    bondsSection.style.display = '';
+    document.getElementById('mdlBondsTable').innerHTML = buildBondsTableHTML(bonds);
+  } else {
+    bondsSection.style.display = 'none';
+  }
+
+  // Stocks table
+  if (stocks.length > 0) {
+    stocksSection.style.display = '';
+    document.getElementById('mdlStocksTable').innerHTML = buildStocksTableHTML(stocks);
+  } else {
+    stocksSection.style.display = 'none';
+  }
+}
+
+function setModelStats(s) {
+  const l1 = document.getElementById('mdlStat1Label'), v1 = document.getElementById('mdlStat1');
+  const l2 = document.getElementById('mdlStat2Label'), v2 = document.getElementById('mdlStat2');
+  const l3 = document.getElementById('mdlStat3Label'), v3 = document.getElementById('mdlStat3');
+  const l4 = document.getElementById('mdlStat4Label'), v4 = document.getElementById('mdlStat4');
+  if (!v1) return;
+
+  if (!s) {
+    l1.textContent = 'Позиций'; v1.textContent = '0';
+    l2.textContent = 'Ср. YTM'; v2.textContent = '—';
+    l3.textContent = 'Ср. дюрация'; v3.textContent = '—';
+    l4.textContent = 'Ср. рейтинг'; v4.textContent = '—';
+    return;
+  }
+
+  if (modelState.type === 'aggressive') {
+    l1.textContent = 'Позиций'; v1.textContent = s.count;
+    l2.textContent = 'Ср. Upside'; v2.textContent = s.upside != null ? (s.upside >= 0 ? '+' : '') + s.upside.toFixed(1) + '%' : '—';
+    l3.textContent = '—'; v3.textContent = '—';
+    l4.textContent = '—'; v4.textContent = '—';
+  } else {
+    l1.textContent = 'Позиций'; v1.textContent = s.count;
+    l2.textContent = 'Ср. YTM'; v2.textContent = s.ytm != null ? s.ytm.toFixed(2) + '%' : '—';
+    l3.textContent = 'Ср. дюрация'; v3.textContent = s.duration != null ? s.duration.toFixed(2) : '—';
+    l4.textContent = 'Ср. рейтинг'; v4.textContent = s.rating || '—';
+  }
+}
+
+function buildBondsTableHTML(bonds) {
+  let html = `<div class="portfolio-table-wrapper"><table>
+    <thead><tr>
+      <th>Название</th><th>ISIN</th><th>Страна</th><th>Сектор</th>
+      <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
+      <th style="text-align:center">YTM</th><th style="text-align:center">Купон</th>
+      <th style="text-align:center">Цена</th><th style="text-align:center">Дюрация</th>
+      <th style="text-align:center">Доля</th>
+    </tr></thead><tbody>`;
+  bonds.forEach(b => {
+    html += `<tr>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.name)}">${esc(b.name)}</td>
+      <td style="font-size:0.75rem;color:#6B7280;">${esc(b.isin) || '—'}</td>
+      <td class="sector-cell" title="${esc(b.countryRu || b.country)}">${esc(b.countryRu || b.country) || '—'}</td>
+      <td class="sector-cell" title="${esc(b.sectorRu || b.sector)}">${esc(b.sectorRu || b.sector) || '—'}</td>
+      <td style="text-align:center;font-size:0.8rem;">${esc(b.currency) || '—'}</td>
+      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
+      <td style="text-align:center;font-weight:700;color:#16A34A;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
+      <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
+      <td style="text-align:center;">${fmtNum(b.price)}</td>
+      <td style="text-align:center;">${fmtNum(b.duration)}</td>
+      <td style="text-align:center;font-weight:600;">${(b._weight||0).toFixed(1)}%</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildStocksTableHTML(stocks) {
+  let html = `<div class="portfolio-table-wrapper"><table>
+    <thead><tr>
+      <th>Тикер</th><th>Компания</th><th>Сектор</th><th>Страна</th>
+      <th style="text-align:center">Вал.</th><th style="text-align:center">Цена</th>
+      <th style="text-align:center">Цель</th><th style="text-align:center">Upside</th>
+      <th style="text-align:center">Доля</th>
+    </tr></thead><tbody>`;
+  stocks.forEach(s => {
+    html += `<tr>
+      <td class="ticker-cell">${esc(s.ticker)}</td>
+      <td class="company-cell">${companyCell(s)}</td>
+      <td class="sector-cell" title="${esc(s.sector)}">${esc(s.sector) || '—'}</td>
+      <td class="sector-cell" title="${esc(s.country)}">${esc(s.country) || '—'}</td>
+      <td style="text-align:center;font-size:0.8rem;">${esc(s.currency) || '—'}</td>
+      <td style="text-align:center;" class="price-cell price-bold">${fmtPrice(s.price)}</td>
+      <td style="text-align:center;" class="price-cell">${fmtPrice(s.target)}</td>
+      <td style="text-align:center;" class="pct ${pctClass(s.potential)}">${fmtPct(s.potential)}</td>
+      <td style="text-align:center;font-weight:600;">${(s._weight||0).toFixed(1)}%</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+/* ---- Printable client report ---- */
+function downloadModelHTML() {
+  const bonds = modelState.bonds;
+  const stocks = modelState.stocks;
+  if (bonds.length === 0 && stocks.length === 0) {
+    showToast('Сначала соберите портфель');
+    return;
+  }
+
+  const t = modelState.type;
+  const typeLabel = MODEL_TYPE_LABELS[t] || '';
+  const clientCurrency = document.getElementById('mdlClientCurrency')?.value || 'USD';
+  const rawName = (document.getElementById('mdlClientName')?.value || '').trim();
+  const rawAmount = (document.getElementById('mdlClientAmount')?.value || '').trim();
+  const dateStr = new Date().toLocaleDateString('ru-RU');
+
+  const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
+  const bondShare = 100 - stockShare;
+
+  const ytm = weightedAvg(bonds, b => b.ytm);
+  const dur = weightedAvg(bonds, b => b.duration);
+  const rating = avgRating(bonds);
+  const upside = weightedAvg(stocks, s => s.potential);
+
+  // Info rows — only filled fields
+  let infoRows = '';
+  if (rawName) infoRows += `<span class="info-label">Клиент:</span><span class="info-value">${esc(rawName)}</span>`;
+  if (rawAmount) infoRows += `<span class="info-label">Сумма:</span><span class="info-value">${Number(rawAmount).toLocaleString()} ${esc(clientCurrency)}</span>`;
+  infoRows += `<span class="info-label">Тип портфеля:</span><span class="info-value accent">${esc(typeLabel)}</span>`;
+  infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
+
+  let statRows = '';
+  statRows += `<span class="info-label">Позиций:</span><span class="info-value">${bonds.length + stocks.length}</span>`;
+  if (bonds.length) {
+    statRows += `<span class="info-label">Ср. YTM:</span><span class="info-value accent">${ytm != null ? ytm.toFixed(2) + '%' : '—'}</span>`;
+    statRows += `<span class="info-label">Ср. дюрация:</span><span class="info-value">${dur != null ? dur.toFixed(2) : '—'}</span>`;
+    statRows += `<span class="info-label">Ср. рейтинг:</span><span class="info-value">${esc(rating)}</span>`;
+  }
+  if (stocks.length) {
+    statRows += `<span class="info-label">Ср. Upside:</span><span class="info-value accent">${upside != null ? (upside >= 0 ? '+' : '') + upside.toFixed(1) + '%' : '—'}</span>`;
+  }
+  statRows += `<span class="info-label">Доля акций:</span><span class="info-value">${stockShare}%</span>`;
+  statRows += `<span class="info-label">Доля облигаций:</span><span class="info-value">${bondShare}%</span>`;
+
+  // Charts — copy SVG from the page
+  function chartBlock(title, svgId, legendId, show) {
+    if (!show) return '';
+    const svgEl = document.getElementById(svgId);
+    const legEl = document.getElementById(legendId);
+    return `<div class="chart-block">
+      <h2>${title}</h2>
+      <div class="chart-area">
+        ${svgEl ? svgEl.outerHTML : ''}
+        <div class="chart-legend">${legEl ? legEl.innerHTML : ''}</div>
+      </div>
+    </div>`;
+  }
+  const chartsHTML =
+    chartBlock('По странам', 'mdlCountryDonut', 'mdlCountryLegend', true) +
+    chartBlock('По секторам', 'mdlSectorDonut', 'mdlSectorLegend', true) +
+    chartBlock('По рейтингам', 'mdlRatingDonut', 'mdlRatingLegend', bonds.length > 0);
+
+  // Bonds page
+  let bondsPage = '';
+  if (bonds.length > 0) {
+    let rows = '';
+    bonds.forEach(b => {
+      rows += `<tr>
+        <td>${esc(b.name)}</td>
+        <td style="font-size:10px;">${esc(b.isin) || '—'}</td>
+        <td>${esc(b.countryRu || b.country) || '—'}</td>
+        <td>${esc(b.sectorRu || b.sector) || '—'}</td>
+        <td style="text-align:center">${esc(b.currency) || '—'}</td>
+        <td style="text-align:center">${esc(b.rating) || '—'}</td>
+        <td style="text-align:right;color:#16A34A;font-weight:600;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
+        <td style="text-align:right">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
+        <td style="text-align:right">${b.price != null ? b.price.toFixed(2) : '—'}</td>
+        <td style="text-align:right">${b.duration != null ? b.duration.toFixed(2) : '—'}</td>
+        <td style="text-align:center">${b.couponsPerYear != null ? b.couponsPerYear : '—'}</td>
+        <td style="text-align:center">${b.callable ? 'Да' : '—'}</td>
+        <td style="text-align:center;font-weight:600;">${(b._weight||0).toFixed(1)}%</td>
+      </tr>`;
+    });
+    bondsPage = `<div class="page-break"></div>
+    <div class="section-title">Облигационная часть портфеля</div>
+    <table>
+      <thead><tr>
+        <th>Название</th><th>ISIN</th><th>Страна</th><th>Сектор</th>
+        <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
+        <th style="text-align:right">YTM</th><th style="text-align:right">Купон</th>
+        <th style="text-align:right">Цена</th><th style="text-align:right">Дюрация</th>
+        <th style="text-align:center">Куп./год</th><th style="text-align:center">Callable</th>
+        <th style="text-align:center">Доля</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  // Stocks page
+  let stocksPage = '';
+  if (stocks.length > 0) {
+    let rows = '';
+    stocks.forEach(s => {
+      const pot = s.potential;
+      rows += `<tr>
+        <td>${esc(s.ticker)}</td>
+        <td>${esc(s.company)}</td>
+        <td>${esc(s.sector) || '—'}</td>
+        <td>${esc(s.country) || '—'}</td>
+        <td style="text-align:center">${esc(s.currency) || '—'}</td>
+        <td style="text-align:right">${s.price != null ? s.price.toFixed(2) : '—'}</td>
+        <td style="text-align:right">${s.target != null ? s.target.toFixed(2) : '—'}</td>
+        <td style="text-align:right;color:${pot != null && pot >= 0 ? '#16A34A' : '#DC2626'};font-weight:600;">${pot != null ? (pot >= 0 ? '+' : '') + pot.toFixed(2) + '%' : '—'}</td>
+        <td style="text-align:center;font-weight:600;">${(s._weight||0).toFixed(1)}%</td>
+      </tr>`;
+    });
+    stocksPage = `<div class="page-break"></div>
+    <div class="section-title">Акционерная часть портфеля</div>
+    <table>
+      <thead><tr>
+        <th>Тикер</th><th>Компания</th><th>Сектор</th><th>Страна</th>
+        <th style="text-align:center">Вал.</th><th style="text-align:right">Цена</th>
+        <th style="text-align:right">Цель</th><th style="text-align:right">Upside</th>
+        <th style="text-align:center">Доля</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  const logoURL = window.location.href.includes('github.io')
+    ? 'https://finzilla.github.io/ags-ideas/assets/logo-light.png'
+    : 'assets/logo-light.png';
+
+  const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>${rawName ? 'Модельный портфель — ' + esc(rawName) : 'Модельный портфель AGS'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Manrope', sans-serif; color: #0A1638; max-width: 960px; margin: 0 auto; }
+
+  .banner {
+    background: linear-gradient(135deg, #A0785A 0%, #B8956E 30%, #A07858 50%, #C4A882 70%, #A89070 100%);
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0 0 12px 12px;
+  }
+  .banner img { height: 36px; }
+  .banner-text { color: rgba(255,255,255,0.7); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .content { padding: 24px 36px; }
+
+  .info-row { display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 22px; }
+  .info-block { flex: 1 1 240px; }
+  .info-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12px; }
+  .info-label { color: #6B7280; }
+  .info-value { font-weight: 600; }
+  .info-value.accent { color: #8B6A4E; }
+
+  .charts-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 10px; }
+  .chart-block { flex: 1 1 260px; }
+  .chart-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-area { display: flex; align-items: center; gap: 10px; }
+  .chart-legend { font-size: 10px; text-align: left; flex: 1; }
+
+  .section-title { font-size: 13px; color: #8B6A4E; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  th { background: #0A1638; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+  td { padding: 5px 6px; border-bottom: 1px solid #E5E7EB; }
+  tr:nth-child(even) td { background: #F9FAFB; }
+
+  .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
+
+  .page-break { height: 0; }
+
+  @media print {
+    body { max-width: 100%; }
+    .banner { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-break { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <img src="${logoURL}" alt="AGS" onerror="this.parentElement.innerHTML='<div style=\\'color:white;font-size:24px;font-weight:700;\\'>AGS</div><div class=\\'banner-text\\'>Abylai Global Solutions</div>'">
+    <div class="banner-text">Модельный портфель — ${esc(typeLabel)}</div>
+  </div>
+
+  <div class="content">
+    <div class="section-title">Структура портфеля</div>
+    <div class="info-row">
+      <div class="info-block">
+        <h2>Информация</h2>
+        <div class="info-grid">${infoRows}</div>
+      </div>
+      <div class="info-block">
+        <h2>Показатели</h2>
+        <div class="info-grid">${statRows}</div>
+      </div>
+    </div>
+
+    <div class="charts-row">${chartsHTML}</div>
+
+    ${bondsPage}
+    ${stocksPage}
+
+    <div class="footer">
+      Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
+      Документ подготовлен автоматически и не является индивидуальной инвестиционной рекомендацией.
+      Инвестирование сопряжено с рисками, включая риск частичной или полной потери капитала.
+    </div>
+  </div>
+
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){ try{ w.print(); }catch(e){} }, 800);
+  showToast('Откроется окно печати — выберите «Сохранить как PDF»');
+}
+
+/* ===========================================================================
    INIT
    =========================================================================== */
 fetchData();
+fetchBonds().catch(e => console.warn('[AGS] Bonds fetch failed:', e.message));
 </script>
 </body>
 </html>
