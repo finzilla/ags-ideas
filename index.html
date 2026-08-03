@@ -3516,6 +3516,7 @@ function buildBondsTableHTML(bonds) {
       <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
       <th style="text-align:center">YTM</th><th style="text-align:center">Купон</th>
       <th style="text-align:center">Цена</th><th style="text-align:center">Дюрация</th>
+      <th style="text-align:center">Мин. лот</th>
       <th style="text-align:center">Доля</th>
     </tr></thead><tbody>`;
   bonds.forEach(b => {
@@ -3530,6 +3531,7 @@ function buildBondsTableHTML(bonds) {
       <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
       <td style="text-align:center;">${fmtNum(b.price)}</td>
       <td style="text-align:center;">${fmtNum(b.duration)}</td>
+      <td style="text-align:center;font-size:0.8rem;">${b.minLot != null ? b.minLot.toLocaleString('ru-RU') : '—'}</td>
       <td style="text-align:center;">${weightCellHTML('bond', b.isin, b)}</td>
     </tr>`;
   });
@@ -3594,14 +3596,14 @@ function downloadModelHTML() {
   infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
 
   let statRows = '';
-  statRows += `<span class="info-label">Позиций:</span><span class="info-value">${bonds.length + stocks.length}</span>`;
+  statRows += `<span class="info-label">Количество позиций:</span><span class="info-value">${bonds.length + stocks.length}</span>`;
   if (bonds.length) {
-    statRows += `<span class="info-label">Ср. YTM:</span><span class="info-value accent">${ytm != null ? ytm.toFixed(2) + '%' : '—'}</span>`;
-    statRows += `<span class="info-label">Ср. дюрация:</span><span class="info-value">${dur != null ? dur.toFixed(2) : '—'}</span>`;
-    statRows += `<span class="info-label">Ср. рейтинг:</span><span class="info-value">${esc(rating)}</span>`;
+    statRows += `<span class="info-label">Средняя доходность к погашению:</span><span class="info-value accent">${ytm != null ? ytm.toFixed(2) + '%' : '—'}</span>`;
+    statRows += `<span class="info-label">Средняя дюрация:</span><span class="info-value">${dur != null ? dur.toFixed(2) + ' лет' : '—'}</span>`;
+    statRows += `<span class="info-label">Средний кредитный рейтинг:</span><span class="info-value">${esc(rating)}</span>`;
   }
   if (stocks.length) {
-    statRows += `<span class="info-label">Ср. Upside:</span><span class="info-value accent">${upside != null ? (upside >= 0 ? '+' : '') + upside.toFixed(1) + '%' : '—'}</span>`;
+    statRows += `<span class="info-label">Средний потенциал роста:</span><span class="info-value accent">${upside != null ? (upside >= 0 ? '+' : '') + upside.toFixed(1) + '%' : '—'}</span>`;
   }
   statRows += `<span class="info-label">Доля акций:</span><span class="info-value">${stockShare}%</span>`;
   statRows += `<span class="info-label">Доля облигаций:</span><span class="info-value">${bondShare}%</span>`;
@@ -3626,7 +3628,7 @@ function downloadModelHTML() {
   // Horizontal bar chart block (ratings + asset classes)
   const barsEl = document.getElementById('mdlRatingBars');
   const barsHTML = barsEl && barsEl.innerHTML.trim()
-    ? `<div style="margin-top:18px;">
+    ? `<div class="bars-block" style="margin-top:18px;">
         <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Структура по рейтингам и классам активов</h2>
         ${barsEl.innerHTML}
       </div>`
@@ -3650,6 +3652,7 @@ function downloadModelHTML() {
         <td style="text-align:right">${b.duration != null ? b.duration.toFixed(2) : '—'}</td>
         <td style="text-align:center">${b.couponsPerYear != null ? b.couponsPerYear : '—'}</td>
         <td style="text-align:center">${b.callable ? 'Да' : '—'}</td>
+        <td style="text-align:right">${b.minLot != null ? b.minLot.toLocaleString('ru-RU') : '—'}</td>
         <td style="text-align:center;font-weight:600;">${(b._weight||0).toFixed(1)}%</td>
       </tr>`;
     });
@@ -3662,6 +3665,7 @@ function downloadModelHTML() {
         <th style="text-align:right">YTM</th><th style="text-align:right">Купон</th>
         <th style="text-align:right">Цена</th><th style="text-align:right">Дюрация</th>
         <th style="text-align:center">Куп./год</th><th style="text-align:center">Callable</th>
+        <th style="text-align:right">Мин. лот</th>
         <th style="text-align:center">Доля</th>
       </tr></thead>
       <tbody>${rows}</tbody>
@@ -3750,12 +3754,14 @@ function downloadModelHTML() {
 
   .page-break { height: 0; }
 
+  /* Force background colors to print everywhere (bars, badges, table stripes) */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   @media print {
     body { max-width: 100%; }
-    .banner { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .banner { border-radius: 0; }
     .page-break { page-break-after: always; }
+    /* Keep bar chart intact across page breaks */
+    .bars-block { page-break-inside: avoid; }
   }
 </style>
 </head>
