@@ -829,7 +829,16 @@ td.right { text-align: center; }
 </head>
 <body>
 
-<!-- Password protection removed -->
+<!-- ====================== LOGIN OVERLAY ====================== -->
+<div id="loginOverlay" style="position:fixed;inset:0;z-index:99999;background:#0A1638;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;">
+  <img src="assets/logo-light.png" alt="AGS" style="height:44px;margin-bottom:36px;" onerror="this.outerHTML='<div style=&quot;color:#fff;font-size:32px;font-weight:700;letter-spacing:2px;margin-bottom:36px;&quot;>AGS</div>'">
+  <div style="color:#C6CEC8;font-size:14px;margin-bottom:16px;">Введите код доступа</div>
+  <input type="password" id="loginPassword" inputmode="numeric" maxlength="4" autocomplete="off"
+    placeholder="••••"
+    style="width:150px;padding:12px;border:1px solid #C6CEC8;border-radius:8px;background:rgba(255,255,255,0.08);color:#fff;font-size:24px;font-family:'Manrope',sans-serif;text-align:center;letter-spacing:10px;outline:none;">
+  <button id="loginBtn" style="margin-top:16px;width:150px;padding:11px;background:#C6CEC8;color:#0A1638;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;">Войти</button>
+  <div id="loginError" style="color:#F87171;font-size:12px;margin-top:12px;height:18px;"></div>
+</div>
 
 <!-- ====================== HEADER ====================== -->
 <div class="header">
@@ -1285,7 +1294,113 @@ td.right { text-align: center; }
 /* === GOOGLE SHEET ID === */
 const SHEET_ID = '1iJXP-R3brvSTxfTzvljPRtyPoh-HTvAc29KQP7SiaE0';
 
-/* Password protection removed */
+/* ===========================================================================
+   PASSWORD PROTECTION
+   Код доступа берётся из Google Sheets: лист "Config", ячейка A1.
+   Поменял цифры в A1 — новый код действует для всех новых входов.
+   =========================================================================== */
+var SITE_PASSWORD = null;      // подгружается из таблицы
+var PASSWORD_FALLBACK = '8888'; // если таблица недоступна
+var pwLoadPromise = null;
+
+function loadSitePassword() {
+  if (pwLoadPromise) return pwLoadPromise;
+  pwLoadPromise = new Promise(function (resolve) {
+    var cbName = '_agsPwCb';
+    var done = false;
+    var finish = function (val) {
+      if (done) return;
+      done = true;
+      try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+      resolve(val);
+    };
+    var timer = setTimeout(function () {
+      console.warn('[AGS] Config timeout — using fallback code');
+      finish(PASSWORD_FALLBACK);
+    }, 8000);
+
+    window[cbName] = function (resp) {
+      clearTimeout(timer);
+      var out = PASSWORD_FALLBACK;
+      try {
+        var cell = resp && resp.table && resp.table.rows && resp.table.rows[0] &&
+                   resp.table.rows[0].c && resp.table.rows[0].c[0];
+        if (cell) {
+          // Prefer formatted string (f) — keeps leading zeros, avoids 8888.0
+          var raw = (cell.f != null && cell.f !== '') ? cell.f : cell.v;
+          if (raw != null) {
+            var s = String(raw).trim();
+            // strip anything that isn't a digit (spaces, NBSP, quotes)
+            s = s.replace(/[^0-9]/g, '');
+            if (s.length > 0) out = s;
+          }
+        }
+      } catch (e) {
+        console.warn('[AGS] Config parse error:', e);
+      }
+      console.log('[AGS] Access code loaded (' + out.length + ' digits)');
+      finish(out);
+    };
+
+    var s = document.createElement('script');
+    s.src = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+            '/gviz/tq?tqx=responseHandler:' + cbName + '&sheet=Config&range=A1';
+    s.onerror = function () {
+      clearTimeout(timer);
+      console.warn('[AGS] Config fetch failed — using fallback code');
+      finish(PASSWORD_FALLBACK);
+    };
+    document.head.appendChild(s);
+  });
+  return pwLoadPromise;
+}
+
+function unlockSite() {
+  var ov = document.getElementById('loginOverlay');
+  if (ov) ov.style.display = 'none';
+  sessionStorage.setItem('ags_auth', 'ok');
+}
+
+function checkPassword() {
+  var inp = document.getElementById('loginPassword');
+  var err = document.getElementById('loginError');
+  var entered = String(inp.value || '').replace(/[^0-9]/g, '');
+
+  if (!entered) { err.textContent = 'Введите код'; return; }
+
+  err.textContent = 'Проверка...';
+  loadSitePassword().then(function (pw) {
+    SITE_PASSWORD = pw;
+    if (entered === String(pw).trim()) {
+      err.textContent = '';
+      unlockSite();
+    } else {
+      err.textContent = 'Неверный код';
+      inp.value = '';
+      inp.focus();
+    }
+  });
+}
+
+// Wire up events + auto-unlock within the same session
+document.addEventListener('DOMContentLoaded', function () {
+  if (sessionStorage.getItem('ags_auth') === 'ok') { unlockSite(); return; }
+
+  var btn = document.getElementById('loginBtn');
+  var inp = document.getElementById('loginPassword');
+  if (btn) btn.addEventListener('click', checkPassword);
+  if (inp) {
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') checkPassword(); });
+    // Auto-submit once 4 digits are entered
+    inp.addEventListener('input', function () {
+      this.value = this.value.replace(/[^0-9]/g, '');
+      if (this.value.length === 4) checkPassword();
+    });
+    inp.focus();
+  }
+  // Warm up the code in the background
+  loadSitePassword();
+});
 
 /* ===========================================================================
    FALLBACK DATA
