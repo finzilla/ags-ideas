@@ -933,6 +933,7 @@ td.right { text-align: center; }
 <div style="padding:0 24px 12px;display:flex;gap:10px;align-items:center;">
   <button class="portfolio-btn primary" onclick="addFilteredToPortfolio();showToast('Идеи добавлены в портфель');" style="font-size:0.9rem;padding:9px 18px;">📥 Все в портфель</button>
   <button class="portfolio-btn danger" onclick="if(confirm('Очистить весь портфель?')){clearPortfolio();renderTable();}" style="font-size:0.9rem;padding:9px 18px;">🗑 Очистить портфель</button>
+  <button class="portfolio-btn" onclick="downloadIdeasSummary('ideas')" style="font-size:0.9rem;padding:9px 18px;">📄 Описания идей</button>
   <span style="font-size:0.85rem;color:#6B7280;font-weight:500;" id="pfQuickCount"></span>
 </div>
 
@@ -961,6 +962,7 @@ td.right { text-align: center; }
             <th data-col="risk">Риск <span class="sort-arrow">&#9650;</span></th>
             <th data-col="status">Статус <span class="sort-arrow">&#9650;</span></th>
             <th data-col="source">Источник <span class="sort-arrow">&#9650;</span></th>
+            <th class="col-action" style="cursor:default;" title="Документ">📎</th>
             <th class="col-action" style="cursor:default;">➕</th>
           </tr>
         </thead>
@@ -1046,6 +1048,7 @@ td.right { text-align: center; }
     <button class="portfolio-btn" onclick="toggleRebalancePanel()">🔄 Ребалансировать</button>
     <button class="portfolio-btn" onclick="downloadPortfolioCSV()">📥 Скачать портфель</button>
     <button class="portfolio-btn" onclick="downloadPortfolioHTML()">📄 Сводка клиенту</button>
+    <button class="portfolio-btn" onclick="downloadIdeasSummary('portfolio')">📄 Описания идей</button>
     <button class="portfolio-btn danger" onclick="clearPortfolio()">🗑 Очистить портфель</button>
   </div>
 
@@ -1406,35 +1409,35 @@ document.addEventListener('DOMContentLoaded', function () {
    FALLBACK DATA
    =========================================================================== */
 const FALLBACK_DATA = [
-  {date:"2026-03-25",ticker:"HIMX",company:"Himax Technologies Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:13.76,open:8.8,target:13.2,closed:12.7,source:"InveStory",share:"5%",perf:44.32,status:"CLOSED",potential:null,maxReturn:185.11,change:0.62,marketCap:2.39,website:"himax.com.tw",comment:"Идея формата: купить и забыть в долгосрочный портфель. Может сделать x2.",isin:""},
-  {date:"2026-02-06",ticker:"IESC",company:"IES Holdings Inc",industry:"Industrials",country:"Industrials",sector:"Engineering & Construction",currency:"USD",price:665.66,open:408.95,target:540,closed:540,source:"InveStory",share:"5%",perf:32.05,status:"CLOSED",potential:null,maxReturn:96.60,change:2.74,marketCap:13.20,website:"IES.com",comment:"Инфраструктурный игрок в гонке ИИ с рекордным портфелем заказов.",isin:""},
-  {date:"2026-02-20",ticker:"KSPI",company:"Kaspi.kz AO - ADR",industry:"Finance",country:"Finance",sector:"Software - Infrastructure",currency:"USD",price:87.27,open:73.2,target:113,closed:null,source:"InveStory",share:"5%",perf:19.22,status:"ACTIVE",potential:29.48,maxReturn:35.40,change:-2.03,marketCap:16.54,website:"kaspi.kz",comment:"Ожидание возобновления дивидендов. Компания выглядит недооценённой.",isin:""},
-  {date:"2026-04-17",ticker:"GOOGL",company:"Alphabet Inc Class A",industry:"Technology",country:"Technology",sector:"Communication Services",currency:"USD",price:347.90,open:335,target:395,closed:null,source:"InveStory",share:"5%",perf:3.85,status:"ACTIVE",potential:13.54,maxReturn:21.97,change:0.22,marketCap:4234.72,website:"google.com",comment:"Качественный актив для покупки в долгую.",isin:""},
-  {date:"2026-02-10",ticker:"VNOM",company:"Viper Energy Inc",industry:"Oil&Gas",country:"Oil&Gas",sector:"Oil & Gas Midstream",currency:"USD",price:45.08,open:43.55,target:55,closed:null,source:"InveStory",share:"5%",perf:3.51,status:"ACTIVE",potential:22.01,maxReturn:17.41,change:0.49,marketCap:16.08,website:"viperenergy.com",comment:"Меньшая зависимость от цены на нефть, хорошая див доходность.",isin:""},
-  {date:"2026-01-27",ticker:"AMZN",company:"Amazon.com Inc",industry:"Technology",country:"Technology",sector:"Internet Retail",currency:"USD",price:243.75,open:238.08,target:305,closed:null,source:"InveStory",share:"5%",perf:2.38,status:"ACTIVE",potential:25.13,maxReturn:17.00,change:-1.52,marketCap:2621.83,website:"amazon.com",comment:"Упала на повышении планов по капитальным расходам. Отличная возможность для покупки.",isin:""},
-  {date:"2026-03-27",ticker:"CSCO",company:"Cisco Systems Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:112.95,open:82,target:110,closed:125.4,source:"InveStory",share:"5%",perf:52.93,status:"CLOSED",potential:null,maxReturn:58.99,change:0.69,marketCap:444.91,website:"cisco.com",comment:"Тренды разворачиваются благоприятно для этой компании.",isin:""},
-  {date:"2026-03-05",ticker:"NATKY",company:"Kazatomprom (GDR)",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"USD",price:68.00,open:81.2,target:110,closed:null,source:"InveStory",share:"5%",perf:-16.26,status:"ACTIVE",potential:61.76,maxReturn:14.48,change:4.12,marketCap:null,website:"kazatomprom.kz",comment:"Крупнейший в мире производитель первичного урана. 25% мировых поставок.",isin:""},
-  {date:"2026-02-05",ticker:"MSFT",company:"Microsoft Corp",industry:"Technology",country:"Technology",sector:"Software - Infrastructure",currency:"USD",price:388.92,open:392.32,target:550,closed:null,source:"InveStory",share:"5%",perf:-0.87,status:"ACTIVE",potential:41.42,maxReturn:41.58,change:-2.22,marketCap:2892.78,website:"microsoft.com",comment:"P/E ≈ 24, близко к историческому минимуму.",isin:""},
-  {date:"2026-02-03",ticker:"TTWO",company:"Take-Two Interactive",industry:"Technology",country:"Technology",sector:"Electronic Gaming",currency:"USD",price:232.86,open:206.61,target:300,closed:null,source:"InveStory",share:"5%",perf:12.71,status:"ACTIVE",potential:28.83,maxReturn:28.58,change:-1.30,marketCap:43.35,website:"take2games.com",comment:"ИИ ускоряет прототипирование и тестирование — позитив для игровых компаний.",isin:""},
-  {date:"2026-02-26",ticker:"MELI",company:"MercadoLibre Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:1806.59,open:1790,target:2800,closed:null,source:"InveStory",share:"5%",perf:0.93,status:"ACTIVE",potential:54.99,maxReturn:42.37,change:-0.88,marketCap:91.58,website:"mercadolibre.com",comment:"Упала на 37% от максимума. Хорошая точка для набора позиции.",isin:""},
-  {date:"2026-01-20",ticker:"CPNG",company:"Coupang Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:15.77,open:20.45,target:32,closed:null,source:"InveStory",share:"5%",perf:-22.89,status:"ACTIVE",potential:102.92,maxReturn:66.65,change:0.03,marketCap:28.31,website:"coupang.com",comment:"Компания с высокой бетой. При коррекциях падает сильнее остальных.",isin:""},
-  {date:"2026-01-30",ticker:"BRX",company:"Brixmor Property Group",industry:"Real Estate",country:"Real Estate",sector:"REIT - Retail",currency:"USD",price:32.64,open:30,target:35,closed:null,source:"ДУА",share:"5%",perf:8.80,status:"ACTIVE",potential:7.23,maxReturn:9.53,change:-0.15,marketCap:10.02,website:"brixmor.com",comment:"Крупнейший владелец открытых торговых центров в США. 350+ объектов.",isin:""},
-  {date:"2026-04-06",ticker:"DOW",company:"Dow Inc",industry:"Materials",country:"Materials",sector:"Chemicals",currency:"USD",price:31.38,open:40.7,target:55,closed:null,source:"InveStory",share:"5%",perf:-22.90,status:"ACTIVE",potential:75.27,maxReturn:5.01,change:2.99,marketCap:22.53,website:"dow.com",comment:"Бенефициар конфликта на Ближнем Востоке. Заходить лесенкой.",isin:""},
-  {date:"2026-03-13",ticker:"KWEB",company:"KraneShares CSI China Internet ETF",industry:"ETF",country:"ETF",sector:"China Internet",currency:"USD",price:26.52,open:30,target:39,closed:null,source:"InveStory",share:"5%",perf:-11.60,status:"ACTIVE",potential:47.06,maxReturn:44.57,change:-1.87,marketCap:null,website:"kraneshares.com",comment:"Ключевой ETF на китайских технологических гигантов.",isin:""},
-  {date:"2026-01-29",ticker:"SPOT",company:"Spotify Technology SA",industry:"Technology",country:"Technology",sector:"Internet Content",currency:"USD",price:475.78,open:462,target:700,closed:null,source:"ДУА",share:"5%",perf:2.98,status:"ACTIVE",potential:47.13,maxReturn:61.97,change:-3.54,marketCap:97.83,website:"spotify.com",comment:"Мировой лидер в сфере аудио-стриминга.",isin:""},
-  {date:"2026-02-17",ticker:"ERO",company:"Ero Copper Corp",industry:"Materials",country:"Materials",sector:"Copper",currency:"USD",price:27.47,open:29.93,target:45,closed:null,source:"InveStory",share:"5%",perf:-8.22,status:"ACTIVE",potential:63.82,maxReturn:32.98,change:2.23,marketCap:4.05,website:"erocopper.com",comment:"Коррекция 30% от максимумов. Потенциал роста меди сохраняется.",isin:""},
-  {date:"2026-04-30",ticker:"V",company:"Visa Inc",industry:"Fintech",country:"Fintech",sector:"Credit Services",currency:"USD",price:355.56,open:330,target:410,closed:null,source:"InveStory",share:"5%",perf:7.75,status:"ACTIVE",potential:15.31,maxReturn:10.65,change:-0.07,marketCap:669.79,website:"visa.com",comment:"Ставка на рост глобальных цифровых платежей.",isin:""},
-  {date:"2026-05-05",ticker:"IBIT",company:"iShares Bitcoin Trust ETF",industry:"Crypto",country:"Crypto",sector:"Bitcoin ETF",currency:"USD",price:37.39,open:45.4,target:60,closed:null,source:"InveStory",share:"5%",perf:-17.64,status:"ACTIVE",potential:60.47,maxReturn:58.19,change:-0.76,marketCap:169.62,website:"BTC.com",comment:"Крупнейший в мире биржевой фонд на биткоин от BlackRock.",isin:""},
-  {date:"2026-05-08",ticker:"CRCL",company:"Circle Internet Group",industry:"Crypto",country:"Crypto",sector:"Capital Markets",currency:"USD",price:67.87,open:113.25,target:155,closed:null,source:"InveStory",share:"5%",perf:-40.07,status:"ACTIVE",potential:128.38,maxReturn:78.81,change:-4.52,marketCap:16.88,website:"circle.com",comment:"Компания, выпускающая стейблкоин USDC.",isin:""},
-  {date:"2026-05-20",ticker:"NOK",company:"Nokia Oyj",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:10.39,open:13.67,target:18,closed:null,source:"InveStory",share:"5%",perf:-23.99,status:"ACTIVE",potential:73.24,maxReturn:27.65,change:-2.26,marketCap:60.41,website:"nokia.com",comment:"Строитель критической инфраструктуры для сетей нового поколения.",isin:""},
-  {date:"2026-05-28",ticker:"COPX",company:"Global X Copper Miners ETF",industry:"Materials",country:"Materials",sector:"Copper Mining",currency:"USD",price:80.33,open:83,target:110,closed:null,source:"InveStory",share:"5%",perf:-3.22,status:"ACTIVE",potential:36.94,maxReturn:20.47,change:2.67,marketCap:null,website:"globalxetfs.com",comment:"ETF на крупнейших медедобытчиков мира.",isin:""},
-  {date:"2026-06-01",ticker:"ARKG",company:"ARK Genomic Revolution ETF",industry:"Healthcare",country:"Healthcare",sector:"Genomics",currency:"USD",price:33.40,open:34,target:45,closed:null,source:"InveStory",share:"5%",perf:-1.76,status:"ACTIVE",potential:34.73,maxReturn:-75.74,change:-0.60,marketCap:null,website:"ark-funds.com",comment:"Генная терапия, редактирование ДНК, ИИ в разработке лекарств.",isin:""},
-  {date:"2026-06-02",ticker:"TSEM",company:"Tower Semiconductor Ltd",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:250.54,open:228,target:350,closed:null,source:"ДУА",share:"5%",perf:9.89,status:"ACTIVE",potential:39.70,maxReturn:40.32,change:-0.15,marketCap:28.40,website:"towersemi.com",comment:"Монополист в ИИ-инфраструктуре. Потенциал роста 2-3x.",isin:""},
-  {date:"2026-06-03",ticker:"CLF",company:"Cleveland-Cliffs Inc",industry:"Materials",country:"Materials",sector:"Steel",currency:"USD",price:9.53,open:12.5,target:17,closed:null,source:"InveStory",share:"5%",perf:-23.76,status:"ACTIVE",potential:78.38,maxReturn:33.60,change:2.97,marketCap:5.43,website:"clevelandcliffs.com",comment:"Ставка на восстановление американской стали и промышленную политику США.",isin:""},
-  {date:"2026-06-04",ticker:"AVGO",company:"Broadcom Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:393.30,open:392.9,target:500,closed:360,source:"InveStory",share:"5%",perf:-8.37,status:"CLOSED",potential:null,maxReturn:25.99,change:1.76,marketCap:1867.54,website:"broadcom.com",comment:"Лидер в полупроводниках и инфраструктурном софте для ИИ.",isin:""},
-  {date:"2026-06-25",ticker:"003816",company:"CGN Power Co Ltd",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"CNY",price:4.11,open:3.96,target:6,closed:null,source:"AGS",share:"5%",perf:3.79,status:"ACTIVE",potential:45.99,maxReturn:24.75,change:1.23,marketCap:219.64,website:"en.cgnpc.com.cn",comment:"Крупнейший оператор атомной генерации в Китае. 55% атомной мощности.",isin:""},
-  {date:"2026-06-26",ticker:"VISN",company:"Vistance Networks Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:12.15,open:12,target:15,closed:null,source:"InveStory",share:"5%",perf:1.25,status:"ACTIVE",potential:23.46,maxReturn:66.25,change:-2.64,marketCap:2.75,website:"vistancenetworks.com",comment:"Бывшая Commscope. Реструктуризация: продажа активов, гашение долга.",isin:""},
-  {date:"2026-06-27",ticker:"RKT",company:"Rocket Companies Inc",industry:"Fintech",country:"Fintech",sector:"Mortgage Finance",currency:"USD",price:13.49,open:14.6,target:19,closed:null,source:"InveStory",share:"5%",perf:-7.60,status:"ACTIVE",potential:40.85,maxReturn:66.85,change:-1.21,marketCap:38.14,website:"rocketcompanies.com",comment:"Крупнейшая ипотечная и финтех-группа США. Rocket Mortgage, Redfin, Mr. Cooper.",isin:""}
+  {date:"2026-03-25",ticker:"HIMX",company:"Himax Technologies Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:13.76,open:8.8,target:13.2,closed:12.7,source:"InveStory",share:"5%",perf:44.32,status:"CLOSED",potential:null,maxReturn:185.11,change:0.62,marketCap:2.39,website:"himax.com.tw",comment:"Идея формата: купить и забыть в долгосрочный портфель. Может сделать x2.",isin:"",doc:""},
+  {date:"2026-02-06",ticker:"IESC",company:"IES Holdings Inc",industry:"Industrials",country:"Industrials",sector:"Engineering & Construction",currency:"USD",price:665.66,open:408.95,target:540,closed:540,source:"InveStory",share:"5%",perf:32.05,status:"CLOSED",potential:null,maxReturn:96.60,change:2.74,marketCap:13.20,website:"IES.com",comment:"Инфраструктурный игрок в гонке ИИ с рекордным портфелем заказов.",isin:"",doc:""},
+  {date:"2026-02-20",ticker:"KSPI",company:"Kaspi.kz AO - ADR",industry:"Finance",country:"Finance",sector:"Software - Infrastructure",currency:"USD",price:87.27,open:73.2,target:113,closed:null,source:"InveStory",share:"5%",perf:19.22,status:"ACTIVE",potential:29.48,maxReturn:35.40,change:-2.03,marketCap:16.54,website:"kaspi.kz",comment:"Ожидание возобновления дивидендов. Компания выглядит недооценённой.",isin:"",doc:""},
+  {date:"2026-04-17",ticker:"GOOGL",company:"Alphabet Inc Class A",industry:"Technology",country:"Technology",sector:"Communication Services",currency:"USD",price:347.90,open:335,target:395,closed:null,source:"InveStory",share:"5%",perf:3.85,status:"ACTIVE",potential:13.54,maxReturn:21.97,change:0.22,marketCap:4234.72,website:"google.com",comment:"Качественный актив для покупки в долгую.",isin:"",doc:""},
+  {date:"2026-02-10",ticker:"VNOM",company:"Viper Energy Inc",industry:"Oil&Gas",country:"Oil&Gas",sector:"Oil & Gas Midstream",currency:"USD",price:45.08,open:43.55,target:55,closed:null,source:"InveStory",share:"5%",perf:3.51,status:"ACTIVE",potential:22.01,maxReturn:17.41,change:0.49,marketCap:16.08,website:"viperenergy.com",comment:"Меньшая зависимость от цены на нефть, хорошая див доходность.",isin:"",doc:""},
+  {date:"2026-01-27",ticker:"AMZN",company:"Amazon.com Inc",industry:"Technology",country:"Technology",sector:"Internet Retail",currency:"USD",price:243.75,open:238.08,target:305,closed:null,source:"InveStory",share:"5%",perf:2.38,status:"ACTIVE",potential:25.13,maxReturn:17.00,change:-1.52,marketCap:2621.83,website:"amazon.com",comment:"Упала на повышении планов по капитальным расходам. Отличная возможность для покупки.",isin:"",doc:""},
+  {date:"2026-03-27",ticker:"CSCO",company:"Cisco Systems Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:112.95,open:82,target:110,closed:125.4,source:"InveStory",share:"5%",perf:52.93,status:"CLOSED",potential:null,maxReturn:58.99,change:0.69,marketCap:444.91,website:"cisco.com",comment:"Тренды разворачиваются благоприятно для этой компании.",isin:"",doc:""},
+  {date:"2026-03-05",ticker:"NATKY",company:"Kazatomprom (GDR)",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"USD",price:68.00,open:81.2,target:110,closed:null,source:"InveStory",share:"5%",perf:-16.26,status:"ACTIVE",potential:61.76,maxReturn:14.48,change:4.12,marketCap:null,website:"kazatomprom.kz",comment:"Крупнейший в мире производитель первичного урана. 25% мировых поставок.",isin:"",doc:""},
+  {date:"2026-02-05",ticker:"MSFT",company:"Microsoft Corp",industry:"Technology",country:"Technology",sector:"Software - Infrastructure",currency:"USD",price:388.92,open:392.32,target:550,closed:null,source:"InveStory",share:"5%",perf:-0.87,status:"ACTIVE",potential:41.42,maxReturn:41.58,change:-2.22,marketCap:2892.78,website:"microsoft.com",comment:"P/E ≈ 24, близко к историческому минимуму.",isin:"",doc:""},
+  {date:"2026-02-03",ticker:"TTWO",company:"Take-Two Interactive",industry:"Technology",country:"Technology",sector:"Electronic Gaming",currency:"USD",price:232.86,open:206.61,target:300,closed:null,source:"InveStory",share:"5%",perf:12.71,status:"ACTIVE",potential:28.83,maxReturn:28.58,change:-1.30,marketCap:43.35,website:"take2games.com",comment:"ИИ ускоряет прототипирование и тестирование — позитив для игровых компаний.",isin:"",doc:""},
+  {date:"2026-02-26",ticker:"MELI",company:"MercadoLibre Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:1806.59,open:1790,target:2800,closed:null,source:"InveStory",share:"5%",perf:0.93,status:"ACTIVE",potential:54.99,maxReturn:42.37,change:-0.88,marketCap:91.58,website:"mercadolibre.com",comment:"Упала на 37% от максимума. Хорошая точка для набора позиции.",isin:"",doc:""},
+  {date:"2026-01-20",ticker:"CPNG",company:"Coupang Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:15.77,open:20.45,target:32,closed:null,source:"InveStory",share:"5%",perf:-22.89,status:"ACTIVE",potential:102.92,maxReturn:66.65,change:0.03,marketCap:28.31,website:"coupang.com",comment:"Компания с высокой бетой. При коррекциях падает сильнее остальных.",isin:"",doc:""},
+  {date:"2026-01-30",ticker:"BRX",company:"Brixmor Property Group",industry:"Real Estate",country:"Real Estate",sector:"REIT - Retail",currency:"USD",price:32.64,open:30,target:35,closed:null,source:"ДУА",share:"5%",perf:8.80,status:"ACTIVE",potential:7.23,maxReturn:9.53,change:-0.15,marketCap:10.02,website:"brixmor.com",comment:"Крупнейший владелец открытых торговых центров в США. 350+ объектов.",isin:"",doc:""},
+  {date:"2026-04-06",ticker:"DOW",company:"Dow Inc",industry:"Materials",country:"Materials",sector:"Chemicals",currency:"USD",price:31.38,open:40.7,target:55,closed:null,source:"InveStory",share:"5%",perf:-22.90,status:"ACTIVE",potential:75.27,maxReturn:5.01,change:2.99,marketCap:22.53,website:"dow.com",comment:"Бенефициар конфликта на Ближнем Востоке. Заходить лесенкой.",isin:"",doc:""},
+  {date:"2026-03-13",ticker:"KWEB",company:"KraneShares CSI China Internet ETF",industry:"ETF",country:"ETF",sector:"China Internet",currency:"USD",price:26.52,open:30,target:39,closed:null,source:"InveStory",share:"5%",perf:-11.60,status:"ACTIVE",potential:47.06,maxReturn:44.57,change:-1.87,marketCap:null,website:"kraneshares.com",comment:"Ключевой ETF на китайских технологических гигантов.",isin:"",doc:""},
+  {date:"2026-01-29",ticker:"SPOT",company:"Spotify Technology SA",industry:"Technology",country:"Technology",sector:"Internet Content",currency:"USD",price:475.78,open:462,target:700,closed:null,source:"ДУА",share:"5%",perf:2.98,status:"ACTIVE",potential:47.13,maxReturn:61.97,change:-3.54,marketCap:97.83,website:"spotify.com",comment:"Мировой лидер в сфере аудио-стриминга.",isin:"",doc:""},
+  {date:"2026-02-17",ticker:"ERO",company:"Ero Copper Corp",industry:"Materials",country:"Materials",sector:"Copper",currency:"USD",price:27.47,open:29.93,target:45,closed:null,source:"InveStory",share:"5%",perf:-8.22,status:"ACTIVE",potential:63.82,maxReturn:32.98,change:2.23,marketCap:4.05,website:"erocopper.com",comment:"Коррекция 30% от максимумов. Потенциал роста меди сохраняется.",isin:"",doc:""},
+  {date:"2026-04-30",ticker:"V",company:"Visa Inc",industry:"Fintech",country:"Fintech",sector:"Credit Services",currency:"USD",price:355.56,open:330,target:410,closed:null,source:"InveStory",share:"5%",perf:7.75,status:"ACTIVE",potential:15.31,maxReturn:10.65,change:-0.07,marketCap:669.79,website:"visa.com",comment:"Ставка на рост глобальных цифровых платежей.",isin:"",doc:""},
+  {date:"2026-05-05",ticker:"IBIT",company:"iShares Bitcoin Trust ETF",industry:"Crypto",country:"Crypto",sector:"Bitcoin ETF",currency:"USD",price:37.39,open:45.4,target:60,closed:null,source:"InveStory",share:"5%",perf:-17.64,status:"ACTIVE",potential:60.47,maxReturn:58.19,change:-0.76,marketCap:169.62,website:"BTC.com",comment:"Крупнейший в мире биржевой фонд на биткоин от BlackRock.",isin:"",doc:""},
+  {date:"2026-05-08",ticker:"CRCL",company:"Circle Internet Group",industry:"Crypto",country:"Crypto",sector:"Capital Markets",currency:"USD",price:67.87,open:113.25,target:155,closed:null,source:"InveStory",share:"5%",perf:-40.07,status:"ACTIVE",potential:128.38,maxReturn:78.81,change:-4.52,marketCap:16.88,website:"circle.com",comment:"Компания, выпускающая стейблкоин USDC.",isin:"",doc:""},
+  {date:"2026-05-20",ticker:"NOK",company:"Nokia Oyj",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:10.39,open:13.67,target:18,closed:null,source:"InveStory",share:"5%",perf:-23.99,status:"ACTIVE",potential:73.24,maxReturn:27.65,change:-2.26,marketCap:60.41,website:"nokia.com",comment:"Строитель критической инфраструктуры для сетей нового поколения.",isin:"",doc:""},
+  {date:"2026-05-28",ticker:"COPX",company:"Global X Copper Miners ETF",industry:"Materials",country:"Materials",sector:"Copper Mining",currency:"USD",price:80.33,open:83,target:110,closed:null,source:"InveStory",share:"5%",perf:-3.22,status:"ACTIVE",potential:36.94,maxReturn:20.47,change:2.67,marketCap:null,website:"globalxetfs.com",comment:"ETF на крупнейших медедобытчиков мира.",isin:"",doc:""},
+  {date:"2026-06-01",ticker:"ARKG",company:"ARK Genomic Revolution ETF",industry:"Healthcare",country:"Healthcare",sector:"Genomics",currency:"USD",price:33.40,open:34,target:45,closed:null,source:"InveStory",share:"5%",perf:-1.76,status:"ACTIVE",potential:34.73,maxReturn:-75.74,change:-0.60,marketCap:null,website:"ark-funds.com",comment:"Генная терапия, редактирование ДНК, ИИ в разработке лекарств.",isin:"",doc:""},
+  {date:"2026-06-02",ticker:"TSEM",company:"Tower Semiconductor Ltd",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:250.54,open:228,target:350,closed:null,source:"ДУА",share:"5%",perf:9.89,status:"ACTIVE",potential:39.70,maxReturn:40.32,change:-0.15,marketCap:28.40,website:"towersemi.com",comment:"Монополист в ИИ-инфраструктуре. Потенциал роста 2-3x.",isin:"",doc:""},
+  {date:"2026-06-03",ticker:"CLF",company:"Cleveland-Cliffs Inc",industry:"Materials",country:"Materials",sector:"Steel",currency:"USD",price:9.53,open:12.5,target:17,closed:null,source:"InveStory",share:"5%",perf:-23.76,status:"ACTIVE",potential:78.38,maxReturn:33.60,change:2.97,marketCap:5.43,website:"clevelandcliffs.com",comment:"Ставка на восстановление американской стали и промышленную политику США.",isin:"",doc:""},
+  {date:"2026-06-04",ticker:"AVGO",company:"Broadcom Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:393.30,open:392.9,target:500,closed:360,source:"InveStory",share:"5%",perf:-8.37,status:"CLOSED",potential:null,maxReturn:25.99,change:1.76,marketCap:1867.54,website:"broadcom.com",comment:"Лидер в полупроводниках и инфраструктурном софте для ИИ.",isin:"",doc:""},
+  {date:"2026-06-25",ticker:"003816",company:"CGN Power Co Ltd",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"CNY",price:4.11,open:3.96,target:6,closed:null,source:"AGS",share:"5%",perf:3.79,status:"ACTIVE",potential:45.99,maxReturn:24.75,change:1.23,marketCap:219.64,website:"en.cgnpc.com.cn",comment:"Крупнейший оператор атомной генерации в Китае. 55% атомной мощности.",isin:"",doc:""},
+  {date:"2026-06-26",ticker:"VISN",company:"Vistance Networks Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:12.15,open:12,target:15,closed:null,source:"InveStory",share:"5%",perf:1.25,status:"ACTIVE",potential:23.46,maxReturn:66.25,change:-2.64,marketCap:2.75,website:"vistancenetworks.com",comment:"Бывшая Commscope. Реструктуризация: продажа активов, гашение долга.",isin:"",doc:""},
+  {date:"2026-06-27",ticker:"RKT",company:"Rocket Companies Inc",industry:"Fintech",country:"Fintech",sector:"Mortgage Finance",currency:"USD",price:13.49,open:14.6,target:19,closed:null,source:"InveStory",share:"5%",perf:-7.60,status:"ACTIVE",potential:40.85,maxReturn:66.85,change:-1.21,marketCap:38.14,website:"rocketcompanies.com",comment:"Крупнейшая ипотечная и финтех-группа США. Rocket Mortgage, Redfin, Mr. Cooper.",isin:"",doc:""}
 ];
 
 /* ===========================================================================
@@ -1556,7 +1559,8 @@ function csvToData(csvText) {
       website: col(cols, 'Website'),
       comment: col(cols, 'Comments'),
       isin: col(cols, 'ISIN'),
-      model: col(cols, 'Model')
+      model: col(cols, 'Model'),
+      doc: col(cols, 'Doc')
     });
   }
   return data;
@@ -1743,6 +1747,7 @@ function gvizToData(table) {
       comment: gvStr(row, 'Comments'),
       isin: gvStr(row, 'ISIN'),
       model: gvStr(row, 'Model'),
+      doc: gvStr(row, 'Doc'),
       sheetWeight: gvNum(row, 'Доля')
     });
   }
@@ -1994,6 +1999,28 @@ function fmtPrice(val) {
   if (val == null) return '—';
   return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+/* ---- Document links (Google Drive) ---- */
+function docFileId(url) {
+  if (!url) return null;
+  var m = String(url).match(/\/file\/d\/([A-Za-z0-9_-]+)/);
+  if (m) return m[1];
+  m = String(url).match(/[?&]id=([A-Za-z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+function hasDoc(item) {
+  return !!(item && item.doc && String(item.doc).trim());
+}
+function docViewUrl(item) {
+  if (!hasDoc(item)) return null;
+  var id = docFileId(item.doc);
+  return id ? 'https://drive.google.com/file/d/' + id + '/view' : String(item.doc).trim();
+}
+function docDownloadUrl(item) {
+  if (!hasDoc(item)) return null;
+  var id = docFileId(item.doc);
+  return id ? 'https://drive.google.com/uc?export=download&id=' + id : String(item.doc).trim();
+}
+
 function logoUrl(ticker, website) {
   // Use financialmodelingprep for stock logos by ticker
   // For tickers with ":" (like SHE:003816) or non-standard, fallback to website favicon
@@ -2022,7 +2049,7 @@ function sourceBadgeClass(src) {
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:#6B7280;">Нет данных, соответствующих фильтрам</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:40px;color:#6B7280;">Нет данных, соответствующих фильтрам</td></tr>';
     return;
   }
   let html = '';
@@ -2047,6 +2074,9 @@ function renderTable() {
       <td><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
       <td><span class="badge ${item.status === 'ACTIVE' ? 'badge-active' : 'badge-closed'}">${item.status === 'ACTIVE' ? 'Активна' : 'Закрыта'}</span></td>
       <td><span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span></td>
+      <td class="col-action">${hasDoc(item)
+        ? `<a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" title="Открыть документ" onclick="event.stopPropagation()" style="text-decoration:none;font-size:1rem;">📎</a>`
+        : '<span style="color:#D1D5DB;font-size:0.9rem;">–</span>'}</td>
       <td class="col-action">${pfBtnHtml}</td>
     </tr>`;
   });
@@ -2182,6 +2212,13 @@ function showDetail(item) {
     </a>`;
   }
 
+  let docBtn = '';
+  if (hasDoc(item)) {
+    docBtn = `<a class="btn-website" href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" style="background:#8B6A4E;color:#fff;border-color:#8B6A4E;">
+      📎 Открыть документ
+    </a>`;
+  }
+
   // Portfolio button for detail panel
   const inPf = isInPortfolio(item.ticker);
   let pfDetailBtn = '';
@@ -2203,6 +2240,7 @@ function showDetail(item) {
     <div class="detail-big-label">${bigLabel}</div>
     <div class="detail-grid">${metricsHTML}</div>
     ${item.comment ? `<div class="detail-comment-title">Комментарий</div><div class="detail-comment">${esc(item.comment)}</div>` : ''}
+    ${docBtn}
     ${websiteBtn}
     <div style="margin-top:8px;">${pfDetailBtn}</div>`;
 }
@@ -2782,6 +2820,7 @@ function renderPortfolio() {
       <th style="text-align:center">Доходность идеи</th>
       <th style="text-align:center">Доля</th>
       <th style="text-align:center">Риск</th>
+      <th style="text-align:center" title="Документ">📎</th>
       <th style="text-align:center">Действие</th>
     </tr></thead><tbody>`;
 
@@ -2817,6 +2856,9 @@ function renderPortfolio() {
         </div>
       </td>
       <td style="text-align:center"><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
+      <td style="text-align:center">${hasDoc(item)
+        ? `<a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" title="Открыть документ" style="text-decoration:none;">📎</a>`
+        : '<span style="color:#D1D5DB;">–</span>'}</td>
       <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('${esc(item.ticker)}');renderPortfolio();">✕ Убрать</button></td>
     </tr>`;
   });
@@ -3043,6 +3085,147 @@ function downloadPortfolioHTML() {
   w.document.close();
   // Auto-trigger print dialog for PDF save
   setTimeout(function() { try { w.print(); } catch(e) {} }, 800);
+  showToast('Откроется окно печати — выберите «Сохранить как PDF»');
+}
+
+/* ---------------------------------------------------------------------------
+   PRINTABLE IDEAS SUMMARY — «Описания идей»
+   source: 'ideas' (current filter) | 'portfolio' (visible portfolio)
+   --------------------------------------------------------------------------- */
+function downloadIdeasSummary(source) {
+  let items;
+  if (source === 'portfolio') {
+    const pf = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
+    items = pf.map(p => p.live);
+  } else {
+    items = filteredData.slice();
+  }
+  if (!items.length) { showToast('Нет идей для выгрузки'); return; }
+
+  const dateStr = new Date().toLocaleDateString('ru-RU');
+
+  const logoURL = window.location.href.includes('github.io')
+    ? 'https://finzilla.github.io/ags-ideas/assets/logo-light.png'
+    : 'assets/logo-light.png';
+
+  let cards = '';
+  items.forEach(item => {
+    const upVal = item.status === 'CLOSED' ? item.perf : item.potential;
+
+    let metrics = '';
+    if (item.price != null)  metrics += `<span>Цена: <b>${fmtPrice(item.price)}</b></span>`;
+    if (item.target != null) metrics += `<span>Цель: <b>${fmtPrice(item.target)}</b></span>`;
+    if (upVal != null)       metrics += `<span>Upside: <b class="${pctClass(upVal)==='positive'?'pos':'neg'}">${fmtPct(upVal)}</b></span>`;
+    if (item.perf != null)   metrics += `<span>Доходность идеи: <b class="${pctClass(item.perf)==='positive'?'pos':'neg'}">${fmtPct(item.perf)}</b></span>`;
+    if (item._risk)          metrics += `<span>Риск: <b>${esc(riskLabel(item._risk).replace(/[🟢🟡🔴⛔]\s?/g,''))}</b></span>`;
+    if (item._date)          metrics += `<span>Дата идеи: <b>${formatDate(item._date)}</b></span>`;
+
+    const badges = [item.sector, item.country, item.currency].filter(Boolean).map(esc).join(' · ');
+
+    const docLine = hasDoc(item)
+      ? `<div class="idea-doc">📎 Документ: <a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener">ссылка</a></div>`
+      : '';
+
+    cards += `<div class="idea-card">
+      <div class="idea-head">
+        <div class="idea-ticker">${esc(item.ticker)}</div>
+        <div class="idea-company">${esc(item.company)}</div>
+        <div class="idea-badges">${badges}</div>
+      </div>
+      <div class="idea-metrics">${metrics}</div>
+      ${item.comment ? `<div class="idea-text">${esc(item.comment)}</div>` : ''}
+      ${docLine}
+    </div>`;
+  });
+
+  const sourceLine = source === 'portfolio'
+    ? `<span class="info-label">Источник:</span><span class="info-value">портфель клиента</span>`
+    : '';
+
+  let infoRows = '';
+  infoRows += `<span class="info-label">Идей в подборке:</span><span class="info-value accent">${items.length}</span>`;
+  infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
+  infoRows += sourceLine;
+
+  const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Инвестиционные идеи — AGS</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Manrope', sans-serif; color: #0A1638; max-width: 960px; margin: 0 auto; }
+
+  .banner {
+    background: linear-gradient(135deg, #A0785A 0%, #B8956E 30%, #A07858 50%, #C4A882 70%, #A89070 100%);
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0 0 12px 12px;
+  }
+  .banner img { height: 36px; }
+  .banner-text { color: rgba(255,255,255,0.7); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .content { padding: 24px 36px; }
+
+  .section-title { font-size: 13px; color: #8B6A4E; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .section-title:first-child { margin-top: 0; }
+  .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12px; margin-bottom: 20px; max-width: 340px; }
+  .info-label { color: #6B7280; }
+  .info-value { font-weight: 600; }
+  .info-value.accent { color: #8B6A4E; }
+
+  .idea-card { border: 1px solid #E5E7EB; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; page-break-inside: avoid; }
+  .idea-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #F3F4F6; }
+  .idea-ticker { font-size: 15px; font-weight: 700; color: #0A1638; }
+  .idea-company { font-size: 13px; color: #0A1638; }
+  .idea-badges { font-size: 10px; color: #8B6A4E; margin-left: auto; text-transform: uppercase; letter-spacing: 0.4px; }
+  .idea-metrics { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: #6B7280; margin-bottom: 8px; }
+  .idea-metrics b { color: #0A1638; }
+  .idea-metrics .pos { color: #16A34A; }
+  .idea-metrics .neg { color: #DC2626; }
+  .idea-text { font-size: 11.5px; line-height: 1.55; color: #1F2937; white-space: pre-wrap; }
+  .idea-doc { margin-top: 8px; font-size: 10.5px; color: #8B6A4E; }
+  .idea-doc a { color: #8B6A4E; }
+
+  .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
+
+  /* Force background colors to print everywhere */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @media print {
+    body { max-width: 100%; }
+    .banner { border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <img src="${logoURL}" alt="AGS" onerror="this.parentElement.innerHTML='<div style=\\'color:white;font-size:24px;font-weight:700;\\'>AGS</div><div class=\\'banner-text\\'>Abylai Global Solutions</div>'">
+    <div class="banner-text">Инвестиционные идеи</div>
+  </div>
+
+  <div class="content">
+    <div class="section-title">Инвестиционные идеи</div>
+    <div class="info-grid">${infoRows}</div>
+
+    ${cards}
+
+    <div class="footer">
+      Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
+      Документ подготовлен автоматически и не является индивидуальной инвестиционной рекомендацией.
+      Инвестирование сопряжено с рисками, включая риск частичной или полной потери капитала.
+    </div>
+  </div>
+
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){ try{ w.print(); }catch(e){} }, 800);
   showToast('Откроется окно печати — выберите «Сохранить как PDF»');
 }
 
