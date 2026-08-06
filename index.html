@@ -184,9 +184,7 @@ body {
   border-radius: 50%;
   display: inline-block;
 }
-.source-dot.investory { background: var(--primary); }
-.source-dot.dua { background: var(--secondary); }
-.source-dot.ags { background: var(--positive); }
+/* Цвет точки задаётся инлайн из палитры источников */
 
 /* ====================== MAIN LAYOUT ====================== */
 .main-container {
@@ -280,9 +278,8 @@ td.right { text-align: center; }
 .badge-high { background: #FEE2E2; color: #991B1B; }
 .badge-stoploss { background: #0A1638; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
 @keyframes pulse-stoploss { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
-.badge-investory { background: #8B6A4E; color: #fff; }
-.badge-dua { background: #0A1638; color: #fff; }
-.badge-ags { background: #C6CEC8; color: #0A1638; }
+/* Бейдж источника — цвета назначаются инлайн из палитры */
+.badge-source { }
 
 /* ====================== DETAIL PANEL ====================== */
 .detail-panel {
@@ -884,9 +881,7 @@ td.right { text-align: center; }
   <div class="filter-group">
     <span class="filter-label">Источник:</span>
     <button class="filter-btn active" data-filter="source" data-value="all">Все</button>
-    <button class="filter-btn" data-filter="source" data-value="InveStory">InveStory</button>
-    <button class="filter-btn" data-filter="source" data-value="ДУА">ДУА</button>
-    <button class="filter-btn" data-filter="source" data-value="AGS">AGS</button>
+    <span id="sourceFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
   </div>
 
   <div class="filter-group">
@@ -1024,9 +1019,7 @@ td.right { text-align: center; }
     <div class="filter-group">
       <span class="filter-label">Источник:</span>
       <button class="filter-btn pf-filter active" data-pffilter="source" data-value="all" onclick="togglePfFilter(this)">Все</button>
-      <button class="filter-btn pf-filter" data-pffilter="source" data-value="InveStory" onclick="togglePfFilter(this)">InveStory</button>
-      <button class="filter-btn pf-filter" data-pffilter="source" data-value="ДУА" onclick="togglePfFilter(this)">ДУА</button>
-      <button class="filter-btn pf-filter" data-pffilter="source" data-value="AGS" onclick="togglePfFilter(this)">AGS</button>
+      <span id="pfSourceFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
     </div>
     <div class="filter-group">
       <span class="filter-label">Статус:</span>
@@ -1296,6 +1289,44 @@ td.right { text-align: center; }
 <script>
 /* === GOOGLE SHEET ID === */
 const SHEET_ID = '1iJXP-R3brvSTxfTzvljPRtyPoh-HTvAc29KQP7SiaE0';
+
+/* ===========================================================================
+   SOURCES — определяются автоматически из данных Google Sheets
+   =========================================================================== */
+let allSources = [];   // ['Name1', 'Name2', ...] в порядке первого появления
+
+/* Фиксированная палитра, назначается по индексу — фирменные цвета */
+const SOURCE_PALETTE = [
+  { bg: '#8B6A4E', fg: '#FFFFFF' },  // brown
+  { bg: '#0A1638', fg: '#FFFFFF' },  // navy
+  { bg: '#C6CEC8', fg: '#0A1638' },  // sage
+  { bg: '#1A2D5A', fg: '#FFFFFF' },  // deep blue
+  { bg: '#B08968', fg: '#FFFFFF' },  // light brown
+  { bg: '#7A8D80', fg: '#FFFFFF' },  // grey-green
+  { bg: '#2A3D6A', fg: '#FFFFFF' },
+  { bg: '#A0845E', fg: '#FFFFFF' }
+];
+
+function collectSources(data) {
+  const seen = [];
+  (data || []).forEach(d => {
+    const s = (d.source || '').trim();
+    if (s && seen.indexOf(s) === -1) seen.push(s);
+  });
+  allSources = seen;
+  return seen;
+}
+
+function sourceColor(src) {
+  const idx = allSources.indexOf(src);
+  return SOURCE_PALETTE[(idx === -1 ? 0 : idx) % SOURCE_PALETTE.length];
+}
+
+/* Инлайн-стиль для бейджа источника */
+function sourceBadgeStyle(src) {
+  const c = sourceColor(src);
+  return `background:${c.bg};color:${c.fg};`;
+}
 
 /* ===========================================================================
    PASSWORD PROTECTION
@@ -1804,6 +1835,9 @@ async function fetchData() {
   });
 
   allData = data;
+  collectSources(data);
+  renderSourceFilterButtons();
+  renderPfSourceFilterButtons();
   populateIndustryFilter();
   applyFilters();
   loading.style.display = 'none';
@@ -2039,11 +2073,57 @@ function companyCell(item) {
   const img = src ? `<img class="company-logo" src="${src}" alt="" onerror="this.style.display='none'">` : '';
   return `<div class="company-with-logo" title="${esc(item.company)}">${img}<span>${esc(item.company)}</span></div>`;
 }
-function sourceBadgeClass(src) {
-  if (src === 'InveStory') return 'badge-investory';
-  if (src === 'ДУА') return 'badge-dua';
-  if (src === 'AGS') return 'badge-ags';
-  return '';
+function sourceBadgeClass(src) { return 'badge-source'; }
+
+/* Кнопки фильтра «Источник» — вкладка «Идеи» (строятся динамически) */
+function renderSourceFilterButtons() {
+  const box = document.getElementById('sourceFilterBtns');
+  if (!box) return;
+  box.innerHTML = '';
+  allSources.forEach(src => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn';
+    b.dataset.filter = 'source';
+    b.dataset.value = src;
+    b.textContent = src;
+    b.addEventListener('click', () => {
+      const set = filters.source;
+      set.delete('all');
+      if (set.has(src)) {
+        set.delete(src);
+        if (set.size === 0) set.add('all');
+      } else {
+        set.add(src);
+      }
+      document.querySelectorAll('.filter-btn[data-filter="source"]:not(.pf-filter)').forEach(x => {
+        x.classList.toggle('active', set.has(x.dataset.value));
+      });
+      selectedIdx = -1;
+      applyFilters();
+      document.getElementById('detailEmpty').style.display = '';
+      document.getElementById('detailContent').style.display = 'none';
+    });
+    box.appendChild(b);
+  });
+}
+
+/* Кнопки фильтра «Источник» — вкладка «Портфель» (строятся динамически) */
+function renderPfSourceFilterButtons() {
+  const box = document.getElementById('pfSourceFilterBtns');
+  if (!box) return;
+  const existing = Array.from(box.children).map(b => b.dataset.value).join('|');
+  if (existing === allSources.join('|')) return;   // уже актуально
+  box.innerHTML = '';
+  allSources.forEach(src => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn pf-filter';
+    b.dataset.pffilter = 'source';
+    b.dataset.value = src;
+    b.textContent = src;
+    if (pfFilters.source.has(src)) b.classList.add('active');
+    b.setAttribute('onclick', 'togglePfFilter(this)');
+    box.appendChild(b);
+  });
 }
 
 function renderTable() {
@@ -2073,7 +2153,7 @@ function renderTable() {
       <td class="right pct ${pctClass(item.perf)}">${fmtPct(item.perf)}</td>
       <td><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
       <td><span class="badge ${item.status === 'ACTIVE' ? 'badge-active' : 'badge-closed'}">${item.status === 'ACTIVE' ? 'Активна' : 'Закрыта'}</span></td>
-      <td><span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span></td>
+      <td><span class="badge badge-source" style="${sourceBadgeStyle(item.source)}">${esc(item.source)}</span></td>
       <td class="col-action">${hasDoc(item)
         ? `<a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" title="Открыть документ" onclick="event.stopPropagation()" style="text-decoration:none;font-size:1rem;">📎</a>`
         : '<span style="color:#D1D5DB;font-size:0.9rem;">–</span>'}</td>
@@ -2128,16 +2208,16 @@ function updateStats() {
 
 function updateSourceStats() {
   const container = document.getElementById('sourceStats');
-  const sources = ['InveStory', 'ДУА', 'AGS'];
-  const dotClasses = { 'InveStory': 'investory', 'ДУА': 'dua', 'AGS': 'ags' };
+  if (!container) return;
   let html = '';
-  sources.forEach(src => {
+  allSources.forEach(src => {
     const items = filteredData.filter(d => d.source === src);
     if (items.length === 0) return;
     const perfs = items.filter(d => d.perf != null);
     const avgPerf = perfs.length ? (perfs.reduce((a, b) => a + b.perf, 0) / perfs.length).toFixed(1) : '—';
+    const c = sourceColor(src);
     html += `<div class="source-stat-item">
-      <span class="source-dot ${dotClasses[src]}"></span>
+      <span class="source-dot" style="background:${c.bg};"></span>
       <span><strong>${esc(src)}</strong>: ${items.length} идей | ср. доходность: <span class="${parseFloat(avgPerf) >= 0 ? 'pct positive' : 'pct negative'}">${avgPerf}%</span></span>
     </div>`;
   });
@@ -2200,7 +2280,7 @@ function showDetail(item) {
     <div><div class="detail-metric-label">Market Cap</div><div class="detail-metric-value">${item.marketCap != null ? '$' + item.marketCap.toFixed(2) + ' млрд' : '—'}</div></div>
     <div><div class="detail-metric-label">Доля в портфеле</div><div class="detail-metric-value">${esc(item.share) || '—'}</div></div>
     <div><div class="detail-metric-label">Дата открытия</div><div class="detail-metric-value">${formatDate(item._date)}</div></div>
-    <div><div class="detail-metric-label">Источник</div><div class="detail-metric-value"><span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span></div></div>`;
+    <div><div class="detail-metric-label">Источник</div><div class="detail-metric-value"><span class="badge badge-source" style="${sourceBadgeStyle(item.source)}">${esc(item.source)}</span></div></div>`;
 
   let websiteBtn = '';
   if (item.website) {
@@ -2233,7 +2313,7 @@ function showDetail(item) {
     <div class="detail-ticker">${esc(item.ticker)}</div>
     <div class="detail-badges">
       <span class="badge ${item.status === 'ACTIVE' ? 'badge-active' : 'badge-closed'}">${item.status === 'ACTIVE' ? 'Активна' : 'Закрыта'}</span>
-      <span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span>
+      <span class="badge badge-source" style="${sourceBadgeStyle(item.source)}">${esc(item.source)}</span>
       <span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span>
     </div>
     <div class="detail-big-pct" style="color:${bigColor}">${bigVal != null ? fmtPct(bigVal) : '—'}</div>
@@ -2743,6 +2823,7 @@ function renderSectorChart(pfDataAll) {
 let pfVisibleData = [];
 
 function renderPortfolio() {
+  renderPfSourceFilterButtons();
   const pfDataAll = getPortfolioData();
   const area = document.getElementById('portfolioTableArea');
 
