@@ -1297,14 +1297,14 @@ let allSources = [];   // ['Name1', 'Name2', ...] в порядке первог
 
 /* Фиксированная палитра, назначается по индексу — фирменные цвета */
 const SOURCE_PALETTE = [
-  { bg: '#8B6A4E', fg: '#FFFFFF' },  // brown
-  { bg: '#0A1638', fg: '#FFFFFF' },  // navy
-  { bg: '#C6CEC8', fg: '#0A1638' },  // sage
-  { bg: '#1A2D5A', fg: '#FFFFFF' },  // deep blue
-  { bg: '#B08968', fg: '#FFFFFF' },  // light brown
-  { bg: '#7A8D80', fg: '#FFFFFF' },  // grey-green
-  { bg: '#2A3D6A', fg: '#FFFFFF' },
-  { bg: '#A0845E', fg: '#FFFFFF' }
+  { bg: '#8B6A4E', fg: '#FFFFFF' },  // 1 — коричневый
+  { bg: '#0A1638', fg: '#FFFFFF' },  // 2 — тёмно-синий
+  { bg: '#C6CEC8', fg: '#0A1638' },  // 3 — шалфей (светлый)
+  { bg: '#5C7A6B', fg: '#FFFFFF' },  // 4 — зелёный
+  { bg: '#A8843F', fg: '#FFFFFF' },  // 5 — золотистый
+  { bg: '#4A5D8A', fg: '#FFFFFF' },  // 6 — стальной синий
+  { bg: '#7A5C7A', fg: '#FFFFFF' },  // 7 — сливовый
+  { bg: '#9C5B4A', fg: '#FFFFFF' }   // 8 — терракота
 ];
 
 function collectSources(data) {
@@ -1318,8 +1318,15 @@ function collectSources(data) {
 }
 
 function sourceColor(src) {
-  const idx = allSources.indexOf(src);
-  return SOURCE_PALETTE[(idx === -1 ? 0 : idx) % SOURCE_PALETTE.length];
+  const key = String(src == null ? '' : src).trim();
+  let idx = allSources.indexOf(key);
+  if (idx === -1) {
+    // Fallback: stable hash so unknown sources still differ visually
+    let h = 0;
+    for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 997;
+    idx = h;
+  }
+  return SOURCE_PALETTE[idx % SOURCE_PALETTE.length];
 }
 
 /* Инлайн-стиль для бейджа источника */
