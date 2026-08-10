@@ -1121,11 +1121,15 @@ td.right { text-align: center; }
       </div>
       <div class="model-config-group">
         <span class="model-config-label">Кол-во облигаций</span>
-        <input type="number" class="model-input" id="mdlBondCount" min="3" max="30" value="10" style="width:110px;" onchange="onModelCountChange()">
+        <input type="number" class="model-input" id="mdlBondCount" min="1" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
       </div>
       <div class="model-config-group">
         <span class="model-config-label">Кол-во акций</span>
-        <input type="number" class="model-input" id="mdlStockCount" min="3" max="30" value="10" style="width:110px;" onchange="onModelCountChange()">
+        <input type="number" class="model-input" id="mdlStockCount" min="1" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
+      </div>
+      <div class="model-config-group">
+        <span class="model-config-label">Доступно в пуле</span>
+        <span class="model-config-label" id="mdlPoolInfo" style="color:#8B6A4E;font-weight:600;white-space:nowrap;">—</span>
       </div>
     </div>
 
@@ -1909,7 +1913,7 @@ function bondsGvizToData(table) {
       minLot: num(row, 'Мин. лот'),
       couponsPerYear: num(row, 'Купонов/год'),
       callable: str(row, 'Callable'),
-      passFilter: num(row, 'Проходит фильтр'),
+      passFilter: str(row, 'Проходит фильтр'),
       rank: num(row, 'Ранг'),
       sheetWeight: num(row, 'Доля')
     });
@@ -1931,6 +1935,7 @@ function fetchBonds() {
         const bonds = bondsGvizToData(resp.table);
         allBonds = bonds;
         console.log('[AGS] Loaded', bonds.length, 'bonds');
+        try { updatePoolInfo(); } catch(e) {}
         resolve(bonds);
       } catch(e) { reject(e); }
     };
@@ -3467,6 +3472,7 @@ function setModelType(type) {
     if (btn) btn.classList.toggle('active', t === type);
   });
   updateModelConfigVisibility();
+  updatePoolInfo();
 }
 
 function updateModelConfigVisibility() {
@@ -3486,13 +3492,57 @@ function onStockShareChange(val) {
   if (lbl) lbl.textContent = 'Доля акций: ' + modelState.stockShare + '%';
 }
 
-function onModelCurrencyChange(val) { modelState.currency = val; }
+function onModelCurrencyChange(val) { modelState.currency = val; updatePoolInfo(); }
 
 function onModelCountChange() {
   const bc = parseInt(document.getElementById('mdlBondCount')?.value, 10);
   const sc = parseInt(document.getElementById('mdlStockCount')?.value, 10);
-  modelState.bondCount = isNaN(bc) ? 10 : Math.max(3, Math.min(30, bc));
-  modelState.stockCount = isNaN(sc) ? 10 : Math.max(3, Math.min(30, sc));
+  modelState.bondCount = isNaN(bc) ? 10 : Math.max(1, Math.min(50, bc));
+  modelState.stockCount = isNaN(sc) ? 10 : Math.max(1, Math.min(50, sc));
+  updatePoolInfo();
+}
+
+/* Показывает, сколько бумаг доступно в пуле под текущий тип/валюту */
+function updatePoolInfo() {
+  const el = document.getElementById('mdlPoolInfo');
+  if (!el) return;
+  const t = modelState.type;
+
+  let bondPool = allBonds.filter(b => fitsModel(b.passFilter, t));
+  if (modelState.currency !== 'all') bondPool = bondPool.filter(b => b.currency === modelState.currency);
+  const stockPool = allData.filter(d => d.status === 'ACTIVE' && fitsModel(d.model, t));
+
+  const parts = [];
+  if (t !== 'aggressive') parts.push('облигаций: ' + bondPool.length);
+  if (t !== 'conservative') parts.push('акций: ' + stockPool.length);
+  el.textContent = parts.join(' · ') || '—';
+}
+
+/* ===========================================================================
+   МЕТОДОЛОГИЯ ОТБОРА — единая для акций и облигаций
+   Цифра в таблице определяет, в какие портфели годится бумага:
+     1 — консервативный
+     2 — сбалансированный
+     3 — агрессивный
+   Можно указать несколько: "1,2" или "2 3" или "1;2;3"
+   Облигации — колонка «Проходит фильтр», акции — колонка «Model»
+   =========================================================================== */
+const MODEL_TYPE_CODE = { conservative: 1, balanced: 2, aggressive: 3 };
+
+/* Разбирает значение ячейки в набор цифр: "1,2" → [1,2] */
+function parseModelCodes(val) {
+  if (val == null || val === '') return [];
+  return String(val)
+    .split(/[^0-9]+/)
+    .map(s => parseInt(s, 10))
+    .filter(n => !isNaN(n) && n >= 1 && n <= 3);
+}
+
+/* Годится ли бумага для выбранного типа портфеля */
+function fitsModel(val, type) {
+  const codes = parseModelCodes(val);
+  if (codes.length === 0) return false;  // пусто — не участвует
+  return codes.indexOf(MODEL_TYPE_CODE[type]) !== -1;
 }
 
 /* ---- Portfolio construction ---- */
@@ -3500,15 +3550,10 @@ function buildModelPortfolio() {
   onModelCountChange();
   const t = modelState.type;
 
-  // --- BONDS selection ---
-  let bondPool = allBonds.filter(b => b.passFilter === 1);
+  // --- BONDS selection — по цифрам в «Проходит фильтр» ---
+  let bondPool = allBonds.filter(b => fitsModel(b.passFilter, t));
   if (modelState.currency !== 'all') bondPool = bondPool.filter(b => b.currency === modelState.currency);
 
-  if (t === 'conservative') {
-    bondPool = bondPool.filter(b => isInvestmentGrade(b.rating));
-  } else if (t === 'balanced') {
-    bondPool = bondPool.filter(b => ratingScore(b.rating) <= RATING_ORDER.indexOf('BB-'));
-  }
   bondPool.sort((a,b) => {
     const ra = a.rank != null ? a.rank : 999;
     const rb = b.rank != null ? b.rank : 999;
@@ -3516,12 +3561,10 @@ function buildModelPortfolio() {
     return (b.ytm||0) - (a.ytm||0);
   });
 
-  // --- STOCKS selection ---
-  const modelTag = t === 'aggressive' ? 'Aggr' : 'Bal';
+  // --- STOCKS selection — по цифрам в «Model» ---
   let stockPool = allData.filter(d => {
     if (d.status !== 'ACTIVE') return false;
-    if (!d.model) return true; // if Model column not filled, include all active
-    return String(d.model).toLowerCase().includes(modelTag.toLowerCase());
+    return fitsModel(d.model, t);
   });
   stockPool.sort((a,b) => (b.potential||0) - (a.potential||0));
 
@@ -3536,6 +3579,16 @@ function buildModelPortfolio() {
     modelState.bonds = bondPool.slice(0, modelState.bondCount);
     modelState.stocks = stockPool.slice(0, modelState.stockCount);
   }
+
+  // Предупреждаем, если в пуле меньше бумаг, чем запрошено
+  const shortfall = [];
+  if (t !== 'aggressive' && bondPool.length < modelState.bondCount) {
+    shortfall.push('облигаций доступно ' + bondPool.length + ' из ' + modelState.bondCount);
+  }
+  if (t !== 'conservative' && stockPool.length < modelState.stockCount) {
+    shortfall.push('акций доступно ' + stockPool.length + ' из ' + modelState.stockCount);
+  }
+  if (shortfall.length) showToast('Внимание: ' + shortfall.join(', '));
 
   // --- Assign weights ---
   const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
