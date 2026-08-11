@@ -1147,6 +1147,7 @@ td.right { text-align: center; }
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="portfolio-btn primary" onclick="buildModelPortfolio()">🔄 Собрать портфель</button>
           <button class="portfolio-btn" onclick="downloadModelHTML()">📄 Сводка клиенту</button>
+          <button class="portfolio-btn" onclick="downloadIdeasSummary('model')">📄 Описания идей</button>
         </div>
       </div>
     </div>
@@ -3005,12 +3006,7 @@ function downloadPortfolioHTML() {
   /* Footer */
   .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
 
-  @media print {
-    body { max-width: 100%; }
-    .banner { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  }
+  ${REPORT_PRINT_CSS}
 </style>
 </head>
 <body>
@@ -3055,11 +3051,7 @@ function downloadPortfolioHTML() {
 </body>
 </html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  // Auto-trigger print dialog for PDF save
-  setTimeout(function() { try { w.print(); } catch(e) {} }, 800);
+  openReportWindow(html);
   showToast('Откроется окно печати — выберите «Сохранить как PDF»');
 }
 
@@ -3072,6 +3064,9 @@ function downloadIdeasSummary(source) {
   if (source === 'portfolio') {
     const pf = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
     items = pf.map(p => p.live);
+  } else if (source === 'model') {
+    // Акции из собранного модельного портфеля
+    items = modelState.stocks.slice();
   } else {
     items = filteredData.slice();
   }
@@ -3167,12 +3162,7 @@ function downloadIdeasSummary(source) {
 
   .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
 
-  /* Force background colors to print everywhere */
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  @media print {
-    body { max-width: 100%; }
-    .banner { border-radius: 0; }
-  }
+  ${REPORT_PRINT_CSS}
 </style>
 </head>
 <body>
@@ -3197,10 +3187,7 @@ function downloadIdeasSummary(source) {
 </body>
 </html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  setTimeout(function(){ try{ w.print(); }catch(e){} }, 800);
+  openReportWindow(html);
   showToast('Откроется окно печати — выберите «Сохранить как PDF»');
 }
 
@@ -3564,6 +3551,43 @@ function distributeModelWeights(items, totalShare) {
     items.forEach(it => { it._weight = (it._weight || 0) * k; });
   }
 }
+
+/* ===========================================================================
+   ОТКРЫТИЕ ОТЧЁТОВ
+   Через Blob URL — иначе в колонтитуле печати появляется "about:blank".
+   =========================================================================== */
+function openReportWindow(html, fileTitle) {
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  if (!w) { showToast('Разрешите всплывающие окна для этого сайта'); return null; }
+  // Имя файла по умолчанию в диалоге печати берётся из <title>
+  setTimeout(function () {
+    try { w.print(); } catch (e) {}
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }, 900);
+  return w;
+}
+
+/* Общий блок CSS для печати — сохраняет экранную вёрстку 1:1 */
+const REPORT_PRINT_CSS = `
+  @page { size: A4; margin: 8mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  html, body { -webkit-text-size-adjust: none; }
+  @media print {
+    body { max-width: 100% !important; margin: 0 !important; }
+    .banner { border-radius: 0 !important; }
+    /* Ничего не должно разрываться посередине */
+    .info-row, .charts-row, .chart-block, .bars-block,
+    .idea-card, table, thead, tfoot { page-break-inside: avoid; break-inside: avoid; }
+    tr { page-break-inside: avoid; break-inside: avoid; }
+    thead { display: table-header-group; }
+    .page-break { page-break-after: always; break-after: page; }
+    /* Убираем лишние отступы, чтобы влезало на страницу */
+    .content { padding-top: 10px !important; }
+    h2 { margin-top: 10px !important; }
+  }
+`;
 
 /* Сумма инвестирования из поля клиента */
 function getModelAmount() {
@@ -3976,7 +4000,6 @@ function downloadModelHTML() {
   }
 
   const t = modelState.type;
-  const typeLabel = MODEL_TYPE_LABELS[t] || '';
   const clientCurrency = document.getElementById('mdlClientCurrency')?.value || 'USD';
   const rawName = (document.getElementById('mdlClientName')?.value || '').trim();
   const rawAmount = (document.getElementById('mdlClientAmount')?.value || '').trim();
@@ -3994,7 +4017,6 @@ function downloadModelHTML() {
   let infoRows = '';
   if (rawName) infoRows += `<span class="info-label">Клиент:</span><span class="info-value">${esc(rawName)}</span>`;
   if (rawAmount) infoRows += `<span class="info-label">Сумма:</span><span class="info-value">${Number(rawAmount).toLocaleString()} ${esc(clientCurrency)}</span>`;
-  infoRows += `<span class="info-label">Тип портфеля:</span><span class="info-value accent">${esc(typeLabel)}</span>`;
   infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
 
   let statRows = '';
@@ -4113,7 +4135,7 @@ function downloadModelHTML() {
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>${rawName ? 'Модельный портфель — ' + esc(rawName) : 'Модельный портфель AGS'}</title>
+<title>${rawName ? 'Портфель — ' + esc(rawName) : 'Инвестиционный портфель AGS'}</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -4156,21 +4178,13 @@ function downloadModelHTML() {
 
   .page-break { height: 0; }
 
-  /* Force background colors to print everywhere (bars, badges, table stripes) */
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  @media print {
-    body { max-width: 100%; }
-    .banner { border-radius: 0; }
-    .page-break { page-break-after: always; }
-    /* Keep bar chart intact across page breaks */
-    .bars-block { page-break-inside: avoid; }
-  }
+  ${REPORT_PRINT_CSS}
 </style>
 </head>
 <body>
   <div class="banner">
     <img src="${logoURL}" alt="AGS" onerror="this.parentElement.innerHTML='<div style=\\'color:white;font-size:24px;font-weight:700;\\'>AGS</div><div class=\\'banner-text\\'>Abylai Global Solutions</div>'">
-    <div class="banner-text">Модельный портфель — ${esc(typeLabel)}</div>
+    <div class="banner-text">Инвестиционный портфель</div>
   </div>
 
   <div class="content">
@@ -4202,10 +4216,7 @@ function downloadModelHTML() {
 </body>
 </html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
-  setTimeout(function(){ try{ w.print(); }catch(e){} }, 800);
+  openReportWindow(html);
   showToast('Откроется окно печати — выберите «Сохранить как PDF»');
 }
 
