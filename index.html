@@ -4052,7 +4052,7 @@ function downloadModelHTML() {
     chartBlock('По странам', 'mdlCountryDonut', 'mdlCountryLegend', true) +
     chartBlock('По секторам', 'mdlSectorDonut', 'mdlSectorLegend', true);
 
-  // Текстовая разбивка по рейтингам (без линейчатой диаграммы)
+  // Линейчатая диаграмма по рейтингам (без строк классов активов)
   let barsHTML = '';
   if (bonds.length > 0) {
     const ratingMap = {};
@@ -4060,13 +4060,25 @@ function downloadModelHTML() {
       const r = b.rating || 'Без рейтинга';
       ratingMap[r] = (ratingMap[r] || 0) + (b._weight || 0);
     });
-    const parts = Object.entries(ratingMap)
-      .sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]))
-      .map(([r, w]) => `${esc(r)} — <b>${w.toFixed(1)}%</b>`);
-    if (parts.length) {
-      barsHTML = `<div style="margin-top:16px;">
-        <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">По кредитным рейтингам</h2>
-        <div style="font-size:11.5px;color:#1F2937;line-height:1.7;">${parts.join(' · ')}</div>
+    const entries = Object.entries(ratingMap).sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]));
+    if (entries.length) {
+      const maxW = Math.max(...entries.map(e => e[1]), 1);
+      let bars = '<div style="display:flex;flex-direction:column;gap:5px;">';
+      entries.forEach(([label, w]) => {
+        const pct = (w / maxW) * 100;
+        const color = isInvestmentGrade(label) ? '#0A1638' : '#8B6A4E';
+        bars += `<div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:100px;flex-shrink:0;font-size:11px;color:#0A1638;text-align:right;">${esc(label)}</div>
+          <div style="flex:1;height:14px;background:#F3F4F6;border-radius:3px;overflow:hidden;">
+            <div style="width:${pct.toFixed(1)}%;height:100%;background:${color};border-radius:3px;"></div>
+          </div>
+          <div style="width:48px;flex-shrink:0;font-size:11px;color:#0A1638;">${w.toFixed(1)}%</div>
+        </div>`;
+      });
+      bars += '</div>';
+      barsHTML = `<div class="bars-block" style="margin-top:16px;">
+        <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">По кредитным рейтингам</h2>
+        ${bars}
       </div>`;
     }
   }
