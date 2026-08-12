@@ -535,6 +535,8 @@ td.right { text-align: center; }
   border-bottom: 1px solid var(--border);
   background: var(--card-bg);
 }
+.pdf-icon { display:inline-block; vertical-align:-2px; margin-right:5px; }
+.btn-pdf { font-weight:700 !important; }
 .portfolio-btn {
   padding: 9px 20px;
   border: 1px solid var(--border);
@@ -1030,7 +1032,7 @@ td.right { text-align: center; }
     <button class="portfolio-btn primary" onclick="addFilteredToPortfolio()">📥 Сформировать из фильтра</button>
     <button class="portfolio-btn" onclick="toggleRebalancePanel()">🔄 Ребалансировать</button>
     <button class="portfolio-btn" onclick="downloadPortfolioCSV()">📥 Скачать портфель</button>
-    <button class="portfolio-btn" onclick="downloadPortfolioHTML()">📄 Сводка клиенту</button>
+    <button class="portfolio-btn btn-pdf" onclick="downloadPortfolioHTML()"><svg class="pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>PDF для клиента</button>
     <button class="portfolio-btn" onclick="downloadIdeasSummary('portfolio')">📄 Описания идей</button>
     <button class="portfolio-btn danger" onclick="clearPortfolio()">🗑 Очистить портфель</button>
   </div>
@@ -1111,11 +1113,11 @@ td.right { text-align: center; }
       </div>
       <div class="model-config-group">
         <span class="model-config-label">Кол-во облигаций</span>
-        <input type="number" class="model-input" id="mdlBondCount" min="1" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
+        <input type="number" class="model-input" id="mdlBondCount" min="0" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
       </div>
       <div class="model-config-group">
         <span class="model-config-label">Кол-во акций</span>
-        <input type="number" class="model-input" id="mdlStockCount" min="1" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
+        <input type="number" class="model-input" id="mdlStockCount" min="0" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
       </div>
       <div class="model-config-group">
         <span class="model-config-label">Доступно в пуле</span>
@@ -1146,7 +1148,7 @@ td.right { text-align: center; }
         <span class="model-config-label">&nbsp;</span>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="portfolio-btn primary" onclick="buildModelPortfolio()">🔄 Собрать портфель</button>
-          <button class="portfolio-btn" onclick="downloadModelHTML()">📄 Сводка клиенту</button>
+          <button class="portfolio-btn btn-pdf" onclick="downloadModelHTML()"><svg class="pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>PDF для клиента</button>
           <button class="portfolio-btn" onclick="downloadIdeasSummary('model')">📄 Описания идей</button>
         </div>
       </div>
@@ -3363,8 +3365,8 @@ function onModelCurrencyChange(val) { modelState.currency = val; updatePoolInfo(
 function onModelCountChange() {
   const bc = parseInt(document.getElementById('mdlBondCount')?.value, 10);
   const sc = parseInt(document.getElementById('mdlStockCount')?.value, 10);
-  modelState.bondCount = isNaN(bc) ? 10 : Math.max(1, Math.min(50, bc));
-  modelState.stockCount = isNaN(sc) ? 10 : Math.max(1, Math.min(50, sc));
+  modelState.bondCount = isNaN(bc) ? 10 : Math.max(0, Math.min(50, bc));
+  modelState.stockCount = isNaN(sc) ? 10 : Math.max(0, Math.min(50, sc));
   updatePoolInfo();
 }
 
@@ -3464,34 +3466,34 @@ function buildModelPortfolio() {
   });
   stockPool.sort((a,b) => (b.potential||0) - (a.potential||0));
 
-  // --- Compose per type ---
-  if (t === 'conservative') {
-    modelState.bonds = bondPool.slice(0, modelState.bondCount);
-    modelState.stocks = [];
-  } else if (t === 'aggressive') {
-    modelState.bonds = [];
-    modelState.stocks = stockPool.slice(0, modelState.stockCount);
-  } else {
-    modelState.bonds = bondPool.slice(0, modelState.bondCount);
-    modelState.stocks = stockPool.slice(0, modelState.stockCount);
-  }
+  // --- Целевые доли классов ---
+  let stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
+  let bondShare = 100 - stockShare;
+
+  // Класс полностью исключается, если его доля = 0 ИЛИ количество бумаг = 0
+  const wantStocks = t !== 'conservative' && stockShare > 0 && modelState.stockCount > 0;
+  const wantBonds  = t !== 'aggressive'   && bondShare  > 0 && modelState.bondCount  > 0;
+
+  // Если один класс выпал — второй забирает все 100%
+  if (!wantStocks && wantBonds) { bondShare = 100; stockShare = 0; }
+  if (!wantBonds && wantStocks) { stockShare = 100; bondShare = 0; }
+
+  // --- Compose ---
+  modelState.bonds  = wantBonds  ? bondPool.slice(0, modelState.bondCount)   : [];
+  modelState.stocks = wantStocks ? stockPool.slice(0, modelState.stockCount) : [];
 
   // Предупреждаем, если в пуле меньше бумаг, чем запрошено
   const shortfall = [];
   if (lotDropped > 0) {
     shortfall.push('отсеяно по мин. лоту: ' + lotDropped);
   }
-  if (t !== 'aggressive' && bondPool.length < modelState.bondCount) {
+  if (wantBonds && bondPool.length < modelState.bondCount) {
     shortfall.push('облигаций доступно ' + bondPool.length + ' из ' + modelState.bondCount);
   }
-  if (t !== 'conservative' && stockPool.length < modelState.stockCount) {
+  if (wantStocks && stockPool.length < modelState.stockCount) {
     shortfall.push('акций доступно ' + stockPool.length + ' из ' + modelState.stockCount);
   }
   if (shortfall.length) showToast('Внимание: ' + shortfall.join(', '));
-
-  // --- Assign weights ---
-  const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
-  const bondShare = 100 - stockShare;
 
   // Copy items so manual edits don't mutate the source pools
   modelState.bonds = modelState.bonds.map(b => ({ ...b }));
@@ -3499,6 +3501,12 @@ function buildModelPortfolio() {
 
   distributeModelWeights(modelState.bonds, bondShare);
   distributeModelWeights(modelState.stocks, stockShare);
+
+  // Убираем позиции с нулевой долей и перераспределяем остаток
+  if (pruneZeroWeights() > 0) {
+    distributeModelWeights(modelState.bonds, bondShare);
+    distributeModelWeights(modelState.stocks, stockShare);
+  }
 
   modelBuilt = true;
 
