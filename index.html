@@ -4052,14 +4052,24 @@ function downloadModelHTML() {
     chartBlock('По странам', 'mdlCountryDonut', 'mdlCountryLegend', true) +
     chartBlock('По секторам', 'mdlSectorDonut', 'mdlSectorLegend', true);
 
-  // Horizontal bar chart block (ratings + asset classes)
-  const barsEl = document.getElementById('mdlRatingBars');
-  const barsHTML = barsEl && barsEl.innerHTML.trim()
-    ? `<div class="bars-block" style="margin-top:18px;">
-        <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Структура по рейтингам и классам активов</h2>
-        ${barsEl.innerHTML}
-      </div>`
-    : '';
+  // Текстовая разбивка по рейтингам (без линейчатой диаграммы)
+  let barsHTML = '';
+  if (bonds.length > 0) {
+    const ratingMap = {};
+    bonds.forEach(b => {
+      const r = b.rating || 'Без рейтинга';
+      ratingMap[r] = (ratingMap[r] || 0) + (b._weight || 0);
+    });
+    const parts = Object.entries(ratingMap)
+      .sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]))
+      .map(([r, w]) => `${esc(r)} — <b>${w.toFixed(1)}%</b>`);
+    if (parts.length) {
+      barsHTML = `<div style="margin-top:16px;">
+        <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">По кредитным рейтингам</h2>
+        <div style="font-size:11.5px;color:#1F2937;line-height:1.7;">${parts.join(' · ')}</div>
+      </div>`;
+    }
+  }
 
   // Bonds page
   let bondsPage = '';
@@ -4078,7 +4088,6 @@ function downloadModelHTML() {
         <td style="text-align:right">${b.price != null ? b.price.toFixed(2) : '—'}</td>
         <td style="text-align:right">${b.duration != null ? b.duration.toFixed(2) : '—'}</td>
         <td style="text-align:center">${b.couponsPerYear != null ? b.couponsPerYear : '—'}</td>
-        <td style="text-align:center">${b.callable ? 'Да' : '—'}</td>
         <td style="text-align:right">${b.minLot != null ? b.minLot.toLocaleString('ru-RU') : '—'}</td>
         <td style="text-align:center;font-weight:600;">${(b._weight||0).toFixed(1)}%</td>
       </tr>`;
@@ -4091,7 +4100,7 @@ function downloadModelHTML() {
         <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
         <th style="text-align:right">YTM</th><th style="text-align:right">Купон</th>
         <th style="text-align:right">Цена</th><th style="text-align:right">Дюрация</th>
-        <th style="text-align:center">Куп./год</th><th style="text-align:center">Callable</th>
+        <th style="text-align:center">Куп./год</th>
         <th style="text-align:right">Мин. лот</th>
         <th style="text-align:center">Доля</th>
       </tr></thead>
