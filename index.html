@@ -3086,15 +3086,10 @@ function downloadIdeasSummary(source) {
     if (item.price != null)  metrics += `<span>Цена: <b>${fmtPrice(item.price)}</b></span>`;
     if (item.target != null) metrics += `<span>Цель: <b>${fmtPrice(item.target)}</b></span>`;
     if (upVal != null)       metrics += `<span>Upside: <b class="${pctClass(upVal)==='positive'?'pos':'neg'}">${fmtPct(upVal)}</b></span>`;
-    if (item.perf != null)   metrics += `<span>Доходность идеи: <b class="${pctClass(item.perf)==='positive'?'pos':'neg'}">${fmtPct(item.perf)}</b></span>`;
-    if (item._risk)          metrics += `<span>Риск: <b>${esc(riskLabel(item._risk).replace(/[🟢🟡🔴⛔]\s?/g,''))}</b></span>`;
-    if (item._date)          metrics += `<span>Дата идеи: <b>${formatDate(item._date)}</b></span>`;
 
     const badges = [item.sector, item.country, item.currency].filter(Boolean).map(esc).join(' · ');
 
-    const docLine = hasDoc(item)
-      ? `<div class="idea-doc">📎 Документ: <a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener">ссылка</a></div>`
-      : '';
+    const docLine = '';
 
     cards += `<div class="idea-card">
       <div class="idea-head">
