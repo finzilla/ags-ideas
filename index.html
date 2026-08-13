@@ -1119,6 +1119,19 @@ td.right { text-align: center; }
         <span class="model-config-label">Кол-во акций</span>
         <input type="number" class="model-input" id="mdlStockCount" min="0" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
       </div>
+      <div class="model-config-group" id="mdlExcludeGroup">
+        <span class="model-config-label">Исключить</span>
+        <div style="display:flex;gap:14px;align-items:center;padding-top:4px;">
+          <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.85rem;color:#0A1638;white-space:nowrap;">
+            <input type="checkbox" id="mdlExcludeStocks" onchange="onExcludeChange()" style="width:14px;height:14px;cursor:pointer;">
+            акции
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.85rem;color:#0A1638;white-space:nowrap;">
+            <input type="checkbox" id="mdlExcludeETF" onchange="onExcludeChange()" style="width:14px;height:14px;cursor:pointer;">
+            ETF
+          </label>
+        </div>
+      </div>
       <div class="model-config-group">
         <span class="model-config-label">Доступно в пуле</span>
         <span class="model-config-label" id="mdlPoolInfo" style="color:#8B6A4E;font-weight:600;white-space:nowrap;">—</span>
@@ -3302,7 +3315,7 @@ function applyRebalance() {
 /* ===========================================================================
    MODEL PORTFOLIOS
    =========================================================================== */
-let modelState = { type: 'balanced', stockShare: 40, currency: 'all', bondCount: 10, stockCount: 10, bonds: [], stocks: [] };
+let modelState = { type: 'balanced', stockShare: 40, currency: 'all', bondCount: 10, stockCount: 10, excludeStocks: false, excludeETF: false, bonds: [], stocks: [] };
 let modelBuilt = false;
 
 const MODEL_TYPE_LABELS = {
@@ -3351,6 +3364,9 @@ function updateModelConfigVisibility() {
   if (bondGroup) bondGroup.style.display = modelState.type === 'aggressive' ? 'none' : '';
   if (currGroup) currGroup.style.display = modelState.type === 'aggressive' ? 'none' : '';
   if (stockGroup) stockGroup.style.display = modelState.type === 'conservative' ? 'none' : '';
+  // Исключения акции/ETF не нужны в консервативном (там нет долевых)
+  const excGroup = document.getElementById('mdlExcludeGroup');
+  if (excGroup) excGroup.style.display = modelState.type === 'conservative' ? 'none' : '';
 }
 
 function onStockShareChange(val) {
@@ -3361,6 +3377,28 @@ function onStockShareChange(val) {
 }
 
 function onModelCurrencyChange(val) { modelState.currency = val; updatePoolInfo(); }
+
+/* Исключение классов долевых инструментов: акции / ETF */
+function onExcludeChange() {
+  const exS = document.getElementById('mdlExcludeStocks');
+  const exE = document.getElementById('mdlExcludeETF');
+  modelState.excludeStocks = !!(exS && exS.checked);
+  modelState.excludeETF = !!(exE && exE.checked);
+
+  // Нельзя исключить оба — снимаем последнюю поставленную галочку
+  if (modelState.excludeStocks && modelState.excludeETF) {
+    showToast('Нельзя исключить и акции, и ETF одновременно');
+    if (exE) { exE.checked = false; modelState.excludeETF = false; }
+  }
+  updatePoolInfo();
+}
+
+/* Применяет исключения акции/ETF к списку долевых бумаг */
+function applyEquityExclusions(list) {
+  if (modelState.excludeStocks && !modelState.excludeETF) return list.filter(s => isETF(s));
+  if (modelState.excludeETF && !modelState.excludeStocks) return list.filter(s => !isETF(s));
+  return list;
+}
 
 function onModelCountChange() {
   const bc = parseInt(document.getElementById('mdlBondCount')?.value, 10);
@@ -3391,14 +3429,21 @@ function updatePoolInfo() {
     });
   }
 
-  const stockPool = allData.filter(d => d.status === 'ACTIVE' && fitsModel(d.model, t));
+  const stockPool = applyEquityExclusions(
+    allData.filter(d => d.status === 'ACTIVE' && fitsModel(d.model, t))
+  );
 
   const parts = [];
   if (t !== 'aggressive') {
     const dropped = bondsBeforeLot - bondPool.length;
     parts.push('облигаций: ' + bondPool.length + (dropped > 0 ? ' (−' + dropped + ' по лоту)' : ''));
   }
-  if (t !== 'conservative') parts.push('акций: ' + stockPool.length);
+  if (t !== 'conservative') {
+    let lbl = 'акций';
+    if (modelState.excludeStocks) lbl = 'ETF';
+    else if (modelState.excludeETF) lbl = 'акций (без ETF)';
+    parts.push(lbl + ': ' + stockPool.length);
+  }
   el.textContent = parts.join(' · ') || '—';
 }
 
@@ -3464,6 +3509,7 @@ function buildModelPortfolio() {
     if (d.status !== 'ACTIVE') return false;
     return fitsModel(d.model, t);
   });
+  stockPool = applyEquityExclusions(stockPool);
   stockPool.sort((a,b) => (b.potential||0) - (a.potential||0));
 
   // --- Целевые доли классов ---
@@ -3729,11 +3775,16 @@ function renderRatingBars(containerId) {
 }
 
 /* Detect ETF: sector/name markers or known ETF tickers */
+/* ETF определяется по названию актива: ETF / UCITS / Trust / Fund / Index.
+   Дополнительно — список известных тикеров на случай короткого названия. */
 function isETF(s) {
-  const hay = [s.sector, s.company, s.country, s.model].join(' ').toUpperCase();
-  if (hay.includes('ETF')) return true;
-  const knownETF = ['KWEB','IBIT','COPX','ARKG','SPY','QQQ','VOO','IVV','VTI','GLD','SLV','TLT','EEM','XLE','XLF','XLK'];
-  return knownETF.includes(String(s.ticker || '').toUpperCase());
+  if (!s) return false;
+  const hay = [s.company, s.sector, s.industry, s.country].filter(Boolean).join(' ').toUpperCase();
+  if (/\bETF\b|\bUCITS\b|\bTRUST\b|\bFUND\b|\bINDEX\b/.test(hay)) return true;
+  const knownETF = ['KWEB','IBIT','COPX','ARKG','SPY','QQQ','VOO','IVV','VTI','VXUS',
+                    'GLD','SLV','TLT','IEF','EEM','EFA','XLE','XLF','XLK','XLV','XLP',
+                    'SMH','SOXX','URA','LIT','JETS','ICLN','BITO','FBTC'];
+  return knownETF.indexOf(String(s.ticker || '').toUpperCase()) !== -1;
 }
 
 /* ---- Generic donut renderer ---- */
@@ -3971,15 +4022,17 @@ function buildBondsTableHTML(bonds) {
 function buildStocksTableHTML(stocks) {
   let html = `<div class="portfolio-table-wrapper"><table>
     <thead><tr>
-      <th>Тикер</th><th>Компания</th><th>Сектор</th><th>Страна</th>
+      <th>Тикер</th><th>Компания</th><th style="text-align:center">Класс</th><th>Сектор</th><th>Страна</th>
       <th style="text-align:center">Вал.</th><th style="text-align:center">Цена</th>
       <th style="text-align:center">Цель</th><th style="text-align:center">Upside</th>
       <th style="text-align:center">Доля</th>
     </tr></thead><tbody>`;
   stocks.forEach(s => {
+    const etf = isETF(s);
     html += `<tr>
       <td class="ticker-cell">${esc(s.ticker)}</td>
       <td class="company-cell">${companyCell(s)}</td>
+      <td style="text-align:center;"><span class="badge" style="background:${etf ? '#C6CEC8' : '#8B6A4E'};color:${etf ? '#0A1638' : '#fff'};">${etf ? 'ETF' : 'Акция'}</span></td>
       <td class="sector-cell" title="${esc(s.sector)}">${esc(s.sector) || '—'}</td>
       <td class="sector-cell" title="${esc(s.country)}">${esc(s.country) || '—'}</td>
       <td style="text-align:center;font-size:0.8rem;">${esc(s.currency) || '—'}</td>
@@ -4129,7 +4182,8 @@ function downloadModelHTML() {
       rows += `<tr>
         <td>${esc(s.ticker)}</td>
         <td>${esc(s.company)}</td>
-        <td>${esc(s.sector) || '—'}</td>
+        <td style="text-align:center">${isETF(s) ? "ETF" : "Акция"}</td>
+        <td>${esc(s.sector) || "—"}</td>
         <td>${esc(s.country) || '—'}</td>
         <td style="text-align:center">${esc(s.currency) || '—'}</td>
         <td style="text-align:right">${s.price != null ? s.price.toFixed(2) : '—'}</td>
@@ -4142,7 +4196,7 @@ function downloadModelHTML() {
     <div class="section-title">Акционерная часть портфеля</div>
     <table>
       <thead><tr>
-        <th>Тикер</th><th>Компания</th><th>Сектор</th><th>Страна</th>
+        <th>Тикер</th><th>Компания</th><th style="text-align:center">Класс</th><th>Сектор</th><th>Страна</th>
         <th style="text-align:center">Вал.</th><th style="text-align:right">Цена</th>
         <th style="text-align:right">Цель</th><th style="text-align:right">Upside</th>
         <th style="text-align:center">Доля</th>
