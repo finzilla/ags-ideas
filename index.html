@@ -862,7 +862,16 @@ td.right { text-align: center; }
   &#9888; Не удалось загрузить данные из Google Sheets. Показаны локальные данные.
 </div>
 
-<!-- ====================== CONTROLS ====================== -->
+<!-- ====================== ASSET CLASS TOGGLE ====================== -->
+<div class="controls" style="padding-bottom:0;">
+  <div class="filter-group">
+    <button class="filter-btn active" id="assetToggleStock" onclick="setAssetClass('stock')">Акции</button>
+    <button class="filter-btn" id="assetToggleBond" onclick="setAssetClass('bond')">Облигации</button>
+  </div>
+</div>
+
+<!-- ====================== CONTROLS: STOCKS ====================== -->
+<div id="stockControlsBlock">
 <div class="controls">
   <input type="text" class="search-input" id="searchInput" placeholder="Поиск по тикеру, компании, сектору...">
 
@@ -972,6 +981,96 @@ td.right { text-align: center; }
     </div>
   </div>
 </div>
+</div><!-- /stockControlsBlock -->
+
+<!-- ====================== CONTROLS: BONDS ====================== -->
+<div id="bondControlsBlock" style="display:none;">
+  <div class="controls">
+    <input type="text" class="search-input" id="bondSearchInput" placeholder="Поиск по названию, ISIN, сектору..." oninput="applyBondFilters()">
+
+    <div class="filter-group">
+      <span class="filter-label">Валюта:</span>
+      <button class="filter-btn bond-filter active" data-bondfilter="currency" data-value="all" onclick="toggleBondFilter(this)">Все</button>
+      <span id="bondCurrencyFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Рейтинг от:</span>
+      <select id="bondRatingMin" onchange="applyBondFilters()"><option value="">Любой</option></select>
+      <span class="filter-label">до:</span>
+      <select id="bondRatingMax" onchange="applyBondFilters()"><option value="">Любой</option></select>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Дюрация:</span>
+      <input type="number" step="0.1" id="bondDurationMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
+      <input type="number" step="0.1" id="bondDurationMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">YTM, %:</span>
+      <input type="number" step="0.1" id="bondYtmMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
+      <input type="number" step="0.1" id="bondYtmMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Спред, б.п.:</span>
+      <input type="number" step="1" id="bondSpreadMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
+      <input type="number" step="1" id="bondSpreadMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
+    </div>
+  </div>
+
+  <!-- Bond stats -->
+  <div class="stats-row" id="bondStatsRow">
+    <div class="stat-card">
+      <div class="stat-card-label">В выборке</div>
+      <div class="stat-card-value" id="bondStatCount">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Ср. YTM</div>
+      <div class="stat-card-value" id="bondStatYtm">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Ср. дюрация</div>
+      <div class="stat-card-value" id="bondStatDuration">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Ср. рейтинг</div>
+      <div class="stat-card-value" id="bondStatRating">—</div>
+    </div>
+  </div>
+
+  <!-- Bond portfolio quick actions -->
+  <div style="padding:0 24px 12px;display:flex;gap:10px;align-items:center;">
+    <button class="portfolio-btn primary" onclick="addFilteredBondsToPortfolio()" style="font-size:0.9rem;padding:9px 18px;">📥 Все в портфель</button>
+    <span style="font-size:0.85rem;color:#6B7280;font-weight:500;" id="pfBondQuickCount"></span>
+  </div>
+
+  <!-- Bond table -->
+  <div class="table-section" id="bondTableSection" style="margin:0 24px 24px;">
+    <div class="table-wrapper" id="bondTableWrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Название</th>
+            <th>ISIN</th>
+            <th>Страна</th>
+            <th>Сектор</th>
+            <th style="text-align:center">Вал.</th>
+            <th style="text-align:center">Рейтинг</th>
+            <th style="text-align:center">YTM</th>
+            <th style="text-align:center">Купон</th>
+            <th style="text-align:center">Цена</th>
+            <th style="text-align:center">Дюрация</th>
+            <th style="text-align:center">Спред</th>
+            <th class="col-action" style="cursor:default;">➕</th>
+          </tr>
+        </thead>
+        <tbody id="bondTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /bondControlsBlock -->
 
 </div><!-- /viewIdeas -->
 
@@ -1078,7 +1177,35 @@ td.right { text-align: center; }
   </div>
 
   <!-- Portfolio Table -->
+  <div class="model-table-title">Акции</div>
   <div id="portfolioTableArea"></div>
+
+  <!-- Bonds section (hidden when portfolio has no bonds) -->
+  <div id="pfBondSection" style="display:none;">
+    <div class="model-table-title">Облигации</div>
+    <div class="stats-row" id="pfBondStatsRow">
+      <div class="stat-card">
+        <div class="stat-card-label">Позиций</div>
+        <div class="stat-card-value" id="pfBondStatCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Ср. YTM</div>
+        <div class="stat-card-value" id="pfBondStatYtm">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Ср. дюрация</div>
+        <div class="stat-card-value" id="pfBondStatDuration">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Ср. рейтинг</div>
+        <div class="stat-card-value" id="pfBondStatRating">—</div>
+      </div>
+    </div>
+    <div class="portfolio-controls" id="pfBondActions">
+      <button class="portfolio-btn" onclick="showToast('Скоро: календарь купонных выплат — заполните даты начала обращения в Google Таблице')" title="Появится после заполнения дат начала обращения бондов в Google Таблице">📅 Календарь выплат (скоро)</button>
+    </div>
+    <div id="portfolioBondsArea"></div>
+  </div>
 </div><!-- /viewPortfolio -->
 
 <!-- ====================== VIEW: MODEL PORTFOLIOS ====================== -->
@@ -1398,6 +1525,17 @@ let filters = {
   risk: new Set(['all']),
   industry: 'all',
   search: ''
+};
+
+let currentAssetClass = 'stock'; // 'stock' | 'bond' — Ideas tab toggle
+let filteredBonds = [];
+let bondFilters = {
+  currency: new Set(['all']),
+  search: '',
+  ratingMin: null, ratingMax: null,   // ratingScore() index, lower = better
+  durationMin: null, durationMax: null,
+  ytmMin: null, ytmMax: null,
+  spreadMin: null, spreadMax: null
 };
 
 /* ===========================================================================
@@ -1816,7 +1954,9 @@ function bondsGvizToData(table) {
       callable: str(row, 'Callable'),
       passFilter: str(row, 'Проходит фильтр'),
       rank: num(row, 'Ранг'),
-      sheetWeight: num(row, 'Доля')
+      sheetWeight: num(row, 'Доля'),
+      spread: num(row, 'Спред'),
+      issueDate: str(row, 'Дата начала обращения')
     });
   }
   return out;
@@ -1837,6 +1977,7 @@ function fetchBonds() {
         allBonds = bonds;
         console.log('[AGS] Loaded', bonds.length, 'bonds');
         try { updatePoolInfo(); } catch(e) {}
+        try { renderBondCurrencyFilterButtons(); applyBondFilters(); } catch(e) {}
         resolve(bonds);
       } catch(e) { reject(e); }
     };
@@ -1881,6 +2022,175 @@ function populateIndustryFilter() {
     opt.textContent = ind;
     sel.appendChild(opt);
   });
+}
+
+/* ===========================================================================
+   ASSET CLASS TOGGLE + BOND BROWSING (Ideas tab)
+   =========================================================================== */
+function setAssetClass(cls) {
+  currentAssetClass = cls;
+  document.getElementById('assetToggleStock').classList.toggle('active', cls === 'stock');
+  document.getElementById('assetToggleBond').classList.toggle('active', cls === 'bond');
+  document.getElementById('stockControlsBlock').style.display = cls === 'stock' ? '' : 'none';
+  document.getElementById('bondControlsBlock').style.display = cls === 'bond' ? '' : 'none';
+  if (cls === 'bond') applyBondFilters();
+}
+
+/* Bond filter buttons (currency) — explicit wiring, data-bondfilter (not data-filter)
+   so the delegated Ideas-tab stock listener ignores them entirely. */
+function toggleBondFilter(btn) {
+  const group = btn.dataset.bondfilter;
+  const value = btn.dataset.value;
+  const set = bondFilters[group];
+  if (!(set instanceof Set)) return;
+
+  if (value === 'all') {
+    set.clear();
+    set.add('all');
+  } else {
+    set.delete('all');
+    if (set.has(value)) {
+      set.delete(value);
+      if (set.size === 0) set.add('all');
+    } else {
+      set.add(value);
+    }
+  }
+  document.querySelectorAll(`.bond-filter[data-bondfilter="${group}"]`).forEach(b => {
+    b.classList.toggle('active', set.has(b.dataset.value));
+  });
+  applyBondFilters();
+}
+
+function renderBondCurrencyFilterButtons() {
+  const box = document.getElementById('bondCurrencyFilterBtns');
+  if (!box) return;
+  const currencies = [...new Set(allBonds.map(b => b.currency).filter(Boolean))].sort();
+  box.innerHTML = '';
+  currencies.forEach(cur => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn bond-filter';
+    b.dataset.bondfilter = 'currency';
+    b.dataset.value = cur;
+    b.textContent = cur;
+    b.onclick = () => toggleBondFilter(b);
+    box.appendChild(b);
+  });
+}
+
+function populateBondRatingSelects() {
+  const minSel = document.getElementById('bondRatingMin');
+  const maxSel = document.getElementById('bondRatingMax');
+  if (!minSel || !maxSel || minSel.options.length > 1) return; // already populated
+  RATING_ORDER.forEach((r, idx) => {
+    const o1 = document.createElement('option'); o1.value = idx; o1.textContent = r; minSel.appendChild(o1);
+    const o2 = document.createElement('option'); o2.value = idx; o2.textContent = r; maxSel.appendChild(o2);
+  });
+}
+
+function applyBondFilters() {
+  bondFilters.search = (document.getElementById('bondSearchInput')?.value || '').toLowerCase();
+  bondFilters.ratingMin = document.getElementById('bondRatingMin')?.value || '';
+  bondFilters.ratingMax = document.getElementById('bondRatingMax')?.value || '';
+  bondFilters.durationMin = parseFloat(document.getElementById('bondDurationMin')?.value);
+  bondFilters.durationMax = parseFloat(document.getElementById('bondDurationMax')?.value);
+  bondFilters.ytmMin = parseFloat(document.getElementById('bondYtmMin')?.value);
+  bondFilters.ytmMax = parseFloat(document.getElementById('bondYtmMax')?.value);
+  bondFilters.spreadMin = parseFloat(document.getElementById('bondSpreadMin')?.value);
+  bondFilters.spreadMax = parseFloat(document.getElementById('bondSpreadMax')?.value);
+
+  filteredBonds = allBonds.filter(b => {
+    if (!bondFilters.currency.has('all') && !bondFilters.currency.has(b.currency)) return false;
+    if (bondFilters.ratingMin !== '' && ratingScore(b.rating) < parseInt(bondFilters.ratingMin, 10)) return false;
+    if (bondFilters.ratingMax !== '' && ratingScore(b.rating) > parseInt(bondFilters.ratingMax, 10)) return false;
+    if (!isNaN(bondFilters.durationMin) && (b.duration == null || b.duration < bondFilters.durationMin)) return false;
+    if (!isNaN(bondFilters.durationMax) && (b.duration == null || b.duration > bondFilters.durationMax)) return false;
+    if (!isNaN(bondFilters.ytmMin) && (b.ytm == null || b.ytm < bondFilters.ytmMin)) return false;
+    if (!isNaN(bondFilters.ytmMax) && (b.ytm == null || b.ytm > bondFilters.ytmMax)) return false;
+    if (!isNaN(bondFilters.spreadMin) && (b.spread == null || b.spread < bondFilters.spreadMin)) return false;
+    if (!isNaN(bondFilters.spreadMax) && (b.spread == null || b.spread > bondFilters.spreadMax)) return false;
+    if (bondFilters.search) {
+      const hay = [b.name, b.isin, b.sectorRu || b.sector, b.countryRu || b.country, b.currency].join(' ').toLowerCase();
+      if (!hay.includes(bondFilters.search)) return false;
+    }
+    return true;
+  });
+
+  renderBondTable();
+  updateBondStats();
+}
+
+function renderBondTable() {
+  const tbody = document.getElementById('bondTableBody');
+  if (!tbody) return;
+  if (filteredBonds.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#6B7280;">Нет облигаций, соответствующих фильтрам</td></tr>';
+    return;
+  }
+  let html = '';
+  filteredBonds.forEach((b, idx) => {
+    const inPf = isInPortfolio('bond', b.isin);
+    const pfBtnHtml = inPf
+      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="removeFromPortfolio('bond','${esc(b.isin)}');renderBondTable();">✅</button>`
+      : `<button class="btn-add-pf" title="Добавить в портфель" onclick="addToPortfolio(filteredBonds[${idx}],'bond');renderBondTable();">➕</button>`;
+    html += `<tr>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.name)}">${esc(b.name)}</td>
+      <td style="font-size:0.75rem;color:#6B7280;">${esc(b.isin) || '—'}</td>
+      <td class="sector-cell" title="${esc(b.countryRu || b.country)}">${esc(b.countryRu || b.country) || '—'}</td>
+      <td class="sector-cell" title="${esc(b.sectorRu || b.sector)}">${esc(b.sectorRu || b.sector) || '—'}</td>
+      <td style="text-align:center;font-size:0.8rem;">${esc(b.currency) || '—'}</td>
+      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
+      <td style="text-align:center;font-weight:700;color:#16A34A;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
+      <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
+      <td style="text-align:center;">${fmtNum(b.price)}</td>
+      <td style="text-align:center;">${fmtNum(b.duration)}</td>
+      <td style="text-align:center;">${b.spread != null ? fmtNum(b.spread, 0) : '—'}</td>
+      <td class="col-action">${pfBtnHtml}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+  const pfqc = document.getElementById('pfBondQuickCount');
+  if (pfqc) {
+    const n = loadPortfolio().filter(p => p.assetClass === 'bond').length;
+    pfqc.textContent = n > 0 ? `В портфеле: ${n} шт.` : '';
+  }
+}
+
+function updateBondStats() {
+  document.getElementById('bondStatCount').textContent = filteredBonds.length;
+  const ytms = filteredBonds.filter(b => b.ytm != null).map(b => b.ytm);
+  const avgYtm = ytms.length ? ytms.reduce((a,b)=>a+b,0)/ytms.length : null;
+  document.getElementById('bondStatYtm').textContent = avgYtm != null ? avgYtm.toFixed(2) + '%' : '—';
+  const durations = filteredBonds.filter(b => b.duration != null).map(b => b.duration);
+  const avgDur = durations.length ? durations.reduce((a,b)=>a+b,0)/durations.length : null;
+  document.getElementById('bondStatDuration').textContent = avgDur != null ? fmtNum(avgDur) : '—';
+  document.getElementById('bondStatRating').textContent = avgRating(filteredBonds);
+}
+
+function addFilteredBondsToPortfolio() {
+  if (filteredBonds.length === 0) {
+    showToast('Нет облигаций в текущем фильтре');
+    return;
+  }
+  const pf = loadPortfolio();
+  let added = 0;
+  const today = new Date().toISOString().slice(0, 10);
+  filteredBonds.forEach(b => {
+    if (!pf.some(p => p.assetClass === 'bond' && p.id === b.isin)) {
+      pf.push({
+        assetClass: 'bond',
+        id: b.isin,
+        addedAt: today,
+        entryPrice: b.price,
+        manualWeight: null,
+        lockedWeight: false
+      });
+      added++;
+    }
+  });
+  savePortfolio(pf);
+  showToast('Добавлено в портфель: ' + added + ' облигаций');
+  renderBondTable();
 }
 
 /* ===========================================================================
@@ -2049,10 +2359,10 @@ function renderTable() {
   filteredData.forEach((item, idx) => {
     const sel = idx === selectedIdx ? ' selected' : '';
     const potentialVal = item.status === 'CLOSED' ? item.perf : item.potential;
-    const inPf = isInPortfolio(item.ticker);
+    const inPf = isInPortfolio('stock', item.ticker);
     const pfBtnHtml = inPf
-      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="event.stopPropagation();removeFromPortfolio('${esc(item.ticker)}');renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">✅</button>`
-      : `<button class="btn-add-pf" title="Добавить в портфель" onclick="event.stopPropagation();addToPortfolio(filteredData[${idx}]);renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">➕</button>`;
+      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="event.stopPropagation();removeFromPortfolio('stock','${esc(item.ticker)}');renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">✅</button>`
+      : `<button class="btn-add-pf" title="Добавить в портфель" onclick="event.stopPropagation();addToPortfolio(filteredData[${idx}],'stock');renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">➕</button>`;
     html += `<tr class="${sel}" onclick="selectRow(${idx})">
       <td>${formatDate(item._date)}</td>
       <td class="ticker-cell">${esc(item.ticker)}</td>
@@ -2213,12 +2523,12 @@ function showDetail(item) {
   }
 
   // Portfolio button for detail panel
-  const inPf = isInPortfolio(item.ticker);
+  const inPf = isInPortfolio('stock', item.ticker);
   let pfDetailBtn = '';
   if (inPf) {
-    pfDetailBtn = `<button class="btn-add-portfolio in-portfolio" onclick="removeFromPortfolio('${esc(item.ticker)}');renderTable();showDetail(filteredData[selectedIdx]);">✅ В портфеле <span class="btn-remove-text">• Убрать</span></button>`;
+    pfDetailBtn = `<button class="btn-add-portfolio in-portfolio" onclick="removeFromPortfolio('stock','${esc(item.ticker)}');renderTable();showDetail(filteredData[selectedIdx]);">✅ В портфеле <span class="btn-remove-text">• Убрать</span></button>`;
   } else {
-    pfDetailBtn = `<button class="btn-add-portfolio" onclick="addToPortfolio(filteredData[selectedIdx]);renderTable();showDetail(filteredData[selectedIdx]);">➕ Добавить в портфель</button>`;
+    pfDetailBtn = `<button class="btn-add-portfolio" onclick="addToPortfolio(filteredData[selectedIdx],'stock');renderTable();showDetail(filteredData[selectedIdx]);">➕ Добавить в портфель</button>`;
   }
 
   c.innerHTML = `
@@ -2426,40 +2736,54 @@ const PF_KEY = 'ags_portfolio';
 function loadPortfolio() {
   try {
     const raw = localStorage.getItem(PF_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const arr = raw ? JSON.parse(raw) : [];
+    // Normalize legacy entries ({ticker,...} with no assetClass/id) to {assetClass,id,...}
+    return arr.map(p => ({
+      assetClass: p.assetClass || 'stock',
+      id: p.id != null ? p.id : p.ticker,
+      addedAt: p.addedAt,
+      entryPrice: p.entryPrice,
+      manualWeight: p.manualWeight != null ? p.manualWeight : null,
+      lockedWeight: !!p.lockedWeight
+    }));
   } catch(e) { return []; }
 }
 function savePortfolio(arr) {
   localStorage.setItem(PF_KEY, JSON.stringify(arr));
 }
-function isInPortfolio(ticker) {
-  return loadPortfolio().some(p => p.ticker === ticker);
+function isInPortfolio(kind, id) {
+  return loadPortfolio().some(p => p.assetClass === kind && p.id === id);
 }
-function addToPortfolio(item) {
-  if (!item || !item.ticker) return;
+function addToPortfolio(item, kind) {
+  kind = kind || 'stock';
+  const id = kind === 'bond' ? item?.isin : item?.ticker;
+  if (!item || !id) return;
   const pf = loadPortfolio();
-  if (pf.some(p => p.ticker === item.ticker)) return;
+  if (pf.some(p => p.assetClass === kind && p.id === id)) return;
   pf.push({
-    ticker: item.ticker,
+    assetClass: kind,
+    id: id,
     addedAt: new Date().toISOString().slice(0, 10),
-    entryPrice: item.open != null ? item.open : item.price,
+    entryPrice: kind === 'bond' ? item.price : (item.open != null ? item.open : item.price),
     manualWeight: null,
     lockedWeight: false
   });
   savePortfolio(pf);
-  showToast('Добавлено в портфель: ' + item.ticker);
+  showToast('Добавлено в портфель: ' + (kind === 'bond' ? item.name : item.ticker));
 }
-function removeFromPortfolio(ticker) {
+function removeFromPortfolio(kind, id) {
   let pf = loadPortfolio();
-  pf = pf.filter(p => p.ticker !== ticker);
+  pf = pf.filter(p => !(p.assetClass === kind && p.id === id));
   savePortfolio(pf);
-  showToast('Удалено из портфеля: ' + ticker);
+  showToast('Удалено из портфеля: ' + id);
 }
 
 function getPortfolioData() {
   const pf = loadPortfolio();
   return pf.map(p => {
-    const live = allData.find(d => d.ticker === p.ticker);
+    const live = p.assetClass === 'bond'
+      ? allBonds.find(b => b.isin === p.id)
+      : allData.find(d => d.ticker === p.id);
     return { ...p, live: live || null };
   }).filter(p => p.live);
 }
@@ -2620,9 +2944,9 @@ function calcWeightedUpside(pfData) {
   return totalWeight > 0 ? sum / totalWeight : null;
 }
 
-function setManualWeight(ticker, weight) {
+function setManualWeight(kind, id, weight) {
   const pf = loadPortfolio();
-  const item = pf.find(p => p.ticker === ticker);
+  const item = pf.find(p => p.assetClass === kind && p.id === id);
   if (item) {
     item.manualWeight = Math.max(0, Math.min(100, weight));
     item.lockedWeight = true;
@@ -2631,9 +2955,9 @@ function setManualWeight(ticker, weight) {
   }
 }
 
-function toggleWeightLock(ticker, locked) {
+function toggleWeightLock(kind, id, locked) {
   const pf = loadPortfolio();
-  const item = pf.find(p => p.ticker === ticker);
+  const item = pf.find(p => p.assetClass === kind && p.id === id);
   if (item) {
     item.lockedWeight = locked;
     if (!locked) item.manualWeight = null;
@@ -2734,10 +3058,16 @@ function renderSectorChart(pfDataAll) {
 
 /* Global: currently visible (filtered) portfolio — used by exports */
 let pfVisibleData = [];
+let pfVisibleBondData = [];
 
 function renderPortfolio() {
   renderPfSourceFilterButtons();
   const pfDataAll = getPortfolioData();
+  renderStockPortfolioSection(pfDataAll.filter(p => p.assetClass !== 'bond'));
+  renderBondPortfolioSection(pfDataAll.filter(p => p.assetClass === 'bond'));
+}
+
+function renderStockPortfolioSection(pfDataAll) {
   const area = document.getElementById('portfolioTableArea');
 
   // Populate sector exclusion checkboxes
@@ -2840,10 +3170,10 @@ function renderPortfolio() {
         <div style="display:flex;align-items:center;justify-content:center;gap:2px;">
           <input type="number" step="0.1" min="0" max="100" value="${p._weight.toFixed(1)}"
             style="${weightInputStyle}"
-            onchange="setManualWeight('${esc(item.ticker)}', parseFloat(this.value))">
+            onchange="setManualWeight('stock', '${esc(item.ticker)}', parseFloat(this.value))">
           <label style="cursor:pointer;font-size:0.7rem;" title="Зафиксировать долю">
             <input type="checkbox" ${p.lockedWeight ? 'checked' : ''}
-              onchange="toggleWeightLock('${esc(item.ticker)}', this.checked)"
+              onchange="toggleWeightLock('stock', '${esc(item.ticker)}', this.checked)"
               style="width:12px;height:12px;">
             🔒
           </label>
@@ -2853,7 +3183,7 @@ function renderPortfolio() {
       <td style="text-align:center">${hasDoc(item)
         ? `<a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" title="Открыть документ" style="text-decoration:none;">📎</a>`
         : '<span style="color:#D1D5DB;">–</span>'}</td>
-      <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('${esc(item.ticker)}');renderPortfolio();">✕ Убрать</button></td>
+      <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('stock','${esc(item.ticker)}');renderPortfolio();">✕ Убрать</button></td>
     </tr>`;
   });
 
@@ -2865,26 +3195,109 @@ function renderPortfolio() {
 }
 
 /* ===========================================================================
+   PORTFOLIO — BONDS SECTION
+   =========================================================================== */
+function portfolioBondWeightCellHTML(p) {
+  const locked = !!p.lockedWeight;
+  const style = locked
+    ? 'width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid #8B6A4E;border-radius:3px;font-family:Manrope,sans-serif;background:#F0F2F0;'
+    : 'width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid #ccc;border-radius:3px;font-family:Manrope,sans-serif;';
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:2px;">
+    <input type="number" step="0.1" min="0" max="100" value="${(p._weight||0).toFixed(1)}"
+      style="${style}"
+      onchange="setManualWeight('bond', '${esc(p.id)}', parseFloat(this.value))">
+    <label style="cursor:pointer;font-size:0.7rem;" title="Зафиксировать долю">
+      <input type="checkbox" ${locked ? 'checked' : ''}
+        onchange="toggleWeightLock('bond', '${esc(p.id)}', this.checked)"
+        style="width:12px;height:12px;">
+      🔒
+    </label>
+  </div>`;
+}
+
+function buildPortfolioBondsTableHTML(pfBondAll) {
+  let html = `<div class="portfolio-table-wrapper"><table>
+    <thead><tr>
+      <th>Название</th><th>ISIN</th>
+      <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
+      <th style="text-align:center">YTM</th><th style="text-align:center">Купон</th>
+      <th style="text-align:center">Цена</th><th style="text-align:center">Дюрация</th>
+      <th style="text-align:center">Спред</th>
+      <th style="text-align:center">Доля</th>
+      <th style="text-align:center">Действие</th>
+    </tr></thead><tbody>`;
+  pfBondAll.forEach(p => {
+    const b = p.live;
+    html += `<tr>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.name)}">${esc(b.name)}</td>
+      <td style="font-size:0.75rem;color:#6B7280;">${esc(b.isin) || '—'}</td>
+      <td style="text-align:center;font-size:0.8rem;">${esc(b.currency) || '—'}</td>
+      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
+      <td style="text-align:center;font-weight:700;color:#16A34A;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
+      <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
+      <td style="text-align:center;">${fmtNum(b.price)}</td>
+      <td style="text-align:center;">${fmtNum(b.duration)}</td>
+      <td style="text-align:center;">${b.spread != null ? fmtNum(b.spread, 0) : '—'}</td>
+      <td style="text-align:center;">${portfolioBondWeightCellHTML(p)}</td>
+      <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('bond','${esc(p.id)}');renderPortfolio();">✕ Убрать</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderBondPortfolioSection(pfBondAll) {
+  const section = document.getElementById('pfBondSection');
+  if (!section) return;
+
+  if (pfBondAll.length === 0) {
+    section.style.display = 'none';
+    pfVisibleBondData = [];
+    return;
+  }
+
+  section.style.display = '';
+  calcPortfolioWeights(pfBondAll);
+  pfVisibleBondData = pfBondAll;
+
+  document.getElementById('pfBondStatCount').textContent = pfBondAll.length;
+  const avgYtm = weightedAvg(pfBondAll, p => p.live.ytm);
+  const avgDur = weightedAvg(pfBondAll, p => p.live.duration);
+  document.getElementById('pfBondStatYtm').textContent = avgYtm != null ? avgYtm.toFixed(2) + '%' : '—';
+  document.getElementById('pfBondStatDuration').textContent = avgDur != null ? fmtNum(avgDur) : '—';
+  document.getElementById('pfBondStatRating').textContent = avgRating(pfBondAll.map(p => p.live));
+
+  document.getElementById('portfolioBondsArea').innerHTML = buildPortfolioBondsTableHTML(pfBondAll);
+}
+
+/* ===========================================================================
    PORTFOLIO ACTIONS
    =========================================================================== */
 function downloadPortfolioCSV() {
   // Use currently visible (filtered) portfolio
-  const pfData = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
-  if (pfData.length === 0) { showToast('Портфель пуст'); return; }
+  let pfStocks = pfVisibleData;
+  let pfBonds = pfVisibleBondData;
+  if (pfStocks.length === 0 && pfBonds.length === 0) {
+    const all = getPortfolioData();
+    pfStocks = all.filter(p => p.assetClass !== 'bond');
+    pfBonds = all.filter(p => p.assetClass === 'bond');
+  }
+  if (pfStocks.length === 0 && pfBonds.length === 0) { showToast('Портфель пуст'); return; }
 
-  const headers = ['Тикер','ISIN','Компания','Сектор','Страна','Валюта','Цена входа','Текущая цена','Целевая цена','Downside','Upside %','Доходность %','Доля %','Риск','Источник','Дата добавления'];
+  calcPortfolioWeights(pfStocks);
+  calcPortfolioWeights(pfBonds);
 
-  calcPortfolioWeights(pfData);
+  const headers = ['Класс','Тикер/ISIN','Название','Сектор','Страна','Валюта','Цена входа','Текущая цена','Целевая/Купон','Downside/Дюрация','Upside %/YTM %','Доходность %','Доля %','Риск/Рейтинг','Источник','Дата добавления'];
 
   let csv = '﻿'; // BOM for Excel
   csv += headers.join(';') + '\n';
 
-  pfData.forEach(p => {
+  pfStocks.forEach(p => {
     const item = p.live;
     const potVal = item.status === 'CLOSED' ? item.perf : item.potential;
     const row = [
+      'Акция',
       item.ticker,
-      item.isin || '',
       '"' + (item.company||'').replace(/"/g,'""') + '"',
       item.sector || '',
       item.country || '',
@@ -2903,6 +3316,29 @@ function downloadPortfolioCSV() {
     csv += row.join(';') + '\n';
   });
 
+  pfBonds.forEach(p => {
+    const b = p.live;
+    const row = [
+      'Облигация',
+      b.isin || '',
+      '"' + (b.name||'').replace(/"/g,'""') + '"',
+      b.sectorRu || b.sector || '',
+      b.countryRu || b.country || '',
+      b.currency || '',
+      p.entryPrice || '',
+      b.price || '',
+      b.coupon != null ? b.coupon.toFixed(2) : '',
+      b.duration != null ? b.duration.toFixed(2) : '',
+      b.ytm != null ? b.ytm.toFixed(2) : '',
+      '',
+      p._weight != null ? p._weight.toFixed(1) : '',
+      b.rating || '',
+      '',
+      p.addedAt || ''
+    ];
+    csv += row.join(';') + '\n';
+  });
+
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -2915,10 +3351,17 @@ function downloadPortfolioCSV() {
 
 function downloadPortfolioHTML() {
   // Use currently visible (filtered) portfolio
-  const pfData = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
-  if (pfData.length === 0) { showToast('Портфель пуст'); return; }
+  let pfData = pfVisibleData;
+  let pfBonds = pfVisibleBondData;
+  if (pfData.length === 0 && pfBonds.length === 0) {
+    const all = getPortfolioData();
+    pfData = all.filter(p => p.assetClass !== 'bond');
+    pfBonds = all.filter(p => p.assetClass === 'bond');
+  }
+  if (pfData.length === 0 && pfBonds.length === 0) { showToast('Портфель пуст'); return; }
 
   calcPortfolioWeights(pfData);
+  calcPortfolioWeights(pfBonds);
   const weightedUpside = calcWeightedUpside(pfData);
 
   const clientName = document.getElementById('clientName')?.value || 'Клиент';
@@ -2950,6 +3393,30 @@ function downloadPortfolioHTML() {
     </tr>`;
   });
 
+  let bondTableRows = '';
+  pfBonds.forEach(p => {
+    const b = p.live;
+    bondTableRows += `<tr>
+      <td>${esc(b.isin) || '—'}</td>
+      <td style="font-size:11px;">${esc(b.name)}</td>
+      <td>${esc(b.sectorRu || b.sector) || ''}</td>
+      <td>${esc(b.countryRu || b.country) || '—'}</td>
+      <td style="text-align:center">${esc(b.currency) || '—'}</td>
+      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
+      <td style="text-align:right">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
+      <td style="text-align:right">${b.duration != null ? b.duration.toFixed(2) : '—'}</td>
+      <td style="text-align:center">${p._weight.toFixed(1)}%</td>
+    </tr>`;
+  });
+  const bondTableBlock = pfBonds.length > 0 ? `
+    <div class="section-title">Облигации</div>
+    <table>
+      <thead><tr>
+        <th>ISIN</th><th>Название</th><th>Сектор</th><th>Страна</th><th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th><th style="text-align:right">YTM</th><th style="text-align:right">Дюрация</th><th style="text-align:center">Доля</th>
+      </tr></thead>
+      <tbody>${bondTableRows}</tbody>
+    </table>` : '';
+
   const amountLine = clientAmount ? `<p>Сумма инвестирования: <strong>${Number(clientAmount).toLocaleString()} ${esc(clientCurrency)}</strong></p>` : '';
 
   // Logo URL — works on GitHub Pages or locally
@@ -2971,7 +3438,7 @@ function downloadPortfolioHTML() {
     infoRows += `<span class="info-label">Сумма:</span><span class="info-value">${Number(rawAmount).toLocaleString()} ${esc(clientCurrency)}</span>`;
   }
   infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
-  infoRows += `<span class="info-label">Позиций:</span><span class="info-value">${pfData.length}</span>`;
+  infoRows += `<span class="info-label">Позиций:</span><span class="info-value">${pfData.length + pfBonds.length}</span>`;
   infoRows += `<span class="info-label">Ср. Upside:</span><span class="info-value accent">${upsideStr}</span>`;
 
   const html = `<!DOCTYPE html>
@@ -3050,14 +3517,16 @@ function downloadPortfolioHTML() {
       </div>
     </div>
 
-    <!-- Portfolio table -->
-    <div class="section-title">Состав портфеля</div>
+    <!-- Portfolio table(s) -->
+    ${pfData.length > 0 ? `
+    <div class="section-title">${pfBonds.length > 0 ? 'Акции' : 'Состав портфеля'}</div>
     <table>
       <thead><tr>
         <th>Тикер</th><th>ISIN</th><th>Компания</th><th>Сектор</th><th>Страна</th><th style="text-align:center">Вал.</th><th style="text-align:right">Цена</th><th style="text-align:right">Цель</th><th style="text-align:right">Upside</th><th style="text-align:center">Доля</th>
       </tr></thead>
       <tbody>${tableRows}</tbody>
-    </table>
+    </table>` : ''}
+    ${bondTableBlock}
 
     <div class="footer">
       Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
@@ -3215,9 +3684,10 @@ function addFilteredToPortfolio() {
   let added = 0;
   const today = new Date().toISOString().slice(0, 10);
   activeFiltered.forEach(item => {
-    if (!pf.some(p => p.ticker === item.ticker)) {
+    if (!pf.some(p => p.assetClass === 'stock' && p.id === item.ticker)) {
       pf.push({
-        ticker: item.ticker,
+        assetClass: 'stock',
+        id: item.ticker,
         addedAt: today,
         entryPrice: item.open != null ? item.open : item.price,
         manualWeight: null,
@@ -3250,7 +3720,8 @@ function toggleRebalancePanel() {
 }
 
 function renderRebalancePanel() {
-  const pfData = getPortfolioData();
+  // Rebalance logic (stoploss/target/closed) is stock-specific — bonds have no .target/.downside/.status
+  const pfData = getPortfolioData().filter(p => p.assetClass !== 'bond');
   const content = document.getElementById('rebalanceContent');
   const actions = document.getElementById('rebalanceActions');
   let items = [];
@@ -3298,16 +3769,13 @@ function renderRebalancePanel() {
 
 function applyRebalance() {
   const checkboxes = document.querySelectorAll('#rebalanceContent input[type="checkbox"]:checked');
-  let removed = 0;
-  checkboxes.forEach(cb => {
-    const ticker = cb.dataset.ticker;
-    if (ticker) {
-      let pf = loadPortfolio();
-      pf = pf.filter(p => p.ticker !== ticker);
-      savePortfolio(pf);
-      removed++;
-    }
-  });
+  const tickers = new Set();
+  checkboxes.forEach(cb => { if (cb.dataset.ticker) tickers.add(cb.dataset.ticker); });
+  let pf = loadPortfolio();
+  const before = pf.length;
+  pf = pf.filter(p => !(p.assetClass === 'stock' && tickers.has(p.id)));
+  const removed = before - pf.length;
+  savePortfolio(pf);
   showToast('Убрано из портфеля: ' + removed + ' позиций');
   document.getElementById('rebalancePanel').style.display = 'none';
   renderPortfolio();
@@ -4305,6 +4773,7 @@ function downloadModelHTML() {
    INIT
    =========================================================================== */
 fetchData();
+populateBondRatingSelects();
 fetchBonds().catch(e => console.warn('[AGS] Bonds fetch failed:', e.message));
 </script>
 </body>
