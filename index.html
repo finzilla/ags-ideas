@@ -995,6 +995,12 @@ td.right { text-align: center; }
     </div>
 
     <div class="filter-group">
+      <span class="filter-label">Страна:</span>
+      <button class="filter-btn bond-filter active" data-bondfilter="country" data-value="all" onclick="toggleBondFilter(this)">Все</button>
+      <span id="bondCountryFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
+    </div>
+
+    <div class="filter-group">
       <span class="filter-label">Рейтинг от:</span>
       <select id="bondRatingMin" onchange="applyBondFilters()"><option value="">Любой</option></select>
       <span class="filter-label">до:</span>
@@ -1047,22 +1053,22 @@ td.right { text-align: center; }
   </div>
 
   <!-- Bond table -->
-  <div class="table-section" id="bondTableSection" style="margin:0 24px 24px;">
+  <div id="bondTableSection" style="margin:0 24px 24px;">
     <div class="table-wrapper" id="bondTableWrapper">
       <table>
         <thead>
           <tr>
-            <th>Название</th>
-            <th>ISIN</th>
-            <th>Страна</th>
-            <th>Сектор</th>
-            <th style="text-align:center">Вал.</th>
-            <th style="text-align:center">Рейтинг</th>
-            <th style="text-align:center">YTM</th>
-            <th style="text-align:center">Купон</th>
-            <th style="text-align:center">Цена</th>
-            <th style="text-align:center">Дюрация</th>
-            <th style="text-align:center">Спред</th>
+            <th data-bondcol="name" class="sorted">Название <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="isin">ISIN <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="country">Страна <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="sector">Сектор <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="currency" style="text-align:center">Вал. <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="rating" style="text-align:center">Рейтинг <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="ytm" style="text-align:center">YTM <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="coupon" style="text-align:center">Купон <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="price" style="text-align:center">Цена <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="duration" style="text-align:center">Дюрация <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="spread" style="text-align:center">Спред <span class="sort-arrow">&#9650;</span></th>
             <th class="col-action" style="cursor:default;">➕</th>
           </tr>
         </thead>
@@ -1529,8 +1535,11 @@ let filters = {
 
 let currentAssetClass = 'stock'; // 'stock' | 'bond' — Ideas tab toggle
 let filteredBonds = [];
+let bondSortCol = 'name';
+let bondSortDir = 'asc';
 let bondFilters = {
   currency: new Set(['all']),
+  country: new Set(['all']),
   search: '',
   ratingMin: null, ratingMax: null,   // ratingScore() index, lower = better
   durationMin: null, durationMax: null,
@@ -1977,7 +1986,7 @@ function fetchBonds() {
         allBonds = bonds;
         console.log('[AGS] Loaded', bonds.length, 'bonds');
         try { updatePoolInfo(); } catch(e) {}
-        try { renderBondCurrencyFilterButtons(); applyBondFilters(); } catch(e) {}
+        try { renderBondCurrencyFilterButtons(); renderBondCountryFilterButtons(); applyBondFilters(); } catch(e) {}
         resolve(bonds);
       } catch(e) { reject(e); }
     };
@@ -2078,6 +2087,24 @@ function renderBondCurrencyFilterButtons() {
   });
 }
 
+function bondCountryLabel(b) { return b.countryRu || b.country || ''; }
+
+function renderBondCountryFilterButtons() {
+  const box = document.getElementById('bondCountryFilterBtns');
+  if (!box) return;
+  const countries = [...new Set(allBonds.map(bondCountryLabel).filter(Boolean))].sort();
+  box.innerHTML = '';
+  countries.forEach(country => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn bond-filter';
+    b.dataset.bondfilter = 'country';
+    b.dataset.value = country;
+    b.textContent = country;
+    b.onclick = () => toggleBondFilter(b);
+    box.appendChild(b);
+  });
+}
+
 function populateBondRatingSelects() {
   const minSel = document.getElementById('bondRatingMin');
   const maxSel = document.getElementById('bondRatingMax');
@@ -2101,6 +2128,7 @@ function applyBondFilters() {
 
   filteredBonds = allBonds.filter(b => {
     if (!bondFilters.currency.has('all') && !bondFilters.currency.has(b.currency)) return false;
+    if (!bondFilters.country.has('all') && !bondFilters.country.has(bondCountryLabel(b))) return false;
     if (bondFilters.ratingMin !== '' && ratingScore(b.rating) < parseInt(bondFilters.ratingMin, 10)) return false;
     if (bondFilters.ratingMax !== '' && ratingScore(b.rating) > parseInt(bondFilters.ratingMax, 10)) return false;
     if (!isNaN(bondFilters.durationMin) && (b.duration == null || b.duration < bondFilters.durationMin)) return false;
@@ -2116,8 +2144,34 @@ function applyBondFilters() {
     return true;
   });
 
-  renderBondTable();
+  applyBondSort();
   updateBondStats();
+}
+
+function applyBondSort() {
+  filteredBonds.sort((a, b) => {
+    let va, vb;
+    switch (bondSortCol) {
+      case 'name': va = a.name || ''; vb = b.name || ''; break;
+      case 'isin': va = a.isin || ''; vb = b.isin || ''; break;
+      case 'country': va = bondCountryLabel(a); vb = bondCountryLabel(b); break;
+      case 'sector': va = a.sectorRu || a.sector || ''; vb = b.sectorRu || b.sector || ''; break;
+      case 'currency': va = a.currency || ''; vb = b.currency || ''; break;
+      case 'rating': va = ratingScore(a.rating); vb = ratingScore(b.rating); break;
+      case 'ytm': va = a.ytm || 0; vb = b.ytm || 0; break;
+      case 'coupon': va = a.coupon || 0; vb = b.coupon || 0; break;
+      case 'price': va = a.price || 0; vb = b.price || 0; break;
+      case 'duration': va = a.duration || 0; vb = b.duration || 0; break;
+      case 'spread': va = a.spread || 0; vb = b.spread || 0; break;
+      default: va = 0; vb = 0;
+    }
+    if (typeof va === 'string') {
+      const cmp = va.localeCompare(vb);
+      return bondSortDir === 'asc' ? cmp : -cmp;
+    }
+    return bondSortDir === 'asc' ? va - vb : vb - va;
+  });
+  renderBondTable();
 }
 
 function renderBondTable() {
@@ -2617,7 +2671,7 @@ document.querySelectorAll('thead th[data-col]').forEach(th => {
       sortDir = 'asc';
     }
     // Update UI
-    document.querySelectorAll('thead th').forEach(t => {
+    document.querySelectorAll('#tableWrapper thead th').forEach(t => {
       t.classList.remove('sorted');
       const arrow = t.querySelector('.sort-arrow');
       if (arrow) arrow.innerHTML = '&#9650;';
@@ -2625,6 +2679,26 @@ document.querySelectorAll('thead th[data-col]').forEach(th => {
     th.classList.add('sorted');
     th.querySelector('.sort-arrow').innerHTML = sortDir === 'asc' ? '&#9650;' : '&#9660;';
     applySort();
+  });
+});
+
+document.querySelectorAll('thead th[data-bondcol]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.bondcol;
+    if (bondSortCol === col) {
+      bondSortDir = bondSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      bondSortCol = col;
+      bondSortDir = 'asc';
+    }
+    document.querySelectorAll('#bondTableWrapper thead th').forEach(t => {
+      t.classList.remove('sorted');
+      const arrow = t.querySelector('.sort-arrow');
+      if (arrow) arrow.innerHTML = '&#9650;';
+    });
+    th.classList.add('sorted');
+    th.querySelector('.sort-arrow').innerHTML = bondSortDir === 'asc' ? '&#9650;' : '&#9660;';
+    applyBondSort();
   });
 });
 
