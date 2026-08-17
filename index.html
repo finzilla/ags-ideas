@@ -997,7 +997,7 @@ td.right { text-align: center; }
     <div class="filter-group">
       <span class="filter-label">Страна:</span>
       <button class="filter-btn bond-filter active" data-bondfilter="country" data-value="all" onclick="toggleBondFilter(this)">Все</button>
-      <span id="bondCountryFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
+      <button class="filter-btn bond-filter" data-bondfilter="country" data-value="kz" onclick="toggleBondFilter(this)">Казахстан</button>
     </div>
 
     <div class="filter-group">
@@ -1020,7 +1020,7 @@ td.right { text-align: center; }
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">Спред, б.п.:</span>
+      <span class="filter-label">Spread, б.п.:</span>
       <input type="number" step="1" id="bondSpreadMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
       <input type="number" step="1" id="bondSpreadMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
     </div>
@@ -1068,7 +1068,7 @@ td.right { text-align: center; }
             <th data-bondcol="coupon" style="text-align:center">Купон <span class="sort-arrow">&#9650;</span></th>
             <th data-bondcol="price" style="text-align:center">Цена <span class="sort-arrow">&#9650;</span></th>
             <th data-bondcol="duration" style="text-align:center">Дюрация <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="spread" style="text-align:center">Спред <span class="sort-arrow">&#9650;</span></th>
+            <th data-bondcol="spread" style="text-align:center">Spread <span class="sort-arrow">&#9650;</span></th>
             <th class="col-action" style="cursor:default;">➕</th>
           </tr>
         </thead>
@@ -1965,7 +1965,7 @@ function bondsGvizToData(table) {
       passFilter: str(row, 'Проходит фильтр'),
       rank: num(row, 'Ранг'),
       sheetWeight: num(row, 'Доля'),
-      spread: num(row, 'Спред'),
+      spread: num(row, 'Spread'),
       issueDate: str(row, 'Дата начала обращения')
     });
   }
@@ -1987,7 +1987,7 @@ function fetchBonds() {
         allBonds = bonds;
         console.log('[AGS] Loaded', bonds.length, 'bonds');
         try { updatePoolInfo(); } catch(e) {}
-        try { renderBondCurrencyFilterButtons(); renderBondCountryFilterButtons(); applyBondFilters(); } catch(e) {}
+        try { renderBondCurrencyFilterButtons(); applyBondFilters(); } catch(e) {}
         resolve(bonds);
       } catch(e) { reject(e); }
     };
@@ -2090,20 +2090,10 @@ function renderBondCurrencyFilterButtons() {
 
 function bondCountryLabel(b) { return b.countryRu || b.country || ''; }
 
-function renderBondCountryFilterButtons() {
-  const box = document.getElementById('bondCountryFilterBtns');
-  if (!box) return;
-  const countries = [...new Set(allBonds.map(bondCountryLabel).filter(Boolean))].sort();
-  box.innerHTML = '';
-  countries.forEach(country => {
-    const b = document.createElement('button');
-    b.className = 'filter-btn bond-filter';
-    b.dataset.bondfilter = 'country';
-    b.dataset.value = country;
-    b.textContent = country;
-    b.onclick = () => toggleBondFilter(b);
-    box.appendChild(b);
-  });
+/* Only Kazakhstan gets its own filter button — other countries aren't split out individually */
+function isKazakhstanBond(b) {
+  const c = bondCountryLabel(b).toLowerCase() + ' ' + (b.country || '').toLowerCase();
+  return c.includes('казахстан') || c.includes('kazakhstan') || c.includes(' kz ') || c.trim().endsWith(' kz');
 }
 
 function populateBondRatingSelects() {
@@ -2129,7 +2119,7 @@ function applyBondFilters() {
 
   filteredBonds = allBonds.filter(b => {
     if (!bondFilters.currency.has('all') && !bondFilters.currency.has(b.currency)) return false;
-    if (!bondFilters.country.has('all') && !bondFilters.country.has(bondCountryLabel(b))) return false;
+    if (!bondFilters.country.has('all') && bondFilters.country.has('kz') && !isKazakhstanBond(b)) return false;
     if (bondFilters.ratingMin !== '' && ratingScore(b.rating) < parseInt(bondFilters.ratingMin, 10)) return false;
     if (bondFilters.ratingMax !== '' && ratingScore(b.rating) > parseInt(bondFilters.ratingMax, 10)) return false;
     if (!isNaN(bondFilters.durationMin) && (b.duration == null || b.duration < bondFilters.durationMin)) return false;
@@ -3298,7 +3288,7 @@ function buildPortfolioBondsTableHTML(pfBondAll) {
       <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
       <th style="text-align:center">YTM</th><th style="text-align:center">Купон</th>
       <th style="text-align:center">Цена</th><th style="text-align:center">Дюрация</th>
-      <th style="text-align:center">Спред</th>
+      <th style="text-align:center">Spread</th>
       <th style="text-align:center">Доля</th>
       <th style="text-align:center">Действие</th>
     </tr></thead><tbody>`;
