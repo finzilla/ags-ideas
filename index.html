@@ -1208,8 +1208,9 @@ td.right { text-align: center; }
       </div>
     </div>
     <div class="portfolio-controls" id="pfBondActions">
-      <button class="portfolio-btn" onclick="showToast('Скоро: календарь купонных выплат — заполните даты начала обращения в Google Таблице')" title="Появится после заполнения дат начала обращения бондов в Google Таблице">📅 Календарь выплат (скоро)</button>
+      <button class="portfolio-btn" onclick="toggleCouponCalendar()" title="Требует заполненной «Даты начала обращения» в Google Таблице (лист Bonds)">📅 Календарь выплат</button>
     </div>
+    <div id="couponCalendarArea" style="display:none;padding:0 24px;"></div>
     <div id="portfolioBondsArea"></div>
   </div>
 </div><!-- /viewPortfolio -->
@@ -3133,6 +3134,7 @@ function renderSectorChart(pfDataAll) {
 /* Global: currently visible (filtered) portfolio — used by exports */
 let pfVisibleData = [];
 let pfVisibleBondData = [];
+let couponCalendarEntries = [];
 
 function renderPortfolio() {
   renderPfSourceFilterButtons();
@@ -3342,6 +3344,156 @@ function renderBondPortfolioSection(pfBondAll) {
   document.getElementById('pfBondStatRating').textContent = avgRating(pfBondAll.map(p => p.live));
 
   document.getElementById('portfolioBondsArea').innerHTML = buildPortfolioBondsTableHTML(pfBondAll);
+
+  // Keep an already-open calendar in sync with portfolio changes
+  const calArea = document.getElementById('couponCalendarArea');
+  if (calArea && calArea.style.display !== 'none') renderCouponCalendar();
+}
+
+/* ===========================================================================
+   COUPON CALENDAR — projected coupon payments by month
+   Requires per-bond "Дата начала обращения" (issueDate) + "Купонов/год"
+   (couponsPerYear) from the Bonds sheet. Projection is approximate
+   (365.25/couponsPerYear days per period) — good enough for planning,
+   not a settlement-accurate schedule.
+   =========================================================================== */
+const RU_MONTHS_NOM = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+function generateCouponDates(issueDateObj, couponsPerYear, horizonStart, horizonEnd) {
+  if (!issueDateObj || !couponsPerYear || couponsPerYear <= 0) return [];
+  const periodMs = (365.25 / couponsPerYear) * 86400000;
+  const dates = [];
+  let cursor = new Date(issueDateObj.getTime());
+  let iterations = 0;
+  while (cursor < horizonStart && iterations < 2000) {
+    cursor = new Date(cursor.getTime() + periodMs);
+    iterations++;
+  }
+  while (cursor <= horizonEnd && iterations < 4000) {
+    dates.push(new Date(cursor.getTime()));
+    cursor = new Date(cursor.getTime() + periodMs);
+    iterations++;
+  }
+  return dates;
+}
+
+function computeCouponCalendar(pfBondAll, monthsAhead) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const horizonEnd = new Date(today.getFullYear(), today.getMonth() + monthsAhead, today.getDate());
+  const entries = [];
+  let skipped = 0;
+  pfBondAll.forEach(p => {
+    const b = p.live;
+    const issueDateObj = parseDate(b.issueDate);
+    if (!issueDateObj || !b.couponsPerYear) { skipped++; return; }
+    generateCouponDates(issueDateObj, b.couponsPerYear, today, horizonEnd).forEach(d => {
+      entries.push({
+        date: d,
+        monthKey: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'),
+        bond: b
+      });
+    });
+  });
+  entries.sort((a, b) => a.date - b.date);
+  return { entries, skipped, total: pfBondAll.length };
+}
+
+function toggleCouponCalendar() {
+  const container = document.getElementById('couponCalendarArea');
+  if (!container) return;
+  if (container.style.display === 'none') {
+    container.style.display = '';
+    renderCouponCalendar();
+  } else {
+    container.style.display = 'none';
+  }
+}
+
+function renderCouponCalendar() {
+  const container = document.getElementById('couponCalendarArea');
+  if (!container) return;
+
+  let pfBondAll = pfVisibleBondData;
+  if (pfBondAll.length === 0) {
+    pfBondAll = getPortfolioData().filter(p => p.assetClass === 'bond');
+  }
+  if (pfBondAll.length === 0) {
+    couponCalendarEntries = [];
+    container.innerHTML = '<div style="padding:16px 0;color:#6B7280;">В портфеле нет облигаций.</div>';
+    return;
+  }
+
+  const { entries, skipped, total } = computeCouponCalendar(pfBondAll, 12);
+  couponCalendarEntries = entries;
+
+  if (entries.length === 0) {
+    container.innerHTML = `<div style="padding:16px 0;color:#6B7280;">
+      Не удалось построить календарь: ни у одной облигации в портфеле не заполнена «Дата начала обращения» в Google Таблице (пропущено: ${skipped} из ${total}).
+    </div>`;
+    return;
+  }
+
+  const today = new Date();
+  const months = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    months.push({ key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), label: RU_MONTHS_NOM[d.getMonth()] + ' ' + d.getFullYear() });
+  }
+
+  let html = '<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:12px;">';
+  if (skipped > 0) {
+    html += `<div style="padding:0 0 8px;color:#8B6A4E;font-size:0.8rem;">⚠ Пропущено облигаций без даты начала обращения: ${skipped} из ${total}</div>`;
+  }
+  months.forEach(m => {
+    const monthEntries = entries.filter(e => e.monthKey === m.key);
+    html += `<div style="margin-bottom:10px;">
+      <div style="font-weight:600;font-size:0.85rem;color:#0A1638;padding:6px 0;border-bottom:1px solid var(--border);">${m.label}${monthEntries.length ? '' : ' — нет выплат'}</div>`;
+    if (monthEntries.length) {
+      html += `<table style="width:100%;font-size:0.8rem;"><tbody>`;
+      monthEntries.forEach(e => {
+        html += `<tr>
+          <td style="padding:3px 6px;color:#6B7280;white-space:nowrap;">${formatDate(e.date)}</td>
+          <td style="padding:3px 6px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(e.bond.name)}">${esc(e.bond.name)}</td>
+          <td style="padding:3px 6px;font-size:0.75rem;color:#6B7280;">${esc(e.bond.isin) || '—'}</td>
+          <td style="padding:3px 6px;text-align:center;">${esc(e.bond.currency) || '—'}</td>
+          <td style="padding:3px 6px;text-align:center;">${e.bond.coupon != null ? e.bond.coupon.toFixed(2) + '%' : '—'}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+    }
+    html += `</div>`;
+  });
+  html += `<button class="portfolio-btn" onclick="downloadCouponCalendarCSV()">📥 Скачать календарь CSV</button>`;
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function downloadCouponCalendarCSV() {
+  if (!couponCalendarEntries || couponCalendarEntries.length === 0) { showToast('Календарь пуст'); return; }
+  const headers = ['Дата выплаты', 'Месяц', 'Облигация', 'ISIN', 'Валюта', 'Купон %', 'Рейтинг'];
+  let csv = '﻿';
+  csv += headers.join(';') + '\n';
+  couponCalendarEntries.forEach(e => {
+    const row = [
+      formatDate(e.date),
+      e.monthKey,
+      '"' + (e.bond.name || '').replace(/"/g, '""') + '"',
+      e.bond.isin || '',
+      e.bond.currency || '',
+      e.bond.coupon != null ? e.bond.coupon.toFixed(2) : '',
+      e.bond.rating || ''
+    ];
+    csv += row.join(';') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'AGS_Coupon_Calendar_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Календарь скачан');
 }
 
 /* ===========================================================================
