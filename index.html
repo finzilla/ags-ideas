@@ -1143,6 +1143,10 @@ td.right { text-align: center; }
     <button class="portfolio-btn btn-pdf" onclick="downloadPortfolioHTML()"><svg class="pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>PDF для клиента</button>
     <button class="portfolio-btn" onclick="downloadIdeasSummary('portfolio')">📄 Описания идей</button>
     <button class="portfolio-btn danger" onclick="clearPortfolio()">🗑 Очистить портфель</button>
+    <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;color:#6B7280;cursor:pointer;user-select:none;margin-left:6px;">
+      <input type="checkbox" id="pfIncludeCouponCalendar" style="width:14px;height:14px;">
+      Добавить календарь выплат
+    </label>
   </div>
 
   <!-- Rebalance Panel (hidden) -->
@@ -1207,6 +1211,7 @@ td.right { text-align: center; }
         <div class="stat-card-value" id="pfBondStatRating">—</div>
       </div>
     </div>
+    <div id="pfBondAmountsRow" style="padding:0 24px 8px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;"></div>
     <div class="portfolio-controls" id="pfBondActions">
       <button class="portfolio-btn" onclick="toggleCouponCalendar()" title="Требует заполненной «Даты начала обращения» в Google Таблице (лист Bonds)">📅 Календарь выплат</button>
     </div>
@@ -1300,6 +1305,10 @@ td.right { text-align: center; }
           <button class="portfolio-btn primary" onclick="buildModelPortfolio()">🔄 Собрать портфель</button>
           <button class="portfolio-btn btn-pdf" onclick="downloadModelHTML()"><svg class="pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>PDF для клиента</button>
           <button class="portfolio-btn" onclick="downloadIdeasSummary('model')">📄 Описания идей</button>
+          <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;color:#6B7280;cursor:pointer;user-select:none;">
+            <input type="checkbox" id="mdlIncludeCouponCalendar" style="width:14px;height:14px;">
+            Добавить календарь выплат
+          </label>
         </div>
       </div>
     </div>
@@ -3129,7 +3138,6 @@ function renderSectorChart(pfDataAll) {
 /* Global: currently visible (filtered) portfolio — used by exports */
 let pfVisibleData = [];
 let pfVisibleBondData = [];
-let couponCalendarEntries = [];
 
 function renderPortfolio() {
   renderPfSourceFilterButtons();
@@ -3339,6 +3347,7 @@ function renderBondPortfolioSection(pfBondAll) {
   document.getElementById('pfBondStatRating').textContent = avgRating(pfBondAll.map(p => p.live));
 
   document.getElementById('portfolioBondsArea').innerHTML = buildPortfolioBondsTableHTML(pfBondAll);
+  renderBondAmountInputs(pfBondAll);
 
   // Keep an already-open calendar in sync with portfolio changes
   const calArea = document.getElementById('couponCalendarArea');
@@ -3346,13 +3355,16 @@ function renderBondPortfolioSection(pfBondAll) {
 }
 
 /* ===========================================================================
-   COUPON CALENDAR — projected coupon payments by month
+   COUPON CALENDAR — issuer × month payment matrix
    Requires per-bond "Дата начала обращения" (issueDate) + "Купонов/год"
-   (couponsPerYear) from the Bonds sheet. Projection is approximate
+   (couponsPerYear) from the Bonds sheet. Date projection is approximate
    (365.25/couponsPerYear days per period) — good enough for planning,
-   not a settlement-accurate schedule.
+   not a settlement-accurate schedule. Amounts require a per-currency
+   "invested amount" supplied by the caller (see buildInvestedPairsForPortfolio
+   for the Portfolio tab, and getModelAmount()-based calc for Models).
    =========================================================================== */
-const RU_MONTHS_NOM = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const RU_MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const BOND_CALENDAR_AMOUNTS_KEY = 'ags_bond_calendar_amounts';
 
 function generateCouponDates(issueDateObj, couponsPerYear, horizonStart, horizonEnd) {
   if (!issueDateObj || !couponsPerYear || couponsPerYear <= 0) return [];
@@ -3372,26 +3384,141 @@ function generateCouponDates(issueDateObj, couponsPerYear, horizonStart, horizon
   return dates;
 }
 
-function computeCouponCalendar(pfBondAll, monthsAhead) {
+function loadBondCalendarAmounts() {
+  try { return JSON.parse(localStorage.getItem(BOND_CALENDAR_AMOUNTS_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+function saveBondCalendarAmounts(obj) {
+  localStorage.setItem(BOND_CALENDAR_AMOUNTS_KEY, JSON.stringify(obj));
+}
+
+/* Renders one "Сумма в облигациях (<CUR>)" input per currency present among pfBondAll,
+   persisted to localStorage — used to split each currency's amount across its bonds
+   proportionally to their in-portfolio weight (renormalized within the currency group). */
+function renderBondAmountInputs(pfBondAll) {
+  const box = document.getElementById('pfBondAmountsRow');
+  if (!box) return;
+  const currencies = [...new Set(pfBondAll.map(p => p.live.currency || '—'))].sort();
+  const amounts = loadBondCalendarAmounts();
+  box.innerHTML = '';
+  currencies.forEach(cur => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center;gap:6px;';
+    const label = document.createElement('span');
+    label.style.cssText = 'font-size:0.8rem;color:#6B7280;';
+    label.textContent = 'Сумма в облигациях (' + cur + '):';
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.placeholder = '0';
+    input.style.cssText = 'width:130px;padding:4px 6px;border:1px solid #C6CEC8;border-radius:4px;font-size:0.8rem;font-family:Manrope,sans-serif;';
+    input.value = amounts[cur] != null ? amounts[cur] : '';
+    input.oninput = () => {
+      const a = loadBondCalendarAmounts();
+      const v = parseFloat(input.value);
+      a[cur] = isNaN(v) ? 0 : v;
+      saveBondCalendarAmounts(a);
+      const calArea = document.getElementById('couponCalendarArea');
+      if (calArea && calArea.style.display !== 'none') renderCouponCalendar();
+    };
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    box.appendChild(wrap);
+  });
+}
+
+/* Splits each currency's entered amount across its bonds proportionally to
+   their portfolio weight, renormalized within that currency's subgroup
+   (weights on pfBondAll sum to 100 across ALL bonds regardless of currency,
+   so a straight weight% of the currency-specific amount would under-count). */
+function buildInvestedPairsForPortfolio(pfBondAll) {
+  const amounts = loadBondCalendarAmounts();
+  const groupWeight = {};
+  pfBondAll.forEach(p => {
+    const cur = p.live.currency || '—';
+    groupWeight[cur] = (groupWeight[cur] || 0) + (p._weight || 0);
+  });
+  return pfBondAll.map(p => {
+    const cur = p.live.currency || '—';
+    const amt = amounts[cur] || 0;
+    const gw = groupWeight[cur] || 0;
+    const invested = gw > 0 ? amt * (p._weight || 0) / gw : 0;
+    return { bond: p.live, invested };
+  });
+}
+
+/* Core matrix builder — shared by the Portfolio tab preview/export and the
+   Model Portfolios PDF export. items: [{ bond, invested }]. */
+function buildCouponMatrix(items, monthsAhead) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const horizonEnd = new Date(today.getFullYear(), today.getMonth() + monthsAhead, today.getDate());
-  const entries = [];
-  let skipped = 0;
-  pfBondAll.forEach(p => {
-    const b = p.live;
+
+  const months = [];
+  for (let i = 0; i < monthsAhead; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    months.push({ key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), label: RU_MONTHS_SHORT[d.getMonth()] });
+  }
+  const monthIndex = {};
+  months.forEach((m, i) => { monthIndex[m.key] = i; });
+
+  const byCurrency = {};
+  let skippedNoDate = 0;
+
+  items.forEach(({ bond: b, invested }) => {
     const issueDateObj = parseDate(b.issueDate);
-    if (!issueDateObj || !b.couponsPerYear) { skipped++; return; }
-    generateCouponDates(issueDateObj, b.couponsPerYear, today, horizonEnd).forEach(d => {
-      entries.push({
-        date: d,
-        monthKey: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'),
-        bond: b
-      });
+    if (!issueDateObj || !b.couponsPerYear) { skippedNoDate++; return; }
+    const dates = generateCouponDates(issueDateObj, b.couponsPerYear, today, horizonEnd);
+    if (dates.length === 0) return;
+
+    const cur = b.currency || '—';
+    if (!byCurrency[cur]) {
+      byCurrency[cur] = { months, rows: [], monthTotals: new Array(monthsAhead).fill(0), grandTotal: 0 };
+    }
+    const group = byCurrency[cur];
+    const cells = new Array(monthsAhead).fill(null);
+    let rowTotal = 0;
+    const perPayment = invested > 0 ? invested * (b.coupon || 0) / 100 / b.couponsPerYear : 0;
+    dates.forEach(d => {
+      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      const idx = monthIndex[key];
+      if (idx == null) return;
+      cells[idx] = (cells[idx] || 0) + perPayment;
+      rowTotal += perPayment;
+      group.monthTotals[idx] += perPayment;
+      group.grandTotal += perPayment;
     });
+    group.rows.push({ key: bondKey(b), name: b.name, isin: b.isin, cells, total: rowTotal });
   });
-  entries.sort((a, b) => a.date - b.date);
-  return { entries, skipped, total: pfBondAll.length };
+
+  return { byCurrency, skippedNoDate, totalBonds: items.length };
+}
+
+function fmtMoney(v) {
+  if (!v) return '';
+  return Math.round(v).toLocaleString('ru-RU');
+}
+
+/* headingClass: 'model-table-title' on the live page, 'section-title' inside PDF exports */
+function renderCouponMatrixHTML(byCurrency, headingClass) {
+  let html = '';
+  Object.keys(byCurrency).sort().forEach(cur => {
+    const g = byCurrency[cur];
+    html += `<div class="${headingClass}">Календарь купонных выплат — ${esc(cur)}</div>
+    <table><thead><tr><th>Эмитент</th>`;
+    g.months.forEach(m => { html += `<th style="text-align:center;">${esc(m.label)}</th>`; });
+    html += `<th style="text-align:center;">Год, Итого ${esc(cur)}</th></tr></thead><tbody>`;
+    g.rows.forEach(row => {
+      html += `<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(row.name)}">${esc(row.name)}</td>`;
+      row.cells.forEach(v => { html += `<td style="text-align:right;">${fmtMoney(v)}</td>`; });
+      html += `<td style="text-align:right;font-weight:700;">${fmtMoney(row.total)}</td></tr>`;
+    });
+    html += `<tr style="font-weight:700;"><td>Итого ${esc(cur)}</td>`;
+    g.monthTotals.forEach(v => { html += `<td style="text-align:right;">${fmtMoney(v)}</td>`; });
+    html += `<td style="text-align:right;">${fmtMoney(g.grandTotal)}</td></tr>`;
+    html += `</tbody></table>`;
+  });
+  return html;
 }
 
 function toggleCouponCalendar() {
@@ -3414,81 +3541,67 @@ function renderCouponCalendar() {
     pfBondAll = getPortfolioData().filter(p => p.assetClass === 'bond');
   }
   if (pfBondAll.length === 0) {
-    couponCalendarEntries = [];
     container.innerHTML = '<div style="padding:16px 0;color:#6B7280;">В портфеле нет облигаций.</div>';
     return;
   }
+  calcPortfolioWeights(pfBondAll);
 
-  const { entries, skipped, total } = computeCouponCalendar(pfBondAll, 12);
-  couponCalendarEntries = entries;
+  const investedPairs = buildInvestedPairsForPortfolio(pfBondAll);
+  const { byCurrency, skippedNoDate, totalBonds } = buildCouponMatrix(investedPairs, 12);
+  const currencies = Object.keys(byCurrency);
 
-  if (entries.length === 0) {
-    container.innerHTML = `<div style="padding:16px 0;color:#6B7280;">
-      Не удалось построить календарь: ни у одной облигации в портфеле не заполнена «Дата начала обращения» в Google Таблице (пропущено: ${skipped} из ${total}).
-    </div>`;
-    return;
+  let html = '<div style="margin-top:4px;border-top:1px solid #E5E7EB;padding-top:12px;">';
+  if (skippedNoDate > 0) {
+    html += `<div style="padding:0 0 8px;color:#8B6A4E;font-size:0.8rem;">⚠ Пропущено облигаций без даты начала обращения: ${skippedNoDate} из ${totalBonds}</div>`;
   }
-
-  const today = new Date();
-  const months = [];
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
-    months.push({ key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), label: RU_MONTHS_NOM[d.getMonth()] + ' ' + d.getFullYear() });
+  if (currencies.length === 0) {
+    html += `<div style="padding:8px 0;color:#6B7280;">Не удалось построить календарь: ни у одной облигации в портфеле не заполнена «Дата начала обращения» в Google Таблице.</div>`;
+  } else {
+    html += renderCouponMatrixHTML(byCurrency, 'model-table-title');
+    html += `<button class="portfolio-btn" style="margin-top:10px;" onclick="downloadCouponCalendarCSV()">📥 Скачать календарь CSV</button>`;
   }
-
-  let html = '<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:12px;">';
-  if (skipped > 0) {
-    html += `<div style="padding:0 0 8px;color:#8B6A4E;font-size:0.8rem;">⚠ Пропущено облигаций без даты начала обращения: ${skipped} из ${total}</div>`;
-  }
-  months.forEach(m => {
-    const monthEntries = entries.filter(e => e.monthKey === m.key);
-    html += `<div style="margin-bottom:10px;">
-      <div style="font-weight:600;font-size:0.85rem;color:#0A1638;padding:6px 0;border-bottom:1px solid var(--border);">${m.label}${monthEntries.length ? '' : ' — нет выплат'}</div>`;
-    if (monthEntries.length) {
-      html += `<table style="width:100%;font-size:0.8rem;"><tbody>`;
-      monthEntries.forEach(e => {
-        html += `<tr>
-          <td style="padding:3px 6px;color:#6B7280;white-space:nowrap;">${formatDate(e.date)}</td>
-          <td style="padding:3px 6px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(e.bond.name)}">${esc(e.bond.name)}</td>
-          <td style="padding:3px 6px;font-size:0.75rem;color:#6B7280;">${esc(e.bond.isin) || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;">${esc(e.bond.currency) || '—'}</td>
-          <td style="padding:3px 6px;text-align:center;">${e.bond.coupon != null ? e.bond.coupon.toFixed(2) + '%' : '—'}</td>
-        </tr>`;
-      });
-      html += `</tbody></table>`;
-    }
-    html += `</div>`;
-  });
-  html += `<button class="portfolio-btn" onclick="downloadCouponCalendarCSV()">📥 Скачать календарь CSV</button>`;
   html += '</div>';
   container.innerHTML = html;
 }
 
-function downloadCouponCalendarCSV() {
-  if (!couponCalendarEntries || couponCalendarEntries.length === 0) { showToast('Календарь пуст'); return; }
-  const headers = ['Дата выплаты', 'Месяц', 'Облигация', 'ISIN', 'Валюта', 'Купон %', 'Рейтинг'];
+function couponMatrixCSVForCurrency(cur, group) {
+  const headers = ['Эмитент', 'ISIN', ...group.months.map(m => m.label), 'Год, Итого'];
   let csv = '﻿';
   csv += headers.join(';') + '\n';
-  couponCalendarEntries.forEach(e => {
-    const row = [
-      formatDate(e.date),
-      e.monthKey,
-      '"' + (e.bond.name || '').replace(/"/g, '""') + '"',
-      e.bond.isin || '',
-      e.bond.currency || '',
-      e.bond.coupon != null ? e.bond.coupon.toFixed(2) : '',
-      e.bond.rating || ''
-    ];
-    csv += row.join(';') + '\n';
+  group.rows.forEach(row => {
+    const cells = row.cells.map(v => v ? Math.round(v) : '');
+    csv += ['"' + (row.name || '').replace(/"/g, '""') + '"', row.isin || '', ...cells, Math.round(row.total)].join(';') + '\n';
   });
+  const totalsCells = group.monthTotals.map(v => v ? Math.round(v) : '');
+  csv += ['Итого ' + cur, '', ...totalsCells, Math.round(group.grandTotal)].join(';') + '\n';
+  return csv;
+}
+
+function downloadOneCouponCalendarCSV(cur, group) {
+  const csv = couponMatrixCSVForCurrency(cur, group);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'AGS_Coupon_Calendar_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.download = 'AGS_Coupon_Calendar_' + cur + '_' + new Date().toISOString().slice(0, 10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
-  showToast('Календарь скачан');
+}
+
+function downloadCouponCalendarCSV() {
+  let pfBondAll = pfVisibleBondData;
+  if (pfBondAll.length === 0) pfBondAll = getPortfolioData().filter(p => p.assetClass === 'bond');
+  if (pfBondAll.length === 0) { showToast('В портфеле нет облигаций'); return; }
+  calcPortfolioWeights(pfBondAll);
+  const investedPairs = buildInvestedPairsForPortfolio(pfBondAll);
+  const { byCurrency, skippedNoDate, totalBonds } = buildCouponMatrix(investedPairs, 12);
+  const currencies = Object.keys(byCurrency);
+  if (currencies.length === 0) {
+    showToast('Нет данных для календаря — заполните «Дата начала обращения» (пропущено ' + skippedNoDate + ' из ' + totalBonds + ')');
+    return;
+  }
+  currencies.forEach(cur => downloadOneCouponCalendarCSV(cur, byCurrency[cur]));
+  showToast('Календарь скачан' + (currencies.length > 1 ? ' (' + currencies.length + ' файла)' : ''));
 }
 
 /* ===========================================================================
@@ -3567,7 +3680,20 @@ function downloadPortfolioCSV() {
   a.download = 'AGS_Portfolio_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
-  showToast('Портфель скачан');
+
+  let toastMsg = 'Портфель скачан';
+  if (document.getElementById('pfIncludeCouponCalendar')?.checked && pfBonds.length > 0) {
+    const investedPairs = buildInvestedPairsForPortfolio(pfBonds);
+    const { byCurrency, skippedNoDate, totalBonds } = buildCouponMatrix(investedPairs, 12);
+    const currencies = Object.keys(byCurrency);
+    if (currencies.length > 0) {
+      currencies.forEach(cur => downloadOneCouponCalendarCSV(cur, byCurrency[cur]));
+    } else {
+      toastMsg = 'Портфель скачан. Календарь не добавлен — заполните «Дата начала обращения» (пропущено ' + skippedNoDate + ' из ' + totalBonds + ')';
+    }
+  }
+
+  showToast(toastMsg);
 }
 
 function downloadPortfolioHTML() {
@@ -3637,6 +3763,16 @@ function downloadPortfolioHTML() {
       </tr></thead>
       <tbody>${bondTableRows}</tbody>
     </table>` : '';
+
+  // Coupon calendar — optional separate page, only when the checkbox is on
+  let calendarPage = '';
+  if (document.getElementById('pfIncludeCouponCalendar')?.checked && pfBonds.length > 0) {
+    const investedPairs = buildInvestedPairsForPortfolio(pfBonds);
+    const { byCurrency } = buildCouponMatrix(investedPairs, 12);
+    if (Object.keys(byCurrency).length > 0) {
+      calendarPage = `<div class="page-break"></div>` + renderCouponMatrixHTML(byCurrency, 'section-title');
+    }
+  }
 
   const amountLine = clientAmount ? `<p>Сумма инвестирования: <strong>${Number(clientAmount).toLocaleString()} ${esc(clientCurrency)}</strong></p>` : '';
 
@@ -3712,6 +3848,8 @@ function downloadPortfolioHTML() {
   /* Footer */
   .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
 
+  .page-break { height: 0; }
+
   ${REPORT_PRINT_CSS}
 </style>
 </head>
@@ -3748,6 +3886,7 @@ function downloadPortfolioHTML() {
       <tbody>${tableRows}</tbody>
     </table>` : ''}
     ${bondTableBlock}
+    ${calendarPage}
 
     <div class="footer">
       Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
@@ -4897,6 +5036,21 @@ function downloadModelHTML() {
     </table>`;
   }
 
+  // Coupon calendar — optional separate page, only when the checkbox is on
+  let calendarPage = '';
+  if (document.getElementById('mdlIncludeCouponCalendar')?.checked && bonds.length > 0) {
+    const amount = getModelAmount();
+    if (amount <= 0) {
+      showToast('Для календаря выплат укажите сумму клиента');
+    } else {
+      const investedPairs = bonds.map(b => ({ bond: b, invested: amount * (b._weight || 0) / 100 }));
+      const { byCurrency } = buildCouponMatrix(investedPairs, 12);
+      if (Object.keys(byCurrency).length > 0) {
+        calendarPage = `<div class="page-break"></div>` + renderCouponMatrixHTML(byCurrency, 'section-title');
+      }
+    }
+  }
+
   const logoURL = window.location.href.includes('github.io')
     ? 'https://finzilla.github.io/ags-ideas/assets/logo-light.png'
     : 'assets/logo-light.png';
@@ -4975,6 +5129,7 @@ function downloadModelHTML() {
 
     ${bondsPage}
     ${stocksPage}
+    ${calendarPage}
 
     <div class="footer">
       Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
