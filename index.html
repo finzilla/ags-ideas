@@ -2090,6 +2090,10 @@ function renderBondCurrencyFilterButtons() {
 
 function bondCountryLabel(b) { return b.countryRu || b.country || ''; }
 
+/* Portfolio/add-to-portfolio key for a bond — falls back to name when ISIN is missing
+   (many local/OTC instruments in the sheet have no ISIN filled in). */
+function bondKey(b) { return (b && (b.isin || b.name)) || ''; }
+
 /* Only Kazakhstan gets its own filter button — other countries aren't split out individually */
 function isKazakhstanBond(b) {
   const c = bondCountryLabel(b).toLowerCase() + ' ' + (b.country || '').toLowerCase();
@@ -2174,9 +2178,9 @@ function renderBondTable() {
   }
   let html = '';
   filteredBonds.forEach((b, idx) => {
-    const inPf = isInPortfolio('bond', b.isin);
+    const inPf = isInPortfolio('bond', bondKey(b));
     const pfBtnHtml = inPf
-      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="removeFromPortfolio('bond','${esc(b.isin)}');renderBondTable();">✅</button>`
+      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="removeFromPortfolio('bond','${esc(bondKey(b))}');renderBondTable();">✅</button>`
       : `<button class="btn-add-pf" title="Добавить в портфель" onclick="addToPortfolio(filteredBonds[${idx}],'bond');renderBondTable();">➕</button>`;
     html += `<tr>
       <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.name)}">${esc(b.name)}</td>
@@ -2221,10 +2225,11 @@ function addFilteredBondsToPortfolio() {
   let added = 0;
   const today = new Date().toISOString().slice(0, 10);
   filteredBonds.forEach(b => {
-    if (!pf.some(p => p.assetClass === 'bond' && p.id === b.isin)) {
+    const key = bondKey(b);
+    if (key && !pf.some(p => p.assetClass === 'bond' && p.id === key)) {
       pf.push({
         assetClass: 'bond',
-        id: b.isin,
+        id: key,
         addedAt: today,
         entryPrice: b.price,
         manualWeight: null,
@@ -2821,7 +2826,7 @@ function isInPortfolio(kind, id) {
 }
 function addToPortfolio(item, kind) {
   kind = kind || 'stock';
-  const id = kind === 'bond' ? item?.isin : item?.ticker;
+  const id = kind === 'bond' ? bondKey(item) : item?.ticker;
   if (!item || !id) return;
   const pf = loadPortfolio();
   if (pf.some(p => p.assetClass === kind && p.id === id)) return;
@@ -2847,7 +2852,7 @@ function getPortfolioData() {
   const pf = loadPortfolio();
   return pf.map(p => {
     const live = p.assetClass === 'bond'
-      ? allBonds.find(b => b.isin === p.id)
+      ? allBonds.find(b => bondKey(b) === p.id)
       : allData.find(d => d.ticker === p.id);
     return { ...p, live: live || null };
   }).filter(p => p.live);
