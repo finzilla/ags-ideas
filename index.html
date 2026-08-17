@@ -2015,10 +2015,42 @@ function fetchBonds() {
    =========================================================================== */
 const RATING_ORDER = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-','BB+','BB','BB-','B+','B','B-','CCC+','CCC','CCC-','CC','C','D'];
 
+/* Moody's-scale ratings ("Baa3", "Ba1"...), mapped to the equivalent S&P/Fitch grade above */
+const MOODY_RATING_MAP = {
+  'AA1':'AA+','AA2':'AA','AA3':'AA-',
+  'A1':'A+','A2':'A','A3':'A-',
+  'BAA1':'BBB+','BAA2':'BBB','BAA3':'BBB-',
+  'BA1':'BB+','BA2':'BB','BA3':'BB-',
+  'B1':'B+','B2':'B','B3':'B-',
+  'CAA1':'CCC+','CAA2':'CCC','CAA3':'CCC-',
+  'CA':'CC'
+};
+
+/* token -> RATING_ORDER index, longest token first so "BAA3"/"AA+" match
+   before shorter prefixes like "A3"/"AA" would. */
+const RATING_TOKEN_LOOKUP = (() => {
+  const map = {};
+  RATING_ORDER.forEach((t, idx) => { map[t] = idx; });
+  Object.entries(MOODY_RATING_MAP).forEach(([moody, sp]) => {
+    if (!(moody in map)) map[moody] = RATING_ORDER.indexOf(sp);
+  });
+  return Object.entries(map).sort((a, b) => b[0].length - a[0].length);
+})();
+
+/* Sheet ratings often carry agency/outlook noise ("Fitch B+ / Стаб.") or use
+   the Moody's scale ("Baa3") instead of an exact "BBB-"-style string — extract
+   the actual grade token instead of requiring a clean exact match (a mismatch
+   here silently falls back to 99 = "unrated", which the "до" range filter
+   then always excludes). */
 function ratingScore(r) {
   if (!r) return 99;
-  const idx = RATING_ORDER.indexOf(String(r).trim().toUpperCase());
-  return idx === -1 ? 99 : idx;
+  const s = String(r).trim().toUpperCase();
+  for (const [token, idx] of RATING_TOKEN_LOOKUP) {
+    const escaped = token.replace(/[+\-]/g, '\\$&');
+    const re = new RegExp('(?:^|[^A-Z])' + escaped + '(?:$|[^A-Z])');
+    if (re.test(s)) return idx;
+  }
+  return 99;
 }
 function isInvestmentGrade(r) { return ratingScore(r) <= RATING_ORDER.indexOf('BBB-'); }
 function avgRating(bonds) {
