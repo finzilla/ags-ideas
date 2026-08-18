@@ -2053,6 +2053,16 @@ function ratingScore(r) {
   return 99;
 }
 function isInvestmentGrade(r) { return ratingScore(r) <= RATING_ORDER.indexOf('BBB-'); }
+
+/* Rank on a "smaller = worse, bigger = better" scale (inverse of ratingScore,
+   where 0 = AAA/best) — used only for the "Рейтинг от/до" bond filter, so the
+   dropdown reads intuitively worst-to-best top-to-bottom. Unrated → -1, below
+   every real rank, so any finite bound still excludes it. */
+function bondRatingRank(r) {
+  const s = ratingScore(r);
+  return s >= 99 ? -1 : (RATING_ORDER.length - 1 - s);
+}
+
 function avgRating(bonds) {
   const scores = bonds.map(b => ratingScore(b.rating)).filter(s => s < 99);
   if (!scores.length) return '—';
@@ -2145,9 +2155,12 @@ function populateBondRatingSelects() {
   const minSel = document.getElementById('bondRatingMin');
   const maxSel = document.getElementById('bondRatingMax');
   if (!minSel || !maxSel || minSel.options.length > 1) return; // already populated
-  RATING_ORDER.forEach((r, idx) => {
-    const o1 = document.createElement('option'); o1.value = idx; o1.textContent = r; minSel.appendChild(o1);
-    const o2 = document.createElement('option'); o2.value = idx; o2.textContent = r; maxSel.appendChild(o2);
+  // Listed worst-to-best (D...AAA) with value = rank, so the scale reads
+  // "от меньшего (хуже) к большему (лучше)" top-to-bottom.
+  [...RATING_ORDER].reverse().forEach(r => {
+    const rank = RATING_ORDER.length - 1 - RATING_ORDER.indexOf(r);
+    const o1 = document.createElement('option'); o1.value = rank; o1.textContent = r; minSel.appendChild(o1);
+    const o2 = document.createElement('option'); o2.value = rank; o2.textContent = r; maxSel.appendChild(o2);
   });
 }
 
@@ -2165,8 +2178,8 @@ function applyBondFilters() {
   filteredBonds = allBonds.filter(b => {
     if (!bondFilters.currency.has('all') && !bondFilters.currency.has(b.currency)) return false;
     if (!bondFilters.country.has('all') && bondFilters.country.has('kz') && !isKazakhstanBond(b)) return false;
-    if (bondFilters.ratingMin !== '' && ratingScore(b.rating) < parseInt(bondFilters.ratingMin, 10)) return false;
-    if (bondFilters.ratingMax !== '' && ratingScore(b.rating) > parseInt(bondFilters.ratingMax, 10)) return false;
+    if (bondFilters.ratingMin !== '' && bondRatingRank(b.rating) < parseInt(bondFilters.ratingMin, 10)) return false;
+    if (bondFilters.ratingMax !== '' && bondRatingRank(b.rating) > parseInt(bondFilters.ratingMax, 10)) return false;
     if (!isNaN(bondFilters.durationMin) && (b.duration == null || b.duration < bondFilters.durationMin)) return false;
     if (!isNaN(bondFilters.durationMax) && (b.duration == null || b.duration > bondFilters.durationMax)) return false;
     if (!isNaN(bondFilters.ytmMin) && (b.ytm == null || b.ytm < bondFilters.ytmMin)) return false;
