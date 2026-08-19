@@ -1024,6 +1024,13 @@ td.right { text-align: center; }
       <input type="number" step="1" id="bondSpreadMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
       <input type="number" step="1" id="bondSpreadMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
     </div>
+
+    <div class="filter-group">
+      <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.85rem;cursor:pointer;user-select:none;" title="Показывать только облигации, где в столбце FDAP таблицы стоит «N» — без налога США">
+        <input type="checkbox" id="bondFdapOnlyIdeas" onchange="setFdapExemptOnly(this.checked)" style="width:14px;height:14px;">
+        Без налога США (FDAP)
+      </label>
+    </div>
   </div>
 
   <!-- Bond stats -->
@@ -1214,6 +1221,10 @@ td.right { text-align: center; }
     <div id="pfBondAmountsRow" style="padding:0 24px 8px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;"></div>
     <div class="portfolio-controls" id="pfBondActions">
       <button class="portfolio-btn" onclick="toggleCouponCalendar()" title="Требует заполненной «Даты начала обращения» в Google Таблице (лист Bonds)">📅 Календарь выплат</button>
+      <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;color:#6B7280;cursor:pointer;user-select:none;" title="Показывать только облигации, где в столбце FDAP таблицы стоит «N» — без налога США">
+        <input type="checkbox" id="pfFdapOnly" onchange="setFdapExemptOnly(this.checked)" style="width:14px;height:14px;">
+        Без налога США (FDAP)
+      </label>
     </div>
     <div id="couponCalendarArea" style="display:none;padding:0 24px;"></div>
     <div id="portfolioBondsArea"></div>
@@ -1273,6 +1284,13 @@ td.right { text-align: center; }
             ETF
           </label>
         </div>
+      </div>
+      <div class="model-config-group">
+        <span class="model-config-label">&nbsp;</span>
+        <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.85rem;color:#0A1638;white-space:nowrap;padding-top:4px;" title="Отбирать облигации только там, где в столбце FDAP таблицы стоит «N» — без налога США">
+          <input type="checkbox" id="mdlFdapOnly" onchange="setFdapExemptOnly(this.checked)" style="width:14px;height:14px;cursor:pointer;">
+          Без налога США (FDAP)
+        </label>
       </div>
       <div class="model-config-group">
         <span class="model-config-label">Доступно в пуле</span>
@@ -1975,7 +1993,8 @@ function bondsGvizToData(table) {
       rank: num(row, 'Ранг'),
       sheetWeight: num(row, 'Доля'),
       spread: num(row, 'Spread'),
-      issueDate: str(row, 'Дата начала обращения')
+      issueDate: str(row, 'Дата начала обращения'),
+      fdap: str(row, 'FDAP')
     });
   }
   return out;
@@ -2151,6 +2170,33 @@ function isKazakhstanBond(b) {
   return c.includes('казахстан') || c.includes('kazakhstan') || c.includes(' kz ') || c.trim().endsWith(' kz');
 }
 
+/* ===========================================================================
+   FDAP (US withholding tax) FILTER — shared across Ideas / Models / Portfolio
+   Sheet column "FDAP": 'N' = no US withholding tax exposure. Checking the
+   toggle in any tab keeps the others in sync (one shared, persisted setting).
+   =========================================================================== */
+const FDAP_ONLY_KEY = 'ags_bond_fdap_only';
+const FDAP_CHECKBOX_IDS = ['bondFdapOnlyIdeas', 'mdlFdapOnly', 'pfFdapOnly'];
+let bondFdapExemptOnly = false;
+
+function isFdapExempt(b) { return String(b?.fdap || '').trim().toUpperCase() === 'N'; }
+
+function loadFdapExemptOnly() {
+  try { return localStorage.getItem(FDAP_ONLY_KEY) === '1'; } catch (e) { return false; }
+}
+
+function setFdapExemptOnly(checked) {
+  bondFdapExemptOnly = !!checked;
+  try { localStorage.setItem(FDAP_ONLY_KEY, bondFdapExemptOnly ? '1' : '0'); } catch (e) {}
+  FDAP_CHECKBOX_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = bondFdapExemptOnly;
+  });
+  applyBondFilters();
+  updatePoolInfo();
+  if (typeof renderPortfolio === 'function') renderPortfolio();
+}
+
 function populateBondRatingSelects() {
   const minSel = document.getElementById('bondRatingMin');
   const maxSel = document.getElementById('bondRatingMax');
@@ -2176,6 +2222,7 @@ function applyBondFilters() {
   bondFilters.spreadMax = parseFloat(document.getElementById('bondSpreadMax')?.value);
 
   filteredBonds = allBonds.filter(b => {
+    if (bondFdapExemptOnly && !isFdapExempt(b)) return false;
     if (!bondFilters.currency.has('all') && !bondFilters.currency.has(b.currency)) return false;
     if (!bondFilters.country.has('all') && bondFilters.country.has('kz') && !isKazakhstanBond(b)) return false;
     if (bondFilters.ratingMin !== '' && bondRatingRank(b.rating) < parseInt(bondFilters.ratingMin, 10)) return false;
@@ -3374,6 +3421,8 @@ function renderBondPortfolioSection(pfBondAll) {
   const section = document.getElementById('pfBondSection');
   if (!section) return;
 
+  if (bondFdapExemptOnly) pfBondAll = pfBondAll.filter(p => isFdapExempt(p.live));
+
   if (pfBondAll.length === 0) {
     section.style.display = 'none';
     pfVisibleBondData = [];
@@ -4292,6 +4341,7 @@ function updatePoolInfo() {
 
   let bondPool = allBonds.filter(b => fitsModel(b.passFilter, t));
   if (modelState.currency !== 'all') bondPool = bondPool.filter(b => b.currency === modelState.currency);
+  if (bondFdapExemptOnly) bondPool = bondPool.filter(isFdapExempt);
   const bondsBeforeLot = bondPool.length;
 
   // Учитываем мин. лот, если задана сумма
@@ -4358,6 +4408,7 @@ function buildModelPortfolio() {
   // --- BONDS selection — по цифрам в «Проходит фильтр» ---
   let bondPool = allBonds.filter(b => fitsModel(b.passFilter, t));
   if (modelState.currency !== 'all') bondPool = bondPool.filter(b => b.currency === modelState.currency);
+  if (bondFdapExemptOnly) bondPool = bondPool.filter(isFdapExempt);
 
   // Фильтр по минимальному лоту: сумма на одну позицию должна покрывать лот
   const amount = getModelAmount();
@@ -5195,6 +5246,8 @@ function downloadModelHTML() {
    =========================================================================== */
 fetchData();
 populateBondRatingSelects();
+bondFdapExemptOnly = loadFdapExemptOnly();
+FDAP_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = bondFdapExemptOnly; });
 fetchBonds().catch(e => console.warn('[AGS] Bonds fetch failed:', e.message));
 </script>
 </body>
