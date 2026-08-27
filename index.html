@@ -3786,11 +3786,38 @@ function downloadPortfolioHTML() {
   const clientAmount = document.getElementById('clientAmount')?.value || '';
   const clientCurrency = document.getElementById('clientCurrency')?.value || 'USD';
 
-  // Get the SVG chart
-  const svgEl = document.getElementById('sectorDonut');
-  const legendEl = document.getElementById('sectorLegend');
-  const svgHTML = svgEl ? svgEl.outerHTML : '';
-  const legendHTML = legendEl ? legendEl.innerHTML : '';
+  // Sector / country breakdown across the WHOLE portfolio (stocks + bonds),
+  // built fresh here rather than read off the on-screen donut, which only
+  // ever reflects the stock sleeve.
+  const sectorMap = {};
+  pfData.forEach(p => {
+    const k = p.live.sector || 'Другое';
+    sectorMap[k] = (sectorMap[k] || 0) + (p._weight || 0);
+  });
+  pfBonds.forEach(p => {
+    const k = p.live.sectorRu || p.live.sector || 'Другое';
+    sectorMap[k] = (sectorMap[k] || 0) + (p._weight || 0);
+  });
+  const countryMap = {};
+  pfData.forEach(p => {
+    const k = p.live.country || 'Другое';
+    countryMap[k] = (countryMap[k] || 0) + (p._weight || 0);
+  });
+  pfBonds.forEach(p => {
+    const k = p.live.countryRu || p.live.country || 'Другое';
+    countryMap[k] = (countryMap[k] || 0) + (p._weight || 0);
+  });
+  const totalPos = pfData.length + pfBonds.length;
+  const sectorChart = buildDonutHTML(sectorMap, totalPos + ' поз.');
+  const countryChart = buildDonutHTML(countryMap, totalPos + ' поз.');
+
+  // Bond-only stats
+  const bondYtm = weightedAvg(pfBonds, p => p.live.ytm);
+  const bondDuration = weightedAvg(pfBonds, p => p.live.duration);
+  const bondRating = pfBonds.length ? avgRating(pfBonds.map(p => p.live)) : '—';
+  const ratingBarsHTML = pfBonds.length
+    ? buildRatingBarsHTML(pfBonds.map(p => ({ rating: p.live.rating, _weight: p._weight })))
+    : '';
 
   let tableRows = '';
   pfData.forEach(p => {
@@ -3866,8 +3893,17 @@ function downloadPortfolioHTML() {
     infoRows += `<span class="info-label">Сумма:</span><span class="info-value">${Number(rawAmount).toLocaleString()} ${esc(clientCurrency)}</span>`;
   }
   infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
-  infoRows += `<span class="info-label">Позиций:</span><span class="info-value">${pfData.length + pfBonds.length}</span>`;
-  infoRows += `<span class="info-label">Ср. Upside:</span><span class="info-value accent">${upsideStr}</span>`;
+
+  let statRows = '';
+  statRows += `<span class="info-label">Позиций:</span><span class="info-value">${pfData.length + pfBonds.length}</span>`;
+  if (pfData.length) {
+    statRows += `<span class="info-label">Ср. Upside (акции):</span><span class="info-value accent">${upsideStr}</span>`;
+  }
+  if (pfBonds.length) {
+    statRows += `<span class="info-label">Средняя доходность к погашению:</span><span class="info-value accent">${bondYtm != null ? bondYtm.toFixed(2) + '%' : '—'}</span>`;
+    statRows += `<span class="info-label">Средняя дюрация:</span><span class="info-value">${bondDuration != null ? bondDuration.toFixed(2) + ' лет' : '—'}</span>`;
+    statRows += `<span class="info-label">Средний кредитный рейтинг:</span><span class="info-value">${esc(bondRating)}</span>`;
+  }
 
   const html = `<!DOCTYPE html>
 <html lang="ru">
@@ -3894,18 +3930,21 @@ function downloadPortfolioHTML() {
   /* Main content */
   .content { padding: 24px 36px; }
 
-  /* Info + chart row */
-  .info-chart-row { display: flex; gap: 32px; align-items: flex-start; margin-bottom: 24px; }
-  .info-block { flex: 1; }
+  /* Info + stats row */
+  .info-row { display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 22px; }
+  .info-block { flex: 1 1 240px; }
   .info-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
   .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12px; }
   .info-label { color: #6B7280; }
   .info-value { font-weight: 600; }
   .info-value.accent { color: #8B6A4E; font-size: 14px; }
 
-  .chart-block { flex-shrink: 0; text-align: center; }
-  .chart-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .chart-area { display: flex; align-items: center; gap: 16px; }
+  /* Charts row */
+  .charts-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 10px; }
+  .chart-block { flex: 1 1 260px; }
+  .chart-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-area { display: flex; align-items: center; gap: 10px; }
+  .chart-legend { font-size: 10px; text-align: left; flex: 1; }
 
   /* Table */
   .section-title { font-size: 13px; color: #8B6A4E; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -3932,20 +3971,30 @@ function downloadPortfolioHTML() {
   </div>
 
   <div class="content">
-    <!-- Client info + chart in one row -->
-    <div class="info-chart-row">
+    <!-- Client info + portfolio stats -->
+    <div class="info-row">
       <div class="info-block">
         <h2>Информация</h2>
         <div class="info-grid">${infoRows}</div>
       </div>
-      <div class="chart-block">
-        <h2>По секторам</h2>
-        <div class="chart-area">
-          ${svgHTML}
-          <div style="font-size:11px;text-align:left;">${legendHTML}</div>
-        </div>
+      <div class="info-block">
+        <h2>Показатели</h2>
+        <div class="info-grid">${statRows}</div>
       </div>
     </div>
+
+    <!-- Sector / country charts -->
+    <div class="charts-row">
+      <div class="chart-block">
+        <h2>По странам</h2>
+        <div class="chart-area">${countryChart.svg}<div class="chart-legend">${countryChart.legend}</div></div>
+      </div>
+      <div class="chart-block">
+        <h2>По секторам</h2>
+        <div class="chart-area">${sectorChart.svg}<div class="chart-legend">${sectorChart.legend}</div></div>
+      </div>
+    </div>
+    ${ratingBarsHTML}
 
     <!-- Portfolio table(s) -->
     ${pfData.length > 0 ? `
@@ -4747,6 +4796,90 @@ function renderDonut(svgId, legendId, dataMap, centerLabel) {
 
   svg.innerHTML = paths;
   if (legend) legend.innerHTML = legendHTML;
+}
+
+/* Same donut math as renderDonut(), but returns markup strings instead of
+   writing into DOM elements — used when building printable reports where
+   the chart has no live on-screen counterpart to read back. */
+function buildDonutHTML(dataMap, centerLabel) {
+  const entries = Object.entries(dataMap).filter(e => e[1] > 0).sort((a,b) => b[1] - a[1]);
+  const total = entries.reduce((s, e) => s + e[1], 0);
+
+  if (entries.length === 0 || total <= 0) {
+    return { svg: '<svg width="160" height="160" viewBox="0 0 160 160"></svg>', legend: '<div style="color:#6B7280;">Нет данных</div>' };
+  }
+
+  const cx = 80, cy = 80, r = 64, inner = 40;
+  let startAngle = -Math.PI / 2;
+  let paths = '';
+  let legendHTML = '';
+
+  entries.forEach(([name, weight], i) => {
+    const pct = weight / total;
+    const angle = pct * 2 * Math.PI;
+    const endAngle = startAngle + angle;
+    const largeArc = angle > Math.PI ? 1 : 0;
+    const color = CHART_COLORS[i % CHART_COLORS.length];
+
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const x3 = cx + inner * Math.cos(endAngle);
+    const y3 = cy + inner * Math.sin(endAngle);
+    const x4 = cx + inner * Math.cos(startAngle);
+    const y4 = cy + inner * Math.sin(startAngle);
+
+    if (entries.length === 1) {
+      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+      paths += `<circle cx="${cx}" cy="${cy}" r="${inner}" fill="white"/>`;
+    } else {
+      paths += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${largeArc} 0 ${x4} ${y4} Z" fill="${color}" stroke="white" stroke-width="1.5"/>`;
+    }
+
+    legendHTML += `<div style="display:flex;align-items:center;gap:5px;">
+      <span style="width:9px;height:9px;border-radius:2px;background:${color};flex-shrink:0;"></span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(name)}">${esc(name)}</span>
+      <span style="color:#6B7280;margin-left:auto;flex-shrink:0;">${weight.toFixed(1)}%</span>
+    </div>`;
+
+    startAngle = endAngle;
+  });
+
+  paths += `<text x="${cx}" y="${cy+2}" text-anchor="middle" font-size="11" fill="#6B7280" font-family="Manrope, sans-serif">${esc(centerLabel || '')}</text>`;
+
+  return { svg: `<svg width="160" height="160" viewBox="0 0 160 160">${paths}</svg>`, legend: legendHTML };
+}
+
+/* Rating bar chart markup for a printable report — bonds passed as raw live
+   bond objects with a numeric _weight already set on them. */
+function buildRatingBarsHTML(bonds) {
+  const ratingMap = {};
+  bonds.forEach(b => {
+    const r = b.rating || 'Без рейтинга';
+    ratingMap[r] = (ratingMap[r] || 0) + (b._weight || 0);
+  });
+  const entries = Object.entries(ratingMap).sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]));
+  if (!entries.length) return '';
+
+  const maxW = Math.max(...entries.map(e => e[1]), 1);
+  let bars = '<div style="display:flex;flex-direction:column;gap:5px;">';
+  entries.forEach(([label, w]) => {
+    const pct = (w / maxW) * 100;
+    const color = isInvestmentGrade(label) ? '#0A1638' : '#8B6A4E';
+    bars += `<div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:100px;flex-shrink:0;font-size:11px;color:#0A1638;text-align:right;">${esc(label)}</div>
+      <div style="flex:1;height:14px;background:#F3F4F6;border-radius:3px;overflow:hidden;">
+        <div style="width:${pct.toFixed(1)}%;height:100%;background:${color};border-radius:3px;"></div>
+      </div>
+      <div style="width:48px;flex-shrink:0;font-size:11px;color:#0A1638;">${w.toFixed(1)}%</div>
+    </div>`;
+  });
+  bars += '</div>';
+  return `<div class="bars-block" style="margin-top:16px;">
+    <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">По кредитным рейтингам</h2>
+    ${bars}
+  </div>`;
 }
 
 /* ---- Weighted helpers ---- */
