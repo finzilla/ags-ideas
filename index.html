@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AGS — Карта инвестиционных идей</title>
-<link rel="icon" type="image/png" href="assets/favicon.png">
-<link rel="apple-touch-icon" href="assets/favicon.png">
-<meta name="theme-color" content="#0A1638">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -93,6 +90,21 @@ body {
   text-align: center;
 }
 .fallback-banner.visible { display: block; }
+
+/* ====================== MIGRATION NOTICE ====================== */
+.migration-notice {
+  background: #FEF3C7;
+  border-bottom: 2px solid var(--warning);
+  color: #92400E;
+  padding: 12px 24px;
+  font-size: 13px;
+  text-align: center;
+}
+.migration-notice a {
+  color: #92400E;
+  font-weight: 700;
+  text-decoration: underline;
+}
 
 /* ====================== CONTROLS ====================== */
 .controls {
@@ -187,7 +199,9 @@ body {
   border-radius: 50%;
   display: inline-block;
 }
-/* Цвет точки задаётся инлайн из палитры источников */
+.source-dot.investory { background: var(--primary); }
+.source-dot.dua { background: var(--secondary); }
+.source-dot.ags { background: var(--positive); }
 
 /* ====================== MAIN LAYOUT ====================== */
 .main-container {
@@ -281,8 +295,9 @@ td.right { text-align: center; }
 .badge-high { background: #FEE2E2; color: #991B1B; }
 .badge-stoploss { background: #0A1638; color: #FFF; font-weight: 700; animation: pulse-stoploss 1.5s ease-in-out infinite; }
 @keyframes pulse-stoploss { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
-/* Бейдж источника — цвета назначаются инлайн из палитры */
-.badge-source { }
+.badge-investory { background: #8B6A4E; color: #fff; }
+.badge-dua { background: #0A1638; color: #fff; }
+.badge-ags { background: #C6CEC8; color: #0A1638; }
 
 /* ====================== DETAIL PANEL ====================== */
 .detail-panel {
@@ -538,8 +553,6 @@ td.right { text-align: center; }
   border-bottom: 1px solid var(--border);
   background: var(--card-bg);
 }
-.pdf-icon { display:inline-block; vertical-align:-2px; margin-right:5px; }
-.btn-pdf { font-weight:700 !important; }
 .portfolio-btn {
   padding: 9px 20px;
   border: 1px solid var(--border);
@@ -701,136 +714,23 @@ td.right { text-align: center; }
 }
 .btn-remove-pf:hover { background: #FEE2E2; }
 
-/* ====================== MODEL PORTFOLIOS ====================== */
-.model-config {
-  margin: 16px 24px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 16px 24px;
-}
-.model-config-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-end;
-  margin-bottom: 14px;
-}
-.model-config-row:last-child { margin-bottom: 0; }
-.model-config-group { display: flex; flex-direction: column; gap: 4px; }
-.model-config-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  font-weight: 600;
-}
-.model-config-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--secondary);
-  margin-bottom: 12px;
-}
-.model-input {
-  padding: 7px 10px;
-  border: 1px solid #C6CEC8;
-  border-radius: var(--radius-sm);
-  font-family: 'Manrope', sans-serif;
-  font-size: 13px;
-  color: var(--text);
-  background: #fff;
-}
-.model-input:focus { outline: none; border-color: #8B6A4E; }
-
-.model-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 220px;
-  height: 5px;
-  border-radius: 3px;
-  background: #E5E7EB;
-  outline: none;
-  cursor: pointer;
-}
-.model-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: #8B6A4E;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(139,106,78,0.5);
-  cursor: pointer;
-}
-.model-slider::-moz-range-thumb {
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: #8B6A4E;
-  border: 2px solid #fff;
-  cursor: pointer;
-}
-.model-slider::-moz-range-track { height: 5px; border-radius: 3px; background: #E5E7EB; }
-
-.model-charts-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 0 24px 16px;
-  align-items: flex-start;
-}
-.model-chart-box {
-  flex: 1 1 260px;
-  min-width: 240px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  box-shadow: var(--shadow);
-}
-.model-chart-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: 10px;
-}
-.model-chart-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.model-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  font-size: 11px;
-  flex: 1 1 110px;
-  min-width: 110px;
-}
-.model-table-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--secondary);
-  margin: 4px 24px 10px;
-}
-.model-empty {
-  text-align: center;
-  padding: 50px 24px;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
 @media (max-width: 768px) {
   .nav-tabs { margin-left: 0; margin-top: 8px; }
   .portfolio-controls { padding: 12px 16px; }
   .portfolio-table-wrapper { margin: 0 16px 16px; }
   .rebalance-panel { margin: 0 16px 16px; }
-  .model-config { margin: 12px 16px; padding: 14px 16px; }
-  .model-charts-row { padding: 0 16px 12px; }
-  .model-table-title { margin: 4px 16px 8px; }
 }
 </style>
 </head>
 <body>
 
+<!-- ====================== MIGRATION NOTICE ====================== -->
+<div class="migration-notice">
+  Это устаревшая версия сайта. Актуальная версия находится в личном кабинете Abylai Global Solutions:
+  <a href="https://lk.abylaigs.com/invest-ideas" target="_blank" rel="noopener">lk.abylaigs.com/invest-ideas</a>
+</div>
+
+<!-- Password protection removed -->
 
 <!-- ====================== HEADER ====================== -->
 <div class="header">
@@ -845,7 +745,6 @@ td.right { text-align: center; }
     <div class="nav-tabs">
       <button class="nav-tab active" id="tabIdeas" onclick="switchTab('ideas')">Идеи</button>
       <button class="nav-tab" id="tabPortfolio" onclick="switchTab('portfolio')">Портфель</button>
-      <button class="nav-tab" id="tabModels" onclick="switchTab('models')">Модельные портфели</button>
     </div>
     <button class="btn-refresh" onclick="fetchData()" title="Обновить данные">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -862,16 +761,7 @@ td.right { text-align: center; }
   &#9888; Не удалось загрузить данные из Google Sheets. Показаны локальные данные.
 </div>
 
-<!-- ====================== ASSET CLASS TOGGLE ====================== -->
-<div class="controls" style="padding-bottom:0;">
-  <div class="filter-group">
-    <button class="filter-btn active" id="assetToggleStock" onclick="setAssetClass('stock')">Акции</button>
-    <button class="filter-btn" id="assetToggleBond" onclick="setAssetClass('bond')">Облигации</button>
-  </div>
-</div>
-
-<!-- ====================== CONTROLS: STOCKS ====================== -->
-<div id="stockControlsBlock">
+<!-- ====================== CONTROLS ====================== -->
 <div class="controls">
   <input type="text" class="search-input" id="searchInput" placeholder="Поиск по тикеру, компании, сектору...">
 
@@ -885,7 +775,9 @@ td.right { text-align: center; }
   <div class="filter-group">
     <span class="filter-label">Источник:</span>
     <button class="filter-btn active" data-filter="source" data-value="all">Все</button>
-    <span id="sourceFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
+    <button class="filter-btn" data-filter="source" data-value="InveStory">InveStory</button>
+    <button class="filter-btn" data-filter="source" data-value="ДУА">ДУА</button>
+    <button class="filter-btn" data-filter="source" data-value="AGS">AGS</button>
   </div>
 
   <div class="filter-group">
@@ -932,7 +824,6 @@ td.right { text-align: center; }
 <div style="padding:0 24px 12px;display:flex;gap:10px;align-items:center;">
   <button class="portfolio-btn primary" onclick="addFilteredToPortfolio();showToast('Идеи добавлены в портфель');" style="font-size:0.9rem;padding:9px 18px;">📥 Все в портфель</button>
   <button class="portfolio-btn danger" onclick="if(confirm('Очистить весь портфель?')){clearPortfolio();renderTable();}" style="font-size:0.9rem;padding:9px 18px;">🗑 Очистить портфель</button>
-  <button class="portfolio-btn" onclick="downloadIdeasSummary('ideas')" style="font-size:0.9rem;padding:9px 18px;">📄 Описания идей</button>
   <span style="font-size:0.85rem;color:#6B7280;font-weight:500;" id="pfQuickCount"></span>
 </div>
 
@@ -961,7 +852,6 @@ td.right { text-align: center; }
             <th data-col="risk">Риск <span class="sort-arrow">&#9650;</span></th>
             <th data-col="status">Статус <span class="sort-arrow">&#9650;</span></th>
             <th data-col="source">Источник <span class="sort-arrow">&#9650;</span></th>
-            <th class="col-action" style="cursor:default;" title="Документ">📎</th>
             <th class="col-action" style="cursor:default;">➕</th>
           </tr>
         </thead>
@@ -981,109 +871,6 @@ td.right { text-align: center; }
     </div>
   </div>
 </div>
-</div><!-- /stockControlsBlock -->
-
-<!-- ====================== CONTROLS: BONDS ====================== -->
-<div id="bondControlsBlock" style="display:none;">
-  <div class="controls">
-    <input type="text" class="search-input" id="bondSearchInput" placeholder="Поиск по названию, ISIN, сектору..." oninput="applyBondFilters()">
-
-    <div class="filter-group">
-      <span class="filter-label">Валюта:</span>
-      <button class="filter-btn bond-filter active" data-bondfilter="currency" data-value="all" onclick="toggleBondFilter(this)">Все</button>
-      <span id="bondCurrencyFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
-    </div>
-
-    <div class="filter-group">
-      <span class="filter-label">Страна:</span>
-      <button class="filter-btn bond-filter active" data-bondfilter="country" data-value="all" onclick="toggleBondFilter(this)">Все</button>
-      <button class="filter-btn bond-filter" data-bondfilter="country" data-value="kz" onclick="toggleBondFilter(this)">Казахстан</button>
-    </div>
-
-    <div class="filter-group">
-      <span class="filter-label">Рейтинг от:</span>
-      <select id="bondRatingMin" onchange="applyBondFilters()"><option value="">Любой</option></select>
-      <span class="filter-label">до:</span>
-      <select id="bondRatingMax" onchange="applyBondFilters()"><option value="">Любой</option></select>
-    </div>
-
-    <div class="filter-group">
-      <span class="filter-label">Дюрация:</span>
-      <input type="number" step="0.1" id="bondDurationMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
-      <input type="number" step="0.1" id="bondDurationMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
-    </div>
-
-    <div class="filter-group">
-      <span class="filter-label">YTM, %:</span>
-      <input type="number" step="0.1" id="bondYtmMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
-      <input type="number" step="0.1" id="bondYtmMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
-    </div>
-
-    <div class="filter-group">
-      <span class="filter-label">Spread, б.п.:</span>
-      <input type="number" step="1" id="bondSpreadMin" placeholder="от" style="width:64px;" oninput="applyBondFilters()">
-      <input type="number" step="1" id="bondSpreadMax" placeholder="до" style="width:64px;" oninput="applyBondFilters()">
-    </div>
-
-    <div class="filter-group">
-      <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.85rem;cursor:pointer;user-select:none;" title="Показывать только облигации, где в столбце FDAP таблицы стоит «N» — без налога США">
-        <input type="checkbox" id="bondFdapOnlyIdeas" onchange="setFdapExemptOnly(this.checked)" style="width:14px;height:14px;">
-        Без налога США (FDAP)
-      </label>
-    </div>
-  </div>
-
-  <!-- Bond stats -->
-  <div class="stats-row" id="bondStatsRow">
-    <div class="stat-card">
-      <div class="stat-card-label">В выборке</div>
-      <div class="stat-card-value" id="bondStatCount">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label">Ср. YTM</div>
-      <div class="stat-card-value" id="bondStatYtm">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label">Ср. дюрация</div>
-      <div class="stat-card-value" id="bondStatDuration">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label">Ср. рейтинг</div>
-      <div class="stat-card-value" id="bondStatRating">—</div>
-    </div>
-  </div>
-
-  <!-- Bond portfolio quick actions -->
-  <div style="padding:0 24px 12px;display:flex;gap:10px;align-items:center;">
-    <button class="portfolio-btn primary" onclick="addFilteredBondsToPortfolio()" style="font-size:0.9rem;padding:9px 18px;">📥 Все в портфель</button>
-    <span style="font-size:0.85rem;color:#6B7280;font-weight:500;" id="pfBondQuickCount"></span>
-  </div>
-
-  <!-- Bond table -->
-  <div id="bondTableSection" style="margin:0 24px 24px;">
-    <div class="table-wrapper" id="bondTableWrapper">
-      <table>
-        <thead>
-          <tr>
-            <th data-bondcol="name" class="sorted">Название <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="isin">ISIN <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="country">Страна <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="sector">Сектор <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="currency" style="text-align:center">Вал. <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="rating" style="text-align:center">Рейтинг <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="ytm" style="text-align:center">YTM <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="coupon" style="text-align:center">Купон <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="price" style="text-align:center">Цена <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="duration" style="text-align:center">Дюрация <span class="sort-arrow">&#9650;</span></th>
-            <th data-bondcol="spread" style="text-align:center">Spread <span class="sort-arrow">&#9650;</span></th>
-            <th class="col-action" style="cursor:default;">➕</th>
-          </tr>
-        </thead>
-        <tbody id="bondTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-</div><!-- /bondControlsBlock -->
 
 </div><!-- /viewIdeas -->
 
@@ -1126,7 +913,9 @@ td.right { text-align: center; }
     <div class="filter-group">
       <span class="filter-label">Источник:</span>
       <button class="filter-btn pf-filter active" data-pffilter="source" data-value="all" onclick="togglePfFilter(this)">Все</button>
-      <span id="pfSourceFilterBtns" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
+      <button class="filter-btn pf-filter" data-pffilter="source" data-value="InveStory" onclick="togglePfFilter(this)">InveStory</button>
+      <button class="filter-btn pf-filter" data-pffilter="source" data-value="ДУА" onclick="togglePfFilter(this)">ДУА</button>
+      <button class="filter-btn pf-filter" data-pffilter="source" data-value="AGS" onclick="togglePfFilter(this)">AGS</button>
     </div>
     <div class="filter-group">
       <span class="filter-label">Статус:</span>
@@ -1147,13 +936,8 @@ td.right { text-align: center; }
     <button class="portfolio-btn primary" onclick="addFilteredToPortfolio()">📥 Сформировать из фильтра</button>
     <button class="portfolio-btn" onclick="toggleRebalancePanel()">🔄 Ребалансировать</button>
     <button class="portfolio-btn" onclick="downloadPortfolioCSV()">📥 Скачать портфель</button>
-    <button class="portfolio-btn btn-pdf" onclick="downloadPortfolioHTML()"><svg class="pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>PDF для клиента</button>
-    <button class="portfolio-btn" onclick="downloadIdeasSummary('portfolio')">📄 Описания идей</button>
+    <button class="portfolio-btn" onclick="downloadPortfolioHTML()">📄 Сводка клиенту</button>
     <button class="portfolio-btn danger" onclick="clearPortfolio()">🗑 Очистить портфель</button>
-    <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;color:#6B7280;cursor:pointer;user-select:none;margin-left:6px;">
-      <input type="checkbox" id="pfIncludeCouponCalendar" style="width:14px;height:14px;">
-      Добавить календарь выплат
-    </label>
   </div>
 
   <!-- Rebalance Panel (hidden) -->
@@ -1194,202 +978,8 @@ td.right { text-align: center; }
   </div>
 
   <!-- Portfolio Table -->
-  <div class="model-table-title">Акции</div>
   <div id="portfolioTableArea"></div>
-
-  <!-- Bonds section (hidden when portfolio has no bonds) -->
-  <div id="pfBondSection" style="display:none;">
-    <div class="model-table-title">Облигации</div>
-    <div class="stats-row" id="pfBondStatsRow">
-      <div class="stat-card">
-        <div class="stat-card-label">Позиций</div>
-        <div class="stat-card-value" id="pfBondStatCount">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Ср. YTM</div>
-        <div class="stat-card-value" id="pfBondStatYtm">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Ср. дюрация</div>
-        <div class="stat-card-value" id="pfBondStatDuration">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Ср. рейтинг</div>
-        <div class="stat-card-value" id="pfBondStatRating">—</div>
-      </div>
-    </div>
-    <div id="pfBondAmountsRow" style="padding:0 24px 8px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;"></div>
-    <div class="portfolio-controls" id="pfBondActions">
-      <button class="portfolio-btn" onclick="toggleCouponCalendar()" title="Требует заполненной «Даты начала обращения» в Google Таблице (лист Bonds)">📅 Календарь выплат</button>
-      <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;color:#6B7280;cursor:pointer;user-select:none;" title="Показывать только облигации, где в столбце FDAP таблицы стоит «N» — без налога США">
-        <input type="checkbox" id="pfFdapOnly" onchange="setFdapExemptOnly(this.checked)" style="width:14px;height:14px;">
-        Без налога США (FDAP)
-      </label>
-    </div>
-    <div id="couponCalendarArea" style="display:none;padding:0 24px;"></div>
-    <div id="portfolioBondsArea"></div>
-  </div>
 </div><!-- /viewPortfolio -->
-
-<!-- ====================== VIEW: MODEL PORTFOLIOS ====================== -->
-<div id="viewModels" style="display:none;">
-
-  <!-- Configurator -->
-  <div class="model-config">
-    <div class="model-config-title">Конструктор модельного портфеля</div>
-
-    <div class="model-config-row">
-      <div class="model-config-group">
-        <span class="model-config-label">Тип портфеля</span>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="filter-btn" id="mdlTypeConservative" onclick="setModelType('conservative')">Консервативный</button>
-          <button class="filter-btn active" id="mdlTypeBalanced" onclick="setModelType('balanced')">Сбалансированный</button>
-          <button class="filter-btn" id="mdlTypeAggressive" onclick="setModelType('aggressive')">Агрессивный</button>
-        </div>
-      </div>
-
-      <div class="model-config-group" id="mdlShareGroup">
-        <span class="model-config-label" id="mdlShareLabel">Доля акций: 40%</span>
-        <input type="range" class="model-slider" id="mdlStockShare" min="0" max="100" step="5" value="40" oninput="onStockShareChange(this.value)">
-      </div>
-    </div>
-
-    <div class="model-config-row">
-      <div class="model-config-group">
-        <span class="model-config-label">Валюта облигаций</span>
-        <select class="model-input" id="mdlCurrency" onchange="onModelCurrencyChange(this.value)">
-          <option value="all">Все</option>
-          <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-          <option value="KZT">KZT</option>
-        </select>
-      </div>
-      <div class="model-config-group">
-        <span class="model-config-label">Кол-во облигаций</span>
-        <input type="number" class="model-input" id="mdlBondCount" min="0" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
-      </div>
-      <div class="model-config-group">
-        <span class="model-config-label">Кол-во акций</span>
-        <input type="number" class="model-input" id="mdlStockCount" min="0" max="50" value="10" style="width:110px;" onchange="onModelCountChange()" title="Меньше бумаг = ниже диверсификация (для малых сумм)">
-      </div>
-      <div class="model-config-group" id="mdlExcludeGroup">
-        <span class="model-config-label">Исключить</span>
-        <div style="display:flex;gap:14px;align-items:center;padding-top:4px;">
-          <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.85rem;color:#0A1638;white-space:nowrap;">
-            <input type="checkbox" id="mdlExcludeStocks" onchange="onExcludeChange()" style="width:14px;height:14px;cursor:pointer;">
-            акции
-          </label>
-          <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.85rem;color:#0A1638;white-space:nowrap;">
-            <input type="checkbox" id="mdlExcludeETF" onchange="onExcludeChange()" style="width:14px;height:14px;cursor:pointer;">
-            ETF
-          </label>
-        </div>
-      </div>
-      <div class="model-config-group">
-        <span class="model-config-label">&nbsp;</span>
-        <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.85rem;color:#0A1638;white-space:nowrap;padding-top:4px;" title="Отбирать облигации только там, где в столбце FDAP таблицы стоит «N» — без налога США">
-          <input type="checkbox" id="mdlFdapOnly" onchange="setFdapExemptOnly(this.checked)" style="width:14px;height:14px;cursor:pointer;">
-          Без налога США (FDAP)
-        </label>
-      </div>
-      <div class="model-config-group">
-        <span class="model-config-label">Доступно в пуле</span>
-        <span class="model-config-label" id="mdlPoolInfo" style="color:#8B6A4E;font-weight:600;white-space:nowrap;">—</span>
-      </div>
-    </div>
-
-    <div class="model-config-row">
-      <div class="model-config-group">
-        <span class="model-config-label">ФИО клиента</span>
-        <input type="text" class="model-input" id="mdlClientName" placeholder="Иванов Иван Иванович" style="width:230px;" oninput="saveModelClientInfo()">
-      </div>
-      <div class="model-config-group">
-        <span class="model-config-label">Сумма инвестирования</span>
-        <input type="number" class="model-input" id="mdlClientAmount" placeholder="100000" style="width:150px;" oninput="saveModelClientInfo()">
-      </div>
-      <div class="model-config-group">
-        <span class="model-config-label">Валюта</span>
-        <select class="model-input" id="mdlClientCurrency" style="width:100px;" onchange="saveModelClientInfo()">
-          <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-          <option value="KZT">KZT</option>
-          <option value="CNY">CNY</option>
-          <option value="HKD">HKD</option>
-        </select>
-      </div>
-      <div class="model-config-group">
-        <span class="model-config-label">&nbsp;</span>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="portfolio-btn primary" onclick="buildModelPortfolio()">🔄 Собрать портфель</button>
-          <button class="portfolio-btn btn-pdf" onclick="downloadModelHTML()"><svg class="pdf-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>PDF для клиента</button>
-          <button class="portfolio-btn" onclick="downloadIdeasSummary('model')">📄 Описания идей</button>
-          <label style="display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;color:#6B7280;cursor:pointer;user-select:none;">
-            <input type="checkbox" id="mdlIncludeCouponCalendar" style="width:14px;height:14px;">
-            Добавить календарь выплат
-          </label>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats -->
-  <div class="stats-row" id="mdlStatsRow">
-    <div class="stat-card">
-      <div class="stat-card-label" id="mdlStat1Label">Позиций</div>
-      <div class="stat-card-value" id="mdlStat1">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label" id="mdlStat2Label">Ср. YTM</div>
-      <div class="stat-card-value" id="mdlStat2">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label" id="mdlStat3Label">Ср. дюрация</div>
-      <div class="stat-card-value" id="mdlStat3">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label" id="mdlStat4Label">Ср. рейтинг</div>
-      <div class="stat-card-value" id="mdlStat4">—</div>
-    </div>
-  </div>
-
-  <!-- Charts -->
-  <div class="model-charts-row" id="mdlChartsRow" style="display:none;">
-    <div class="model-chart-box" id="mdlCountryBox">
-      <div class="model-chart-title">По странам</div>
-      <div class="model-chart-inner">
-        <svg id="mdlCountryDonut" width="160" height="160" viewBox="0 0 160 160"></svg>
-        <div class="model-legend" id="mdlCountryLegend"></div>
-      </div>
-    </div>
-    <div class="model-chart-box" id="mdlSectorBox">
-      <div class="model-chart-title">По секторам</div>
-      <div class="model-chart-inner">
-        <svg id="mdlSectorDonut" width="160" height="160" viewBox="0 0 160 160"></svg>
-        <div class="model-legend" id="mdlSectorLegend"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Horizontal bar chart: ratings + asset classes -->
-  <div class="model-chart-box" id="mdlRatingBox" style="margin:0 24px 16px;padding:14px 18px;">
-    <div class="model-chart-title" style="margin-bottom:10px;">Структура по рейтингам и классам активов</div>
-    <div id="mdlRatingBars"></div>
-  </div>
-
-  <!-- Tables -->
-  <div id="mdlBondsSection" style="display:none;">
-    <div class="model-table-title">Облигации</div>
-    <div id="mdlBondsTable"></div>
-  </div>
-  <div id="mdlStocksSection" style="display:none;">
-    <div class="model-table-title">Акции</div>
-    <div id="mdlStocksTable"></div>
-  </div>
-
-  <div class="model-empty" id="mdlEmpty">
-    Настройте параметры и нажмите «🔄 Собрать портфель».
-  </div>
-</div><!-- /viewModels -->
 
 <!-- ====================== FAB ====================== -->
 <button class="fab" onclick="openModal()" title="Предложить идею"><span style="font-size:1.2rem;">💡</span> Предложить идею</button>
@@ -1464,91 +1054,47 @@ td.right { text-align: center; }
 /* === GOOGLE SHEET ID === */
 const SHEET_ID = '1iJXP-R3brvSTxfTzvljPRtyPoh-HTvAc29KQP7SiaE0';
 
-/* ===========================================================================
-   SOURCES — определяются автоматически из данных Google Sheets
-   =========================================================================== */
-let allSources = [];   // ['Name1', 'Name2', ...] в порядке первого появления
-
-/* Фиксированная палитра, назначается по индексу — фирменные цвета */
-const SOURCE_PALETTE = [
-  { bg: '#8B6A4E', fg: '#FFFFFF' },  // 1 — коричневый
-  { bg: '#0A1638', fg: '#FFFFFF' },  // 2 — тёмно-синий
-  { bg: '#C6CEC8', fg: '#0A1638' },  // 3 — шалфей (светлый)
-  { bg: '#5C7A6B', fg: '#FFFFFF' },  // 4 — зелёный
-  { bg: '#A8843F', fg: '#FFFFFF' },  // 5 — золотистый
-  { bg: '#4A5D8A', fg: '#FFFFFF' },  // 6 — стальной синий
-  { bg: '#7A5C7A', fg: '#FFFFFF' },  // 7 — сливовый
-  { bg: '#9C5B4A', fg: '#FFFFFF' }   // 8 — терракота
-];
-
-function collectSources(data) {
-  const seen = [];
-  (data || []).forEach(d => {
-    const s = (d.source || '').trim();
-    if (s && seen.indexOf(s) === -1) seen.push(s);
-  });
-  allSources = seen;
-  return seen;
-}
-
-function sourceColor(src) {
-  const key = String(src == null ? '' : src).trim();
-  let idx = allSources.indexOf(key);
-  if (idx === -1) {
-    // Fallback: stable hash so unknown sources still differ visually
-    let h = 0;
-    for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 997;
-    idx = h;
-  }
-  return SOURCE_PALETTE[idx % SOURCE_PALETTE.length];
-}
-
-/* Инлайн-стиль для бейджа источника */
-function sourceBadgeStyle(src) {
-  const c = sourceColor(src);
-  return `background:${c.bg};color:${c.fg};`;
-}
+/* Password protection removed */
 
 /* ===========================================================================
    FALLBACK DATA
    =========================================================================== */
 const FALLBACK_DATA = [
-  {date:"2026-03-25",ticker:"HIMX",company:"Himax Technologies Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:13.76,open:8.8,target:13.2,closed:12.7,source:"InveStory",share:"5%",perf:44.32,status:"CLOSED",potential:null,maxReturn:185.11,change:0.62,marketCap:2.39,website:"himax.com.tw",comment:"Идея формата: купить и забыть в долгосрочный портфель. Может сделать x2.",isin:"",doc:""},
-  {date:"2026-02-06",ticker:"IESC",company:"IES Holdings Inc",industry:"Industrials",country:"Industrials",sector:"Engineering & Construction",currency:"USD",price:665.66,open:408.95,target:540,closed:540,source:"InveStory",share:"5%",perf:32.05,status:"CLOSED",potential:null,maxReturn:96.60,change:2.74,marketCap:13.20,website:"IES.com",comment:"Инфраструктурный игрок в гонке ИИ с рекордным портфелем заказов.",isin:"",doc:""},
-  {date:"2026-02-20",ticker:"KSPI",company:"Kaspi.kz AO - ADR",industry:"Finance",country:"Finance",sector:"Software - Infrastructure",currency:"USD",price:87.27,open:73.2,target:113,closed:null,source:"InveStory",share:"5%",perf:19.22,status:"ACTIVE",potential:29.48,maxReturn:35.40,change:-2.03,marketCap:16.54,website:"kaspi.kz",comment:"Ожидание возобновления дивидендов. Компания выглядит недооценённой.",isin:"",doc:""},
-  {date:"2026-04-17",ticker:"GOOGL",company:"Alphabet Inc Class A",industry:"Technology",country:"Technology",sector:"Communication Services",currency:"USD",price:347.90,open:335,target:395,closed:null,source:"InveStory",share:"5%",perf:3.85,status:"ACTIVE",potential:13.54,maxReturn:21.97,change:0.22,marketCap:4234.72,website:"google.com",comment:"Качественный актив для покупки в долгую.",isin:"",doc:""},
-  {date:"2026-02-10",ticker:"VNOM",company:"Viper Energy Inc",industry:"Oil&Gas",country:"Oil&Gas",sector:"Oil & Gas Midstream",currency:"USD",price:45.08,open:43.55,target:55,closed:null,source:"InveStory",share:"5%",perf:3.51,status:"ACTIVE",potential:22.01,maxReturn:17.41,change:0.49,marketCap:16.08,website:"viperenergy.com",comment:"Меньшая зависимость от цены на нефть, хорошая див доходность.",isin:"",doc:""},
-  {date:"2026-01-27",ticker:"AMZN",company:"Amazon.com Inc",industry:"Technology",country:"Technology",sector:"Internet Retail",currency:"USD",price:243.75,open:238.08,target:305,closed:null,source:"InveStory",share:"5%",perf:2.38,status:"ACTIVE",potential:25.13,maxReturn:17.00,change:-1.52,marketCap:2621.83,website:"amazon.com",comment:"Упала на повышении планов по капитальным расходам. Отличная возможность для покупки.",isin:"",doc:""},
-  {date:"2026-03-27",ticker:"CSCO",company:"Cisco Systems Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:112.95,open:82,target:110,closed:125.4,source:"InveStory",share:"5%",perf:52.93,status:"CLOSED",potential:null,maxReturn:58.99,change:0.69,marketCap:444.91,website:"cisco.com",comment:"Тренды разворачиваются благоприятно для этой компании.",isin:"",doc:""},
-  {date:"2026-03-05",ticker:"NATKY",company:"Kazatomprom (GDR)",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"USD",price:68.00,open:81.2,target:110,closed:null,source:"InveStory",share:"5%",perf:-16.26,status:"ACTIVE",potential:61.76,maxReturn:14.48,change:4.12,marketCap:null,website:"kazatomprom.kz",comment:"Крупнейший в мире производитель первичного урана. 25% мировых поставок.",isin:"",doc:""},
-  {date:"2026-02-05",ticker:"MSFT",company:"Microsoft Corp",industry:"Technology",country:"Technology",sector:"Software - Infrastructure",currency:"USD",price:388.92,open:392.32,target:550,closed:null,source:"InveStory",share:"5%",perf:-0.87,status:"ACTIVE",potential:41.42,maxReturn:41.58,change:-2.22,marketCap:2892.78,website:"microsoft.com",comment:"P/E ≈ 24, близко к историческому минимуму.",isin:"",doc:""},
-  {date:"2026-02-03",ticker:"TTWO",company:"Take-Two Interactive",industry:"Technology",country:"Technology",sector:"Electronic Gaming",currency:"USD",price:232.86,open:206.61,target:300,closed:null,source:"InveStory",share:"5%",perf:12.71,status:"ACTIVE",potential:28.83,maxReturn:28.58,change:-1.30,marketCap:43.35,website:"take2games.com",comment:"ИИ ускоряет прототипирование и тестирование — позитив для игровых компаний.",isin:"",doc:""},
-  {date:"2026-02-26",ticker:"MELI",company:"MercadoLibre Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:1806.59,open:1790,target:2800,closed:null,source:"InveStory",share:"5%",perf:0.93,status:"ACTIVE",potential:54.99,maxReturn:42.37,change:-0.88,marketCap:91.58,website:"mercadolibre.com",comment:"Упала на 37% от максимума. Хорошая точка для набора позиции.",isin:"",doc:""},
-  {date:"2026-01-20",ticker:"CPNG",company:"Coupang Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:15.77,open:20.45,target:32,closed:null,source:"InveStory",share:"5%",perf:-22.89,status:"ACTIVE",potential:102.92,maxReturn:66.65,change:0.03,marketCap:28.31,website:"coupang.com",comment:"Компания с высокой бетой. При коррекциях падает сильнее остальных.",isin:"",doc:""},
-  {date:"2026-01-30",ticker:"BRX",company:"Brixmor Property Group",industry:"Real Estate",country:"Real Estate",sector:"REIT - Retail",currency:"USD",price:32.64,open:30,target:35,closed:null,source:"ДУА",share:"5%",perf:8.80,status:"ACTIVE",potential:7.23,maxReturn:9.53,change:-0.15,marketCap:10.02,website:"brixmor.com",comment:"Крупнейший владелец открытых торговых центров в США. 350+ объектов.",isin:"",doc:""},
-  {date:"2026-04-06",ticker:"DOW",company:"Dow Inc",industry:"Materials",country:"Materials",sector:"Chemicals",currency:"USD",price:31.38,open:40.7,target:55,closed:null,source:"InveStory",share:"5%",perf:-22.90,status:"ACTIVE",potential:75.27,maxReturn:5.01,change:2.99,marketCap:22.53,website:"dow.com",comment:"Бенефициар конфликта на Ближнем Востоке. Заходить лесенкой.",isin:"",doc:""},
-  {date:"2026-03-13",ticker:"KWEB",company:"KraneShares CSI China Internet ETF",industry:"ETF",country:"ETF",sector:"China Internet",currency:"USD",price:26.52,open:30,target:39,closed:null,source:"InveStory",share:"5%",perf:-11.60,status:"ACTIVE",potential:47.06,maxReturn:44.57,change:-1.87,marketCap:null,website:"kraneshares.com",comment:"Ключевой ETF на китайских технологических гигантов.",isin:"",doc:""},
-  {date:"2026-01-29",ticker:"SPOT",company:"Spotify Technology SA",industry:"Technology",country:"Technology",sector:"Internet Content",currency:"USD",price:475.78,open:462,target:700,closed:null,source:"ДУА",share:"5%",perf:2.98,status:"ACTIVE",potential:47.13,maxReturn:61.97,change:-3.54,marketCap:97.83,website:"spotify.com",comment:"Мировой лидер в сфере аудио-стриминга.",isin:"",doc:""},
-  {date:"2026-02-17",ticker:"ERO",company:"Ero Copper Corp",industry:"Materials",country:"Materials",sector:"Copper",currency:"USD",price:27.47,open:29.93,target:45,closed:null,source:"InveStory",share:"5%",perf:-8.22,status:"ACTIVE",potential:63.82,maxReturn:32.98,change:2.23,marketCap:4.05,website:"erocopper.com",comment:"Коррекция 30% от максимумов. Потенциал роста меди сохраняется.",isin:"",doc:""},
-  {date:"2026-04-30",ticker:"V",company:"Visa Inc",industry:"Fintech",country:"Fintech",sector:"Credit Services",currency:"USD",price:355.56,open:330,target:410,closed:null,source:"InveStory",share:"5%",perf:7.75,status:"ACTIVE",potential:15.31,maxReturn:10.65,change:-0.07,marketCap:669.79,website:"visa.com",comment:"Ставка на рост глобальных цифровых платежей.",isin:"",doc:""},
-  {date:"2026-05-05",ticker:"IBIT",company:"iShares Bitcoin Trust ETF",industry:"Crypto",country:"Crypto",sector:"Bitcoin ETF",currency:"USD",price:37.39,open:45.4,target:60,closed:null,source:"InveStory",share:"5%",perf:-17.64,status:"ACTIVE",potential:60.47,maxReturn:58.19,change:-0.76,marketCap:169.62,website:"BTC.com",comment:"Крупнейший в мире биржевой фонд на биткоин от BlackRock.",isin:"",doc:""},
-  {date:"2026-05-08",ticker:"CRCL",company:"Circle Internet Group",industry:"Crypto",country:"Crypto",sector:"Capital Markets",currency:"USD",price:67.87,open:113.25,target:155,closed:null,source:"InveStory",share:"5%",perf:-40.07,status:"ACTIVE",potential:128.38,maxReturn:78.81,change:-4.52,marketCap:16.88,website:"circle.com",comment:"Компания, выпускающая стейблкоин USDC.",isin:"",doc:""},
-  {date:"2026-05-20",ticker:"NOK",company:"Nokia Oyj",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:10.39,open:13.67,target:18,closed:null,source:"InveStory",share:"5%",perf:-23.99,status:"ACTIVE",potential:73.24,maxReturn:27.65,change:-2.26,marketCap:60.41,website:"nokia.com",comment:"Строитель критической инфраструктуры для сетей нового поколения.",isin:"",doc:""},
-  {date:"2026-05-28",ticker:"COPX",company:"Global X Copper Miners ETF",industry:"Materials",country:"Materials",sector:"Copper Mining",currency:"USD",price:80.33,open:83,target:110,closed:null,source:"InveStory",share:"5%",perf:-3.22,status:"ACTIVE",potential:36.94,maxReturn:20.47,change:2.67,marketCap:null,website:"globalxetfs.com",comment:"ETF на крупнейших медедобытчиков мира.",isin:"",doc:""},
-  {date:"2026-06-01",ticker:"ARKG",company:"ARK Genomic Revolution ETF",industry:"Healthcare",country:"Healthcare",sector:"Genomics",currency:"USD",price:33.40,open:34,target:45,closed:null,source:"InveStory",share:"5%",perf:-1.76,status:"ACTIVE",potential:34.73,maxReturn:-75.74,change:-0.60,marketCap:null,website:"ark-funds.com",comment:"Генная терапия, редактирование ДНК, ИИ в разработке лекарств.",isin:"",doc:""},
-  {date:"2026-06-02",ticker:"TSEM",company:"Tower Semiconductor Ltd",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:250.54,open:228,target:350,closed:null,source:"ДУА",share:"5%",perf:9.89,status:"ACTIVE",potential:39.70,maxReturn:40.32,change:-0.15,marketCap:28.40,website:"towersemi.com",comment:"Монополист в ИИ-инфраструктуре. Потенциал роста 2-3x.",isin:"",doc:""},
-  {date:"2026-06-03",ticker:"CLF",company:"Cleveland-Cliffs Inc",industry:"Materials",country:"Materials",sector:"Steel",currency:"USD",price:9.53,open:12.5,target:17,closed:null,source:"InveStory",share:"5%",perf:-23.76,status:"ACTIVE",potential:78.38,maxReturn:33.60,change:2.97,marketCap:5.43,website:"clevelandcliffs.com",comment:"Ставка на восстановление американской стали и промышленную политику США.",isin:"",doc:""},
-  {date:"2026-06-04",ticker:"AVGO",company:"Broadcom Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:393.30,open:392.9,target:500,closed:360,source:"InveStory",share:"5%",perf:-8.37,status:"CLOSED",potential:null,maxReturn:25.99,change:1.76,marketCap:1867.54,website:"broadcom.com",comment:"Лидер в полупроводниках и инфраструктурном софте для ИИ.",isin:"",doc:""},
-  {date:"2026-06-25",ticker:"003816",company:"CGN Power Co Ltd",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"CNY",price:4.11,open:3.96,target:6,closed:null,source:"AGS",share:"5%",perf:3.79,status:"ACTIVE",potential:45.99,maxReturn:24.75,change:1.23,marketCap:219.64,website:"en.cgnpc.com.cn",comment:"Крупнейший оператор атомной генерации в Китае. 55% атомной мощности.",isin:"",doc:""},
-  {date:"2026-06-26",ticker:"VISN",company:"Vistance Networks Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:12.15,open:12,target:15,closed:null,source:"InveStory",share:"5%",perf:1.25,status:"ACTIVE",potential:23.46,maxReturn:66.25,change:-2.64,marketCap:2.75,website:"vistancenetworks.com",comment:"Бывшая Commscope. Реструктуризация: продажа активов, гашение долга.",isin:"",doc:""},
-  {date:"2026-06-27",ticker:"RKT",company:"Rocket Companies Inc",industry:"Fintech",country:"Fintech",sector:"Mortgage Finance",currency:"USD",price:13.49,open:14.6,target:19,closed:null,source:"InveStory",share:"5%",perf:-7.60,status:"ACTIVE",potential:40.85,maxReturn:66.85,change:-1.21,marketCap:38.14,website:"rocketcompanies.com",comment:"Крупнейшая ипотечная и финтех-группа США. Rocket Mortgage, Redfin, Mr. Cooper.",isin:"",doc:""}
+  {date:"2026-03-25",ticker:"HIMX",company:"Himax Technologies Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:13.76,open:8.8,target:13.2,closed:12.7,source:"InveStory",share:"5%",perf:44.32,status:"CLOSED",potential:null,maxReturn:185.11,change:0.62,marketCap:2.39,website:"himax.com.tw",comment:"Идея формата: купить и забыть в долгосрочный портфель. Может сделать x2.",isin:""},
+  {date:"2026-02-06",ticker:"IESC",company:"IES Holdings Inc",industry:"Industrials",country:"Industrials",sector:"Engineering & Construction",currency:"USD",price:665.66,open:408.95,target:540,closed:540,source:"InveStory",share:"5%",perf:32.05,status:"CLOSED",potential:null,maxReturn:96.60,change:2.74,marketCap:13.20,website:"IES.com",comment:"Инфраструктурный игрок в гонке ИИ с рекордным портфелем заказов.",isin:""},
+  {date:"2026-02-20",ticker:"KSPI",company:"Kaspi.kz AO - ADR",industry:"Finance",country:"Finance",sector:"Software - Infrastructure",currency:"USD",price:87.27,open:73.2,target:113,closed:null,source:"InveStory",share:"5%",perf:19.22,status:"ACTIVE",potential:29.48,maxReturn:35.40,change:-2.03,marketCap:16.54,website:"kaspi.kz",comment:"Ожидание возобновления дивидендов. Компания выглядит недооценённой.",isin:""},
+  {date:"2026-04-17",ticker:"GOOGL",company:"Alphabet Inc Class A",industry:"Technology",country:"Technology",sector:"Communication Services",currency:"USD",price:347.90,open:335,target:395,closed:null,source:"InveStory",share:"5%",perf:3.85,status:"ACTIVE",potential:13.54,maxReturn:21.97,change:0.22,marketCap:4234.72,website:"google.com",comment:"Качественный актив для покупки в долгую.",isin:""},
+  {date:"2026-02-10",ticker:"VNOM",company:"Viper Energy Inc",industry:"Oil&Gas",country:"Oil&Gas",sector:"Oil & Gas Midstream",currency:"USD",price:45.08,open:43.55,target:55,closed:null,source:"InveStory",share:"5%",perf:3.51,status:"ACTIVE",potential:22.01,maxReturn:17.41,change:0.49,marketCap:16.08,website:"viperenergy.com",comment:"Меньшая зависимость от цены на нефть, хорошая див доходность.",isin:""},
+  {date:"2026-01-27",ticker:"AMZN",company:"Amazon.com Inc",industry:"Technology",country:"Technology",sector:"Internet Retail",currency:"USD",price:243.75,open:238.08,target:305,closed:null,source:"InveStory",share:"5%",perf:2.38,status:"ACTIVE",potential:25.13,maxReturn:17.00,change:-1.52,marketCap:2621.83,website:"amazon.com",comment:"Упала на повышении планов по капитальным расходам. Отличная возможность для покупки.",isin:""},
+  {date:"2026-03-27",ticker:"CSCO",company:"Cisco Systems Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:112.95,open:82,target:110,closed:125.4,source:"InveStory",share:"5%",perf:52.93,status:"CLOSED",potential:null,maxReturn:58.99,change:0.69,marketCap:444.91,website:"cisco.com",comment:"Тренды разворачиваются благоприятно для этой компании.",isin:""},
+  {date:"2026-03-05",ticker:"NATKY",company:"Kazatomprom (GDR)",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"USD",price:68.00,open:81.2,target:110,closed:null,source:"InveStory",share:"5%",perf:-16.26,status:"ACTIVE",potential:61.76,maxReturn:14.48,change:4.12,marketCap:null,website:"kazatomprom.kz",comment:"Крупнейший в мире производитель первичного урана. 25% мировых поставок.",isin:""},
+  {date:"2026-02-05",ticker:"MSFT",company:"Microsoft Corp",industry:"Technology",country:"Technology",sector:"Software - Infrastructure",currency:"USD",price:388.92,open:392.32,target:550,closed:null,source:"InveStory",share:"5%",perf:-0.87,status:"ACTIVE",potential:41.42,maxReturn:41.58,change:-2.22,marketCap:2892.78,website:"microsoft.com",comment:"P/E ≈ 24, близко к историческому минимуму.",isin:""},
+  {date:"2026-02-03",ticker:"TTWO",company:"Take-Two Interactive",industry:"Technology",country:"Technology",sector:"Electronic Gaming",currency:"USD",price:232.86,open:206.61,target:300,closed:null,source:"InveStory",share:"5%",perf:12.71,status:"ACTIVE",potential:28.83,maxReturn:28.58,change:-1.30,marketCap:43.35,website:"take2games.com",comment:"ИИ ускоряет прототипирование и тестирование — позитив для игровых компаний.",isin:""},
+  {date:"2026-02-26",ticker:"MELI",company:"MercadoLibre Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:1806.59,open:1790,target:2800,closed:null,source:"InveStory",share:"5%",perf:0.93,status:"ACTIVE",potential:54.99,maxReturn:42.37,change:-0.88,marketCap:91.58,website:"mercadolibre.com",comment:"Упала на 37% от максимума. Хорошая точка для набора позиции.",isin:""},
+  {date:"2026-01-20",ticker:"CPNG",company:"Coupang Inc",industry:"Consumer Discretionary",country:"Consumer Discretionary",sector:"Internet Retail",currency:"USD",price:15.77,open:20.45,target:32,closed:null,source:"InveStory",share:"5%",perf:-22.89,status:"ACTIVE",potential:102.92,maxReturn:66.65,change:0.03,marketCap:28.31,website:"coupang.com",comment:"Компания с высокой бетой. При коррекциях падает сильнее остальных.",isin:""},
+  {date:"2026-01-30",ticker:"BRX",company:"Brixmor Property Group",industry:"Real Estate",country:"Real Estate",sector:"REIT - Retail",currency:"USD",price:32.64,open:30,target:35,closed:null,source:"ДУА",share:"5%",perf:8.80,status:"ACTIVE",potential:7.23,maxReturn:9.53,change:-0.15,marketCap:10.02,website:"brixmor.com",comment:"Крупнейший владелец открытых торговых центров в США. 350+ объектов.",isin:""},
+  {date:"2026-04-06",ticker:"DOW",company:"Dow Inc",industry:"Materials",country:"Materials",sector:"Chemicals",currency:"USD",price:31.38,open:40.7,target:55,closed:null,source:"InveStory",share:"5%",perf:-22.90,status:"ACTIVE",potential:75.27,maxReturn:5.01,change:2.99,marketCap:22.53,website:"dow.com",comment:"Бенефициар конфликта на Ближнем Востоке. Заходить лесенкой.",isin:""},
+  {date:"2026-03-13",ticker:"KWEB",company:"KraneShares CSI China Internet ETF",industry:"ETF",country:"ETF",sector:"China Internet",currency:"USD",price:26.52,open:30,target:39,closed:null,source:"InveStory",share:"5%",perf:-11.60,status:"ACTIVE",potential:47.06,maxReturn:44.57,change:-1.87,marketCap:null,website:"kraneshares.com",comment:"Ключевой ETF на китайских технологических гигантов.",isin:""},
+  {date:"2026-01-29",ticker:"SPOT",company:"Spotify Technology SA",industry:"Technology",country:"Technology",sector:"Internet Content",currency:"USD",price:475.78,open:462,target:700,closed:null,source:"ДУА",share:"5%",perf:2.98,status:"ACTIVE",potential:47.13,maxReturn:61.97,change:-3.54,marketCap:97.83,website:"spotify.com",comment:"Мировой лидер в сфере аудио-стриминга.",isin:""},
+  {date:"2026-02-17",ticker:"ERO",company:"Ero Copper Corp",industry:"Materials",country:"Materials",sector:"Copper",currency:"USD",price:27.47,open:29.93,target:45,closed:null,source:"InveStory",share:"5%",perf:-8.22,status:"ACTIVE",potential:63.82,maxReturn:32.98,change:2.23,marketCap:4.05,website:"erocopper.com",comment:"Коррекция 30% от максимумов. Потенциал роста меди сохраняется.",isin:""},
+  {date:"2026-04-30",ticker:"V",company:"Visa Inc",industry:"Fintech",country:"Fintech",sector:"Credit Services",currency:"USD",price:355.56,open:330,target:410,closed:null,source:"InveStory",share:"5%",perf:7.75,status:"ACTIVE",potential:15.31,maxReturn:10.65,change:-0.07,marketCap:669.79,website:"visa.com",comment:"Ставка на рост глобальных цифровых платежей.",isin:""},
+  {date:"2026-05-05",ticker:"IBIT",company:"iShares Bitcoin Trust ETF",industry:"Crypto",country:"Crypto",sector:"Bitcoin ETF",currency:"USD",price:37.39,open:45.4,target:60,closed:null,source:"InveStory",share:"5%",perf:-17.64,status:"ACTIVE",potential:60.47,maxReturn:58.19,change:-0.76,marketCap:169.62,website:"BTC.com",comment:"Крупнейший в мире биржевой фонд на биткоин от BlackRock.",isin:""},
+  {date:"2026-05-08",ticker:"CRCL",company:"Circle Internet Group",industry:"Crypto",country:"Crypto",sector:"Capital Markets",currency:"USD",price:67.87,open:113.25,target:155,closed:null,source:"InveStory",share:"5%",perf:-40.07,status:"ACTIVE",potential:128.38,maxReturn:78.81,change:-4.52,marketCap:16.88,website:"circle.com",comment:"Компания, выпускающая стейблкоин USDC.",isin:""},
+  {date:"2026-05-20",ticker:"NOK",company:"Nokia Oyj",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:10.39,open:13.67,target:18,closed:null,source:"InveStory",share:"5%",perf:-23.99,status:"ACTIVE",potential:73.24,maxReturn:27.65,change:-2.26,marketCap:60.41,website:"nokia.com",comment:"Строитель критической инфраструктуры для сетей нового поколения.",isin:""},
+  {date:"2026-05-28",ticker:"COPX",company:"Global X Copper Miners ETF",industry:"Materials",country:"Materials",sector:"Copper Mining",currency:"USD",price:80.33,open:83,target:110,closed:null,source:"InveStory",share:"5%",perf:-3.22,status:"ACTIVE",potential:36.94,maxReturn:20.47,change:2.67,marketCap:null,website:"globalxetfs.com",comment:"ETF на крупнейших медедобытчиков мира.",isin:""},
+  {date:"2026-06-01",ticker:"ARKG",company:"ARK Genomic Revolution ETF",industry:"Healthcare",country:"Healthcare",sector:"Genomics",currency:"USD",price:33.40,open:34,target:45,closed:null,source:"InveStory",share:"5%",perf:-1.76,status:"ACTIVE",potential:34.73,maxReturn:-75.74,change:-0.60,marketCap:null,website:"ark-funds.com",comment:"Генная терапия, редактирование ДНК, ИИ в разработке лекарств.",isin:""},
+  {date:"2026-06-02",ticker:"TSEM",company:"Tower Semiconductor Ltd",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:250.54,open:228,target:350,closed:null,source:"ДУА",share:"5%",perf:9.89,status:"ACTIVE",potential:39.70,maxReturn:40.32,change:-0.15,marketCap:28.40,website:"towersemi.com",comment:"Монополист в ИИ-инфраструктуре. Потенциал роста 2-3x.",isin:""},
+  {date:"2026-06-03",ticker:"CLF",company:"Cleveland-Cliffs Inc",industry:"Materials",country:"Materials",sector:"Steel",currency:"USD",price:9.53,open:12.5,target:17,closed:null,source:"InveStory",share:"5%",perf:-23.76,status:"ACTIVE",potential:78.38,maxReturn:33.60,change:2.97,marketCap:5.43,website:"clevelandcliffs.com",comment:"Ставка на восстановление американской стали и промышленную политику США.",isin:""},
+  {date:"2026-06-04",ticker:"AVGO",company:"Broadcom Inc",industry:"Technology",country:"Technology",sector:"Semiconductors",currency:"USD",price:393.30,open:392.9,target:500,closed:360,source:"InveStory",share:"5%",perf:-8.37,status:"CLOSED",potential:null,maxReturn:25.99,change:1.76,marketCap:1867.54,website:"broadcom.com",comment:"Лидер в полупроводниках и инфраструктурном софте для ИИ.",isin:""},
+  {date:"2026-06-25",ticker:"003816",company:"CGN Power Co Ltd",industry:"Nuclear",country:"Nuclear",sector:"Energy",currency:"CNY",price:4.11,open:3.96,target:6,closed:null,source:"AGS",share:"5%",perf:3.79,status:"ACTIVE",potential:45.99,maxReturn:24.75,change:1.23,marketCap:219.64,website:"en.cgnpc.com.cn",comment:"Крупнейший оператор атомной генерации в Китае. 55% атомной мощности.",isin:""},
+  {date:"2026-06-26",ticker:"VISN",company:"Vistance Networks Inc",industry:"Technology",country:"Technology",sector:"Communication Equipment",currency:"USD",price:12.15,open:12,target:15,closed:null,source:"InveStory",share:"5%",perf:1.25,status:"ACTIVE",potential:23.46,maxReturn:66.25,change:-2.64,marketCap:2.75,website:"vistancenetworks.com",comment:"Бывшая Commscope. Реструктуризация: продажа активов, гашение долга.",isin:""},
+  {date:"2026-06-27",ticker:"RKT",company:"Rocket Companies Inc",industry:"Fintech",country:"Fintech",sector:"Mortgage Finance",currency:"USD",price:13.49,open:14.6,target:19,closed:null,source:"InveStory",share:"5%",perf:-7.60,status:"ACTIVE",potential:40.85,maxReturn:66.85,change:-1.21,marketCap:38.14,website:"rocketcompanies.com",comment:"Крупнейшая ипотечная и финтех-группа США. Rocket Mortgage, Redfin, Mr. Cooper.",isin:""}
 ];
 
 /* ===========================================================================
    GLOBAL STATE
    =========================================================================== */
 let allData = [];
-let allBonds = [];
 let filteredData = [];
 let selectedIdx = -1; // index into filteredData
 let sortCol = 'date';
@@ -1559,20 +1105,6 @@ let filters = {
   risk: new Set(['all']),
   industry: 'all',
   search: ''
-};
-
-let currentAssetClass = 'stock'; // 'stock' | 'bond' — Ideas tab toggle
-let filteredBonds = [];
-let bondSortCol = 'name';
-let bondSortDir = 'asc';
-let bondFilters = {
-  currency: new Set(['all']),
-  country: new Set(['all']),
-  search: '',
-  ratingMin: null, ratingMax: null,   // ratingScore() index, lower = better
-  durationMin: null, durationMax: null,
-  ytmMin: null, ytmMax: null,
-  spreadMin: null, spreadMax: null
 };
 
 /* ===========================================================================
@@ -1676,9 +1208,7 @@ function csvToData(csvText) {
       marketCap: parseNum(col(cols, 'Market cap (B USD)')),
       website: col(cols, 'Website'),
       comment: col(cols, 'Comments'),
-      isin: col(cols, 'ISIN'),
-      model: col(cols, 'Model'),
-      doc: col(cols, 'Doc')
+      isin: col(cols, 'ISIN')
     });
   }
   return data;
@@ -1863,10 +1393,7 @@ function gvizToData(table) {
       marketCap: gvNum(row, 'Market cap (B USD)'),
       website: gvStr(row, 'Website'),
       comment: gvStr(row, 'Comments'),
-      isin: gvStr(row, 'ISIN'),
-      model: gvStr(row, 'Model'),
-      doc: gvStr(row, 'Doc'),
-      sheetWeight: gvNum(row, 'Доля')
+      isin: gvStr(row, 'ISIN')
     });
   }
   return data;
@@ -1922,171 +1449,10 @@ async function fetchData() {
   });
 
   allData = data;
-  collectSources(data);
-  renderSourceFilterButtons();
-  renderPfSourceFilterButtons();
   populateIndustryFilter();
   applyFilters();
   loading.style.display = 'none';
   tableWrap.style.display = '';
-}
-
-/* ===========================================================================
-   BONDS — parsing & loading
-   =========================================================================== */
-/* Numbers in the Bonds sheet are stored as TEXT with comma decimals and % signs */
-function parseRuNum(val) {
-  if (val == null || val === '') return null;
-  const s = String(val).replace(/%/g, '').replace(/\s/g, '').replace(',', '.');
-  const n = parseFloat(s);
-  return isNaN(n) ? null : n;
-}
-
-function bondsGvizToData(table) {
-  const cols = (table.cols || []).map(c => (c.label || '').trim());
-  const rows = table.rows || [];
-  const ci = {};
-  cols.forEach((name, i) => { if (name) ci[name] = i; });
-
-  function raw(row, colName) {
-    const idx = ci[colName];
-    if (idx == null) return null;
-    const cell = row.c?.[idx];
-    if (!cell) return null;
-    if (cell.f != null && cell.f !== '') return cell.f;
-    return cell.v != null ? cell.v : null;
-  }
-  function str(row, colName) {
-    const v = raw(row, colName);
-    return v != null ? String(v).trim() : '';
-  }
-  function num(row, colName) {
-    const idx = ci[colName];
-    if (idx == null) return null;
-    const cell = row.c?.[idx];
-    if (!cell) return null;
-    if (typeof cell.v === 'number') return cell.v;
-    return parseRuNum(cell.f != null ? cell.f : cell.v);
-  }
-
-  const out = [];
-  for (const row of rows) {
-    const name = str(row, 'Название');
-    if (!name) continue;
-    out.push({
-      name: name,
-      isin: str(row, 'ISIN'),
-      currency: str(row, 'Валюта'),
-      country: str(row, 'Страна'),
-      countryRu: str(row, 'Страна (рус)'),
-      sector: str(row, 'Сектор'),
-      sectorRu: str(row, 'Сектор (рус)'),
-      rating: str(row, 'Рейтинг'),
-      ytm: num(row, 'YTM'),
-      coupon: num(row, 'Купон'),
-      price: num(row, 'Цена, %'),
-      duration: num(row, 'Дюрация'),
-      minLot: num(row, 'Мин. лот'),
-      couponsPerYear: num(row, 'Купонов/год'),
-      callable: str(row, 'Callable'),
-      passFilter: str(row, 'Проходит фильтр'),
-      rank: num(row, 'Ранг'),
-      sheetWeight: num(row, 'Доля'),
-      spread: num(row, 'Spread'),
-      issueDate: str(row, 'Дата начала обращения'),
-      fdap: str(row, 'FDAP')
-    });
-  }
-  return out;
-}
-
-let _bondsCallbackId = 0;
-function fetchBonds() {
-  return new Promise((resolve, reject) => {
-    const cbName = '_bondsCb' + (++_bondsCallbackId);
-    const timeout = setTimeout(() => { reject(new Error('JSONP timeout')); delete window[cbName]; }, 12000);
-
-    window[cbName] = function(resp) {
-      clearTimeout(timeout);
-      delete window[cbName];
-      try {
-        if (resp.status === 'error') throw new Error(resp.errors?.[0]?.message || 'gviz error');
-        const bonds = bondsGvizToData(resp.table);
-        allBonds = bonds;
-        console.log('[AGS] Loaded', bonds.length, 'bonds');
-        try { updatePoolInfo(); } catch(e) {}
-        try { renderBondCurrencyFilterButtons(); applyBondFilters(); } catch(e) {}
-        resolve(bonds);
-      } catch(e) { reject(e); }
-    };
-
-    const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
-      '/gviz/tq?tqx=responseHandler:' + cbName + '&headers=1&sheet=Bonds';
-    const s = document.createElement('script');
-    s.src = url;
-    s.onerror = () => { clearTimeout(timeout); reject(new Error('script load failed')); };
-    document.head.appendChild(s);
-  });
-}
-
-/* ===========================================================================
-   CREDIT RATING HELPERS
-   =========================================================================== */
-const RATING_ORDER = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-','BB+','BB','BB-','B+','B','B-','CCC+','CCC','CCC-','CC','C','D'];
-
-/* Moody's-scale ratings ("Baa3", "Ba1"...), mapped to the equivalent S&P/Fitch grade above */
-const MOODY_RATING_MAP = {
-  'AA1':'AA+','AA2':'AA','AA3':'AA-',
-  'A1':'A+','A2':'A','A3':'A-',
-  'BAA1':'BBB+','BAA2':'BBB','BAA3':'BBB-',
-  'BA1':'BB+','BA2':'BB','BA3':'BB-',
-  'B1':'B+','B2':'B','B3':'B-',
-  'CAA1':'CCC+','CAA2':'CCC','CAA3':'CCC-',
-  'CA':'CC'
-};
-
-/* token -> RATING_ORDER index, longest token first so "BAA3"/"AA+" match
-   before shorter prefixes like "A3"/"AA" would. */
-const RATING_TOKEN_LOOKUP = (() => {
-  const map = {};
-  RATING_ORDER.forEach((t, idx) => { map[t] = idx; });
-  Object.entries(MOODY_RATING_MAP).forEach(([moody, sp]) => {
-    if (!(moody in map)) map[moody] = RATING_ORDER.indexOf(sp);
-  });
-  return Object.entries(map).sort((a, b) => b[0].length - a[0].length);
-})();
-
-/* Sheet ratings often carry agency/outlook noise ("Fitch B+ / Стаб.") or use
-   the Moody's scale ("Baa3") instead of an exact "BBB-"-style string — extract
-   the actual grade token instead of requiring a clean exact match (a mismatch
-   here silently falls back to 99 = "unrated", which the "до" range filter
-   then always excludes). */
-function ratingScore(r) {
-  if (!r) return 99;
-  const s = String(r).trim().toUpperCase();
-  for (const [token, idx] of RATING_TOKEN_LOOKUP) {
-    const escaped = token.replace(/[+\-]/g, '\\$&');
-    const re = new RegExp('(?:^|[^A-Z])' + escaped + '(?:$|[^A-Z])');
-    if (re.test(s)) return idx;
-  }
-  return 99;
-}
-function isInvestmentGrade(r) { return ratingScore(r) <= RATING_ORDER.indexOf('BBB-'); }
-
-/* Rank on a "smaller = worse, bigger = better" scale (inverse of ratingScore,
-   where 0 = AAA/best) — used only for the "Рейтинг от/до" bond filter, so the
-   dropdown reads intuitively worst-to-best top-to-bottom. Unrated → -1, below
-   every real rank, so any finite bound still excludes it. */
-function bondRatingRank(r) {
-  const s = ratingScore(r);
-  return s >= 99 ? -1 : (RATING_ORDER.length - 1 - s);
-}
-
-function avgRating(bonds) {
-  const scores = bonds.map(b => ratingScore(b.rating)).filter(s => s < 99);
-  if (!scores.length) return '—';
-  const avg = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
-  return RATING_ORDER[Math.min(avg, RATING_ORDER.length-1)] || '—';
 }
 
 /* ===========================================================================
@@ -2102,246 +1468,6 @@ function populateIndustryFilter() {
     opt.textContent = ind;
     sel.appendChild(opt);
   });
-}
-
-/* ===========================================================================
-   ASSET CLASS TOGGLE + BOND BROWSING (Ideas tab)
-   =========================================================================== */
-function setAssetClass(cls) {
-  currentAssetClass = cls;
-  document.getElementById('assetToggleStock').classList.toggle('active', cls === 'stock');
-  document.getElementById('assetToggleBond').classList.toggle('active', cls === 'bond');
-  document.getElementById('stockControlsBlock').style.display = cls === 'stock' ? '' : 'none';
-  document.getElementById('bondControlsBlock').style.display = cls === 'bond' ? '' : 'none';
-  if (cls === 'bond') applyBondFilters();
-}
-
-/* Bond filter buttons (currency) — explicit wiring, data-bondfilter (not data-filter)
-   so the delegated Ideas-tab stock listener ignores them entirely. */
-function toggleBondFilter(btn) {
-  const group = btn.dataset.bondfilter;
-  const value = btn.dataset.value;
-  const set = bondFilters[group];
-  if (!(set instanceof Set)) return;
-
-  if (value === 'all') {
-    set.clear();
-    set.add('all');
-  } else {
-    set.delete('all');
-    if (set.has(value)) {
-      set.delete(value);
-      if (set.size === 0) set.add('all');
-    } else {
-      set.add(value);
-    }
-  }
-  document.querySelectorAll(`.bond-filter[data-bondfilter="${group}"]`).forEach(b => {
-    b.classList.toggle('active', set.has(b.dataset.value));
-  });
-  applyBondFilters();
-}
-
-function renderBondCurrencyFilterButtons() {
-  const box = document.getElementById('bondCurrencyFilterBtns');
-  if (!box) return;
-  const currencies = [...new Set(allBonds.map(b => b.currency).filter(Boolean))].sort();
-  box.innerHTML = '';
-  currencies.forEach(cur => {
-    const b = document.createElement('button');
-    b.className = 'filter-btn bond-filter';
-    b.dataset.bondfilter = 'currency';
-    b.dataset.value = cur;
-    b.textContent = cur;
-    b.onclick = () => toggleBondFilter(b);
-    box.appendChild(b);
-  });
-}
-
-function bondCountryLabel(b) { return b.countryRu || b.country || ''; }
-
-/* Portfolio/add-to-portfolio key for a bond — falls back to name when ISIN is missing
-   (many local/OTC instruments in the sheet have no ISIN filled in). */
-function bondKey(b) { return (b && (b.isin || b.name)) || ''; }
-
-/* Only Kazakhstan gets its own filter button — other countries aren't split out individually */
-function isKazakhstanBond(b) {
-  const c = bondCountryLabel(b).toLowerCase() + ' ' + (b.country || '').toLowerCase();
-  return c.includes('казахстан') || c.includes('kazakhstan') || c.includes(' kz ') || c.trim().endsWith(' kz');
-}
-
-/* ===========================================================================
-   FDAP (US withholding tax) FILTER — shared across Ideas / Models / Portfolio
-   Sheet column "FDAP": 'N' = no US withholding tax exposure. Checking the
-   toggle in any tab keeps the others in sync (one shared, persisted setting).
-   =========================================================================== */
-const FDAP_ONLY_KEY = 'ags_bond_fdap_only';
-const FDAP_CHECKBOX_IDS = ['bondFdapOnlyIdeas', 'mdlFdapOnly', 'pfFdapOnly'];
-let bondFdapExemptOnly = false;
-
-function isFdapExempt(b) { return String(b?.fdap || '').trim().toUpperCase() === 'N'; }
-
-function loadFdapExemptOnly() {
-  try { return localStorage.getItem(FDAP_ONLY_KEY) === '1'; } catch (e) { return false; }
-}
-
-function setFdapExemptOnly(checked) {
-  bondFdapExemptOnly = !!checked;
-  try { localStorage.setItem(FDAP_ONLY_KEY, bondFdapExemptOnly ? '1' : '0'); } catch (e) {}
-  FDAP_CHECKBOX_IDS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.checked = bondFdapExemptOnly;
-  });
-  applyBondFilters();
-  updatePoolInfo();
-  if (typeof renderPortfolio === 'function') renderPortfolio();
-}
-
-function populateBondRatingSelects() {
-  const minSel = document.getElementById('bondRatingMin');
-  const maxSel = document.getElementById('bondRatingMax');
-  if (!minSel || !maxSel || minSel.options.length > 1) return; // already populated
-  // Listed worst-to-best (D...AAA) with value = rank, so the scale reads
-  // "от меньшего (хуже) к большему (лучше)" top-to-bottom.
-  [...RATING_ORDER].reverse().forEach(r => {
-    const rank = RATING_ORDER.length - 1 - RATING_ORDER.indexOf(r);
-    const o1 = document.createElement('option'); o1.value = rank; o1.textContent = r; minSel.appendChild(o1);
-    const o2 = document.createElement('option'); o2.value = rank; o2.textContent = r; maxSel.appendChild(o2);
-  });
-}
-
-function applyBondFilters() {
-  bondFilters.search = (document.getElementById('bondSearchInput')?.value || '').toLowerCase();
-  bondFilters.ratingMin = document.getElementById('bondRatingMin')?.value || '';
-  bondFilters.ratingMax = document.getElementById('bondRatingMax')?.value || '';
-  bondFilters.durationMin = parseFloat(document.getElementById('bondDurationMin')?.value);
-  bondFilters.durationMax = parseFloat(document.getElementById('bondDurationMax')?.value);
-  bondFilters.ytmMin = parseFloat(document.getElementById('bondYtmMin')?.value);
-  bondFilters.ytmMax = parseFloat(document.getElementById('bondYtmMax')?.value);
-  bondFilters.spreadMin = parseFloat(document.getElementById('bondSpreadMin')?.value);
-  bondFilters.spreadMax = parseFloat(document.getElementById('bondSpreadMax')?.value);
-
-  filteredBonds = allBonds.filter(b => {
-    if (bondFdapExemptOnly && !isFdapExempt(b)) return false;
-    if (!bondFilters.currency.has('all') && !bondFilters.currency.has(b.currency)) return false;
-    if (!bondFilters.country.has('all') && bondFilters.country.has('kz') && !isKazakhstanBond(b)) return false;
-    if (bondFilters.ratingMin !== '' && bondRatingRank(b.rating) < parseInt(bondFilters.ratingMin, 10)) return false;
-    if (bondFilters.ratingMax !== '' && bondRatingRank(b.rating) > parseInt(bondFilters.ratingMax, 10)) return false;
-    if (!isNaN(bondFilters.durationMin) && (b.duration == null || b.duration < bondFilters.durationMin)) return false;
-    if (!isNaN(bondFilters.durationMax) && (b.duration == null || b.duration > bondFilters.durationMax)) return false;
-    if (!isNaN(bondFilters.ytmMin) && (b.ytm == null || b.ytm < bondFilters.ytmMin)) return false;
-    if (!isNaN(bondFilters.ytmMax) && (b.ytm == null || b.ytm > bondFilters.ytmMax)) return false;
-    if (!isNaN(bondFilters.spreadMin) && (b.spread == null || b.spread < bondFilters.spreadMin)) return false;
-    if (!isNaN(bondFilters.spreadMax) && (b.spread == null || b.spread > bondFilters.spreadMax)) return false;
-    if (bondFilters.search) {
-      const hay = [b.name, b.isin, b.sectorRu || b.sector, b.countryRu || b.country, b.currency].join(' ').toLowerCase();
-      if (!hay.includes(bondFilters.search)) return false;
-    }
-    return true;
-  });
-
-  applyBondSort();
-  updateBondStats();
-}
-
-function applyBondSort() {
-  filteredBonds.sort((a, b) => {
-    let va, vb;
-    switch (bondSortCol) {
-      case 'name': va = a.name || ''; vb = b.name || ''; break;
-      case 'isin': va = a.isin || ''; vb = b.isin || ''; break;
-      case 'country': va = bondCountryLabel(a); vb = bondCountryLabel(b); break;
-      case 'sector': va = a.sectorRu || a.sector || ''; vb = b.sectorRu || b.sector || ''; break;
-      case 'currency': va = a.currency || ''; vb = b.currency || ''; break;
-      case 'rating': va = ratingScore(a.rating); vb = ratingScore(b.rating); break;
-      case 'ytm': va = a.ytm || 0; vb = b.ytm || 0; break;
-      case 'coupon': va = a.coupon || 0; vb = b.coupon || 0; break;
-      case 'price': va = a.price || 0; vb = b.price || 0; break;
-      case 'duration': va = a.duration || 0; vb = b.duration || 0; break;
-      case 'spread': va = a.spread || 0; vb = b.spread || 0; break;
-      default: va = 0; vb = 0;
-    }
-    if (typeof va === 'string') {
-      const cmp = va.localeCompare(vb);
-      return bondSortDir === 'asc' ? cmp : -cmp;
-    }
-    return bondSortDir === 'asc' ? va - vb : vb - va;
-  });
-  renderBondTable();
-}
-
-function renderBondTable() {
-  const tbody = document.getElementById('bondTableBody');
-  if (!tbody) return;
-  if (filteredBonds.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:#6B7280;">Нет облигаций, соответствующих фильтрам</td></tr>';
-    return;
-  }
-  let html = '';
-  filteredBonds.forEach((b, idx) => {
-    const inPf = isInPortfolio('bond', bondKey(b));
-    const pfBtnHtml = inPf
-      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="removeFromPortfolio('bond','${esc(bondKey(b))}');renderBondTable();">✅</button>`
-      : `<button class="btn-add-pf" title="Добавить в портфель" onclick="addToPortfolio(filteredBonds[${idx}],'bond');renderBondTable();">➕</button>`;
-    html += `<tr>
-      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.name)}">${esc(b.name)}</td>
-      <td style="font-size:0.75rem;color:#6B7280;">${esc(b.isin) || '—'}</td>
-      <td class="sector-cell" title="${esc(b.countryRu || b.country)}">${esc(b.countryRu || b.country) || '—'}</td>
-      <td class="sector-cell" title="${esc(b.sectorRu || b.sector)}">${esc(b.sectorRu || b.sector) || '—'}</td>
-      <td style="text-align:center;font-size:0.8rem;">${esc(b.currency) || '—'}</td>
-      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
-      <td style="text-align:center;font-weight:700;color:#16A34A;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:center;">${fmtNum(b.price)}</td>
-      <td style="text-align:center;">${fmtNum(b.duration)}</td>
-      <td style="text-align:center;">${b.spread != null ? fmtNum(b.spread, 0) : '—'}</td>
-      <td class="col-action">${pfBtnHtml}</td>
-    </tr>`;
-  });
-  tbody.innerHTML = html;
-  const pfqc = document.getElementById('pfBondQuickCount');
-  if (pfqc) {
-    const n = loadPortfolio().filter(p => p.assetClass === 'bond').length;
-    pfqc.textContent = n > 0 ? `В портфеле: ${n} шт.` : '';
-  }
-}
-
-function updateBondStats() {
-  document.getElementById('bondStatCount').textContent = filteredBonds.length;
-  const ytms = filteredBonds.filter(b => b.ytm != null).map(b => b.ytm);
-  const avgYtm = ytms.length ? ytms.reduce((a,b)=>a+b,0)/ytms.length : null;
-  document.getElementById('bondStatYtm').textContent = avgYtm != null ? avgYtm.toFixed(2) + '%' : '—';
-  const durations = filteredBonds.filter(b => b.duration != null).map(b => b.duration);
-  const avgDur = durations.length ? durations.reduce((a,b)=>a+b,0)/durations.length : null;
-  document.getElementById('bondStatDuration').textContent = avgDur != null ? fmtNum(avgDur) : '—';
-  document.getElementById('bondStatRating').textContent = avgRating(filteredBonds);
-}
-
-function addFilteredBondsToPortfolio() {
-  if (filteredBonds.length === 0) {
-    showToast('Нет облигаций в текущем фильтре');
-    return;
-  }
-  const pf = loadPortfolio();
-  let added = 0;
-  const today = new Date().toISOString().slice(0, 10);
-  filteredBonds.forEach(b => {
-    const key = bondKey(b);
-    if (key && !pf.some(p => p.assetClass === 'bond' && p.id === key)) {
-      pf.push({
-        assetClass: 'bond',
-        id: key,
-        addedAt: today,
-        entryPrice: b.price,
-        manualWeight: null,
-        lockedWeight: false
-      });
-      added++;
-    }
-  });
-  savePortfolio(pf);
-  showToast('Добавлено в портфель: ' + added + ' облигаций');
-  renderBondTable();
 }
 
 /* ===========================================================================
@@ -2407,28 +1533,6 @@ function fmtPrice(val) {
   if (val == null) return '—';
   return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-/* ---- Document links (Google Drive) ---- */
-function docFileId(url) {
-  if (!url) return null;
-  var m = String(url).match(/\/file\/d\/([A-Za-z0-9_-]+)/);
-  if (m) return m[1];
-  m = String(url).match(/[?&]id=([A-Za-z0-9_-]+)/);
-  return m ? m[1] : null;
-}
-function hasDoc(item) {
-  return !!(item && item.doc && String(item.doc).trim());
-}
-function docViewUrl(item) {
-  if (!hasDoc(item)) return null;
-  var id = docFileId(item.doc);
-  return id ? 'https://drive.google.com/file/d/' + id + '/view' : String(item.doc).trim();
-}
-function docDownloadUrl(item) {
-  if (!hasDoc(item)) return null;
-  var id = docFileId(item.doc);
-  return id ? 'https://drive.google.com/uc?export=download&id=' + id : String(item.doc).trim();
-}
-
 function logoUrl(ticker, website) {
   // Use financialmodelingprep for stock logos by ticker
   // For tickers with ":" (like SHE:003816) or non-standard, fallback to website favicon
@@ -2447,73 +1551,27 @@ function companyCell(item) {
   const img = src ? `<img class="company-logo" src="${src}" alt="" onerror="this.style.display='none'">` : '';
   return `<div class="company-with-logo" title="${esc(item.company)}">${img}<span>${esc(item.company)}</span></div>`;
 }
-function sourceBadgeClass(src) { return 'badge-source'; }
-
-/* Кнопки фильтра «Источник» — вкладка «Идеи» (строятся динамически) */
-function renderSourceFilterButtons() {
-  const box = document.getElementById('sourceFilterBtns');
-  if (!box) return;
-  box.innerHTML = '';
-  allSources.forEach(src => {
-    const b = document.createElement('button');
-    b.className = 'filter-btn';
-    b.dataset.filter = 'source';
-    b.dataset.value = src;
-    b.textContent = src;
-    b.addEventListener('click', () => {
-      const set = filters.source;
-      set.delete('all');
-      if (set.has(src)) {
-        set.delete(src);
-        if (set.size === 0) set.add('all');
-      } else {
-        set.add(src);
-      }
-      document.querySelectorAll('.filter-btn[data-filter="source"]:not(.pf-filter)').forEach(x => {
-        x.classList.toggle('active', set.has(x.dataset.value));
-      });
-      selectedIdx = -1;
-      applyFilters();
-      document.getElementById('detailEmpty').style.display = '';
-      document.getElementById('detailContent').style.display = 'none';
-    });
-    box.appendChild(b);
-  });
-}
-
-/* Кнопки фильтра «Источник» — вкладка «Портфель» (строятся динамически) */
-function renderPfSourceFilterButtons() {
-  const box = document.getElementById('pfSourceFilterBtns');
-  if (!box) return;
-  const existing = Array.from(box.children).map(b => b.dataset.value).join('|');
-  if (existing === allSources.join('|')) return;   // уже актуально
-  box.innerHTML = '';
-  allSources.forEach(src => {
-    const b = document.createElement('button');
-    b.className = 'filter-btn pf-filter';
-    b.dataset.pffilter = 'source';
-    b.dataset.value = src;
-    b.textContent = src;
-    if (pfFilters.source.has(src)) b.classList.add('active');
-    b.setAttribute('onclick', 'togglePfFilter(this)');
-    box.appendChild(b);
-  });
+function sourceBadgeClass(src) {
+  if (src === 'InveStory') return 'badge-investory';
+  if (src === 'ДУА') return 'badge-dua';
+  if (src === 'AGS') return 'badge-ags';
+  return '';
 }
 
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:40px;color:#6B7280;">Нет данных, соответствующих фильтрам</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:#6B7280;">Нет данных, соответствующих фильтрам</td></tr>';
     return;
   }
   let html = '';
   filteredData.forEach((item, idx) => {
     const sel = idx === selectedIdx ? ' selected' : '';
     const potentialVal = item.status === 'CLOSED' ? item.perf : item.potential;
-    const inPf = isInPortfolio('stock', item.ticker);
+    const inPf = isInPortfolio(item.ticker);
     const pfBtnHtml = inPf
-      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="event.stopPropagation();removeFromPortfolio('stock','${esc(item.ticker)}');renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">✅</button>`
-      : `<button class="btn-add-pf" title="Добавить в портфель" onclick="event.stopPropagation();addToPortfolio(filteredData[${idx}],'stock');renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">➕</button>`;
+      ? `<button class="btn-add-pf in-portfolio" title="В портфеле" onclick="event.stopPropagation();removeFromPortfolio('${esc(item.ticker)}');renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">✅</button>`
+      : `<button class="btn-add-pf" title="Добавить в портфель" onclick="event.stopPropagation();addToPortfolio(filteredData[${idx}]);renderTable();if(selectedIdx===${idx})showDetail(filteredData[${idx}]);">➕</button>`;
     html += `<tr class="${sel}" onclick="selectRow(${idx})">
       <td>${formatDate(item._date)}</td>
       <td class="ticker-cell">${esc(item.ticker)}</td>
@@ -2527,10 +1585,7 @@ function renderTable() {
       <td class="right pct ${pctClass(item.perf)}">${fmtPct(item.perf)}</td>
       <td><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
       <td><span class="badge ${item.status === 'ACTIVE' ? 'badge-active' : 'badge-closed'}">${item.status === 'ACTIVE' ? 'Активна' : 'Закрыта'}</span></td>
-      <td><span class="badge badge-source" style="${sourceBadgeStyle(item.source)}">${esc(item.source)}</span></td>
-      <td class="col-action">${hasDoc(item)
-        ? `<a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" title="Открыть документ" onclick="event.stopPropagation()" style="text-decoration:none;font-size:1rem;">📎</a>`
-        : '<span style="color:#D1D5DB;font-size:0.9rem;">–</span>'}</td>
+      <td><span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span></td>
       <td class="col-action">${pfBtnHtml}</td>
     </tr>`;
   });
@@ -2582,16 +1637,16 @@ function updateStats() {
 
 function updateSourceStats() {
   const container = document.getElementById('sourceStats');
-  if (!container) return;
+  const sources = ['InveStory', 'ДУА', 'AGS'];
+  const dotClasses = { 'InveStory': 'investory', 'ДУА': 'dua', 'AGS': 'ags' };
   let html = '';
-  allSources.forEach(src => {
+  sources.forEach(src => {
     const items = filteredData.filter(d => d.source === src);
     if (items.length === 0) return;
     const perfs = items.filter(d => d.perf != null);
     const avgPerf = perfs.length ? (perfs.reduce((a, b) => a + b.perf, 0) / perfs.length).toFixed(1) : '—';
-    const c = sourceColor(src);
     html += `<div class="source-stat-item">
-      <span class="source-dot" style="background:${c.bg};"></span>
+      <span class="source-dot ${dotClasses[src]}"></span>
       <span><strong>${esc(src)}</strong>: ${items.length} идей | ср. доходность: <span class="${parseFloat(avgPerf) >= 0 ? 'pct positive' : 'pct negative'}">${avgPerf}%</span></span>
     </div>`;
   });
@@ -2654,7 +1709,7 @@ function showDetail(item) {
     <div><div class="detail-metric-label">Market Cap</div><div class="detail-metric-value">${item.marketCap != null ? '$' + item.marketCap.toFixed(2) + ' млрд' : '—'}</div></div>
     <div><div class="detail-metric-label">Доля в портфеле</div><div class="detail-metric-value">${esc(item.share) || '—'}</div></div>
     <div><div class="detail-metric-label">Дата открытия</div><div class="detail-metric-value">${formatDate(item._date)}</div></div>
-    <div><div class="detail-metric-label">Источник</div><div class="detail-metric-value"><span class="badge badge-source" style="${sourceBadgeStyle(item.source)}">${esc(item.source)}</span></div></div>`;
+    <div><div class="detail-metric-label">Источник</div><div class="detail-metric-value"><span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span></div></div>`;
 
   let websiteBtn = '';
   if (item.website) {
@@ -2666,20 +1721,13 @@ function showDetail(item) {
     </a>`;
   }
 
-  let docBtn = '';
-  if (hasDoc(item)) {
-    docBtn = `<a class="btn-website" href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" style="background:#8B6A4E;color:#fff;border-color:#8B6A4E;">
-      📎 Открыть документ
-    </a>`;
-  }
-
   // Portfolio button for detail panel
-  const inPf = isInPortfolio('stock', item.ticker);
+  const inPf = isInPortfolio(item.ticker);
   let pfDetailBtn = '';
   if (inPf) {
-    pfDetailBtn = `<button class="btn-add-portfolio in-portfolio" onclick="removeFromPortfolio('stock','${esc(item.ticker)}');renderTable();showDetail(filteredData[selectedIdx]);">✅ В портфеле <span class="btn-remove-text">• Убрать</span></button>`;
+    pfDetailBtn = `<button class="btn-add-portfolio in-portfolio" onclick="removeFromPortfolio('${esc(item.ticker)}');renderTable();showDetail(filteredData[selectedIdx]);">✅ В портфеле <span class="btn-remove-text">• Убрать</span></button>`;
   } else {
-    pfDetailBtn = `<button class="btn-add-portfolio" onclick="addToPortfolio(filteredData[selectedIdx],'stock');renderTable();showDetail(filteredData[selectedIdx]);">➕ Добавить в портфель</button>`;
+    pfDetailBtn = `<button class="btn-add-portfolio" onclick="addToPortfolio(filteredData[selectedIdx]);renderTable();showDetail(filteredData[selectedIdx]);">➕ Добавить в портфель</button>`;
   }
 
   c.innerHTML = `
@@ -2687,14 +1735,13 @@ function showDetail(item) {
     <div class="detail-ticker">${esc(item.ticker)}</div>
     <div class="detail-badges">
       <span class="badge ${item.status === 'ACTIVE' ? 'badge-active' : 'badge-closed'}">${item.status === 'ACTIVE' ? 'Активна' : 'Закрыта'}</span>
-      <span class="badge badge-source" style="${sourceBadgeStyle(item.source)}">${esc(item.source)}</span>
+      <span class="badge ${sourceBadgeClass(item.source)}">${esc(item.source)}</span>
       <span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span>
     </div>
     <div class="detail-big-pct" style="color:${bigColor}">${bigVal != null ? fmtPct(bigVal) : '—'}</div>
     <div class="detail-big-label">${bigLabel}</div>
     <div class="detail-grid">${metricsHTML}</div>
     ${item.comment ? `<div class="detail-comment-title">Комментарий</div><div class="detail-comment">${esc(item.comment)}</div>` : ''}
-    ${docBtn}
     ${websiteBtn}
     <div style="margin-top:8px;">${pfDetailBtn}</div>`;
 }
@@ -2768,7 +1815,7 @@ document.querySelectorAll('thead th[data-col]').forEach(th => {
       sortDir = 'asc';
     }
     // Update UI
-    document.querySelectorAll('#tableWrapper thead th').forEach(t => {
+    document.querySelectorAll('thead th').forEach(t => {
       t.classList.remove('sorted');
       const arrow = t.querySelector('.sort-arrow');
       if (arrow) arrow.innerHTML = '&#9650;';
@@ -2776,26 +1823,6 @@ document.querySelectorAll('thead th[data-col]').forEach(th => {
     th.classList.add('sorted');
     th.querySelector('.sort-arrow').innerHTML = sortDir === 'asc' ? '&#9650;' : '&#9660;';
     applySort();
-  });
-});
-
-document.querySelectorAll('thead th[data-bondcol]').forEach(th => {
-  th.addEventListener('click', () => {
-    const col = th.dataset.bondcol;
-    if (bondSortCol === col) {
-      bondSortDir = bondSortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      bondSortCol = col;
-      bondSortDir = 'asc';
-    }
-    document.querySelectorAll('#bondTableWrapper thead th').forEach(t => {
-      t.classList.remove('sorted');
-      const arrow = t.querySelector('.sort-arrow');
-      if (arrow) arrow.innerHTML = '&#9650;';
-    });
-    th.classList.add('sorted');
-    th.querySelector('.sort-arrow').innerHTML = bondSortDir === 'asc' ? '&#9650;' : '&#9660;';
-    applyBondSort();
   });
 });
 
@@ -2907,54 +1934,40 @@ const PF_KEY = 'ags_portfolio';
 function loadPortfolio() {
   try {
     const raw = localStorage.getItem(PF_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    // Normalize legacy entries ({ticker,...} with no assetClass/id) to {assetClass,id,...}
-    return arr.map(p => ({
-      assetClass: p.assetClass || 'stock',
-      id: p.id != null ? p.id : p.ticker,
-      addedAt: p.addedAt,
-      entryPrice: p.entryPrice,
-      manualWeight: p.manualWeight != null ? p.manualWeight : null,
-      lockedWeight: !!p.lockedWeight
-    }));
+    return raw ? JSON.parse(raw) : [];
   } catch(e) { return []; }
 }
 function savePortfolio(arr) {
   localStorage.setItem(PF_KEY, JSON.stringify(arr));
 }
-function isInPortfolio(kind, id) {
-  return loadPortfolio().some(p => p.assetClass === kind && p.id === id);
+function isInPortfolio(ticker) {
+  return loadPortfolio().some(p => p.ticker === ticker);
 }
-function addToPortfolio(item, kind) {
-  kind = kind || 'stock';
-  const id = kind === 'bond' ? bondKey(item) : item?.ticker;
-  if (!item || !id) return;
+function addToPortfolio(item) {
+  if (!item || !item.ticker) return;
   const pf = loadPortfolio();
-  if (pf.some(p => p.assetClass === kind && p.id === id)) return;
+  if (pf.some(p => p.ticker === item.ticker)) return;
   pf.push({
-    assetClass: kind,
-    id: id,
+    ticker: item.ticker,
     addedAt: new Date().toISOString().slice(0, 10),
-    entryPrice: kind === 'bond' ? item.price : (item.open != null ? item.open : item.price),
+    entryPrice: item.open != null ? item.open : item.price,
     manualWeight: null,
     lockedWeight: false
   });
   savePortfolio(pf);
-  showToast('Добавлено в портфель: ' + (kind === 'bond' ? item.name : item.ticker));
+  showToast('Добавлено в портфель: ' + item.ticker);
 }
-function removeFromPortfolio(kind, id) {
+function removeFromPortfolio(ticker) {
   let pf = loadPortfolio();
-  pf = pf.filter(p => !(p.assetClass === kind && p.id === id));
+  pf = pf.filter(p => p.ticker !== ticker);
   savePortfolio(pf);
-  showToast('Удалено из портфеля: ' + id);
+  showToast('Удалено из портфеля: ' + ticker);
 }
 
 function getPortfolioData() {
   const pf = loadPortfolio();
   return pf.map(p => {
-    const live = p.assetClass === 'bond'
-      ? allBonds.find(b => bondKey(b) === p.id)
-      : allData.find(d => d.ticker === p.id);
+    const live = allData.find(d => d.ticker === p.ticker);
     return { ...p, live: live || null };
   }).filter(p => p.live);
 }
@@ -2965,17 +1978,12 @@ function getPortfolioData() {
 function switchTab(tab) {
   document.getElementById('viewIdeas').style.display = tab === 'ideas' ? '' : 'none';
   document.getElementById('viewPortfolio').style.display = tab === 'portfolio' ? '' : 'none';
-  const vm = document.getElementById('viewModels');
-  if (vm) vm.style.display = tab === 'models' ? '' : 'none';
   document.getElementById('tabIdeas').classList.toggle('active', tab === 'ideas');
   document.getElementById('tabPortfolio').classList.toggle('active', tab === 'portfolio');
-  const tm = document.getElementById('tabModels');
-  if (tm) tm.classList.toggle('active', tab === 'models');
-  // Hide "Предложить идею" button on Portfolio / Models tabs
+  // Hide "Предложить идею" button on Portfolio tab
   const fab = document.querySelector('.fab');
-  if (fab) fab.style.display = (tab === 'portfolio' || tab === 'models') ? 'none' : 'flex';
+  if (fab) fab.style.display = tab === 'portfolio' ? 'none' : 'flex';
   if (tab === 'portfolio') renderPortfolio();
-  if (tab === 'models') renderModels();
 }
 
 /* ===========================================================================
@@ -3115,9 +2123,9 @@ function calcWeightedUpside(pfData) {
   return totalWeight > 0 ? sum / totalWeight : null;
 }
 
-function setManualWeight(kind, id, weight) {
+function setManualWeight(ticker, weight) {
   const pf = loadPortfolio();
-  const item = pf.find(p => p.assetClass === kind && p.id === id);
+  const item = pf.find(p => p.ticker === ticker);
   if (item) {
     item.manualWeight = Math.max(0, Math.min(100, weight));
     item.lockedWeight = true;
@@ -3126,9 +2134,9 @@ function setManualWeight(kind, id, weight) {
   }
 }
 
-function toggleWeightLock(kind, id, locked) {
+function toggleWeightLock(ticker, locked) {
   const pf = loadPortfolio();
-  const item = pf.find(p => p.assetClass === kind && p.id === id);
+  const item = pf.find(p => p.ticker === ticker);
   if (item) {
     item.lockedWeight = locked;
     if (!locked) item.manualWeight = null;
@@ -3136,7 +2144,6 @@ function toggleWeightLock(kind, id, locked) {
     renderPortfolio();
   }
 }
-
 
 const CHART_COLORS = ['#0A1638','#8B6A4E','#C6CEC8','#1A2D5A','#B08968','#D4DCD6','#2A3D6A','#A0845E','#3A4D7A','#C9A882','#9BADA0','#4A5D8A','#D4B896','#7A8D80','#5A6D9A','#E0C8AA','#ADBFB2','#6A7DAA','#D0B090','#8A9D90'];
 
@@ -3209,16 +2216,9 @@ function renderSectorChart(pfDataAll) {
 
 /* Global: currently visible (filtered) portfolio — used by exports */
 let pfVisibleData = [];
-let pfVisibleBondData = [];
 
 function renderPortfolio() {
-  renderPfSourceFilterButtons();
   const pfDataAll = getPortfolioData();
-  renderStockPortfolioSection(pfDataAll.filter(p => p.assetClass !== 'bond'));
-  renderBondPortfolioSection(pfDataAll.filter(p => p.assetClass === 'bond'));
-}
-
-function renderStockPortfolioSection(pfDataAll) {
   const area = document.getElementById('portfolioTableArea');
 
   // Populate sector exclusion checkboxes
@@ -3295,7 +2295,6 @@ function renderStockPortfolioSection(pfDataAll) {
       <th style="text-align:center">Доходность идеи</th>
       <th style="text-align:center">Доля</th>
       <th style="text-align:center">Риск</th>
-      <th style="text-align:center" title="Документ">📎</th>
       <th style="text-align:center">Действие</th>
     </tr></thead><tbody>`;
 
@@ -3321,20 +2320,17 @@ function renderStockPortfolioSection(pfDataAll) {
         <div style="display:flex;align-items:center;justify-content:center;gap:2px;">
           <input type="number" step="0.1" min="0" max="100" value="${p._weight.toFixed(1)}"
             style="${weightInputStyle}"
-            onchange="setManualWeight('stock', '${esc(item.ticker)}', parseFloat(this.value))">
+            onchange="setManualWeight('${esc(item.ticker)}', parseFloat(this.value))">
           <label style="cursor:pointer;font-size:0.7rem;" title="Зафиксировать долю">
             <input type="checkbox" ${p.lockedWeight ? 'checked' : ''}
-              onchange="toggleWeightLock('stock', '${esc(item.ticker)}', this.checked)"
+              onchange="toggleWeightLock('${esc(item.ticker)}', this.checked)"
               style="width:12px;height:12px;">
             🔒
           </label>
         </div>
       </td>
       <td style="text-align:center"><span class="badge ${riskBadgeClass(item._risk)}">${riskLabel(item._risk)}</span></td>
-      <td style="text-align:center">${hasDoc(item)
-        ? `<a href="${esc(docViewUrl(item))}" target="_blank" rel="noopener" title="Открыть документ" style="text-decoration:none;">📎</a>`
-        : '<span style="color:#D1D5DB;">–</span>'}</td>
-      <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('stock','${esc(item.ticker)}');renderPortfolio();">✕ Убрать</button></td>
+      <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('${esc(item.ticker)}');renderPortfolio();">✕ Убрать</button></td>
     </tr>`;
   });
 
@@ -3343,366 +2339,26 @@ function renderStockPortfolioSection(pfDataAll) {
 }
 
 /* ===========================================================================
-   PORTFOLIO — BONDS SECTION
-   =========================================================================== */
-function portfolioBondWeightCellHTML(p) {
-  const locked = !!p.lockedWeight;
-  const style = locked
-    ? 'width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid #8B6A4E;border-radius:3px;font-family:Manrope,sans-serif;background:#F0F2F0;'
-    : 'width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid #ccc;border-radius:3px;font-family:Manrope,sans-serif;';
-  return `<div style="display:flex;align-items:center;justify-content:center;gap:2px;">
-    <input type="number" step="0.1" min="0" max="100" value="${(p._weight||0).toFixed(1)}"
-      style="${style}"
-      onchange="setManualWeight('bond', '${esc(p.id)}', parseFloat(this.value))">
-    <label style="cursor:pointer;font-size:0.7rem;" title="Зафиксировать долю">
-      <input type="checkbox" ${locked ? 'checked' : ''}
-        onchange="toggleWeightLock('bond', '${esc(p.id)}', this.checked)"
-        style="width:12px;height:12px;">
-      🔒
-    </label>
-  </div>`;
-}
-
-function buildPortfolioBondsTableHTML(pfBondAll) {
-  let html = `<div class="portfolio-table-wrapper"><table>
-    <thead><tr>
-      <th>Название</th><th>ISIN</th>
-      <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
-      <th style="text-align:center">YTM</th><th style="text-align:center">Купон</th>
-      <th style="text-align:center">Цена</th><th style="text-align:center">Дюрация</th>
-      <th style="text-align:center">Spread</th>
-      <th style="text-align:center">Доля</th>
-      <th style="text-align:center">Действие</th>
-    </tr></thead><tbody>`;
-  pfBondAll.forEach(p => {
-    const b = p.live;
-    html += `<tr>
-      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.name)}">${esc(b.name)}</td>
-      <td style="font-size:0.75rem;color:#6B7280;">${esc(b.isin) || '—'}</td>
-      <td style="text-align:center;font-size:0.8rem;">${esc(b.currency) || '—'}</td>
-      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
-      <td style="text-align:center;font-weight:700;color:#16A34A;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:center;">${fmtNum(b.price)}</td>
-      <td style="text-align:center;">${fmtNum(b.duration)}</td>
-      <td style="text-align:center;">${b.spread != null ? fmtNum(b.spread, 0) : '—'}</td>
-      <td style="text-align:center;">${portfolioBondWeightCellHTML(p)}</td>
-      <td style="text-align:center"><button class="btn-remove-pf" onclick="removeFromPortfolio('bond','${esc(p.id)}');renderPortfolio();">✕ Убрать</button></td>
-    </tr>`;
-  });
-  html += '</tbody></table></div>';
-  return html;
-}
-
-function renderBondPortfolioSection(pfBondAll) {
-  const section = document.getElementById('pfBondSection');
-  if (!section) return;
-
-  if (bondFdapExemptOnly) pfBondAll = pfBondAll.filter(p => isFdapExempt(p.live));
-
-  if (pfBondAll.length === 0) {
-    section.style.display = 'none';
-    pfVisibleBondData = [];
-    return;
-  }
-
-  section.style.display = '';
-  calcPortfolioWeights(pfBondAll);
-  pfVisibleBondData = pfBondAll;
-
-  document.getElementById('pfBondStatCount').textContent = pfBondAll.length;
-  const avgYtm = weightedAvg(pfBondAll, p => p.live.ytm);
-  const avgDur = weightedAvg(pfBondAll, p => p.live.duration);
-  document.getElementById('pfBondStatYtm').textContent = avgYtm != null ? avgYtm.toFixed(2) + '%' : '—';
-  document.getElementById('pfBondStatDuration').textContent = avgDur != null ? fmtNum(avgDur) : '—';
-  document.getElementById('pfBondStatRating').textContent = avgRating(pfBondAll.map(p => p.live));
-
-  document.getElementById('portfolioBondsArea').innerHTML = buildPortfolioBondsTableHTML(pfBondAll);
-  renderBondAmountInputs(pfBondAll);
-
-  // Keep an already-open calendar in sync with portfolio changes
-  const calArea = document.getElementById('couponCalendarArea');
-  if (calArea && calArea.style.display !== 'none') renderCouponCalendar();
-}
-
-/* ===========================================================================
-   COUPON CALENDAR — issuer × month payment matrix
-   Requires per-bond "Дата начала обращения" (issueDate) + "Купонов/год"
-   (couponsPerYear) from the Bonds sheet. Date projection is approximate
-   (365.25/couponsPerYear days per period) — good enough for planning,
-   not a settlement-accurate schedule. Amounts require a per-currency
-   "invested amount" supplied by the caller (see buildInvestedPairsForPortfolio
-   for the Portfolio tab, and getModelAmount()-based calc for Models).
-   =========================================================================== */
-const RU_MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
-const BOND_CALENDAR_AMOUNTS_KEY = 'ags_bond_calendar_amounts';
-
-function generateCouponDates(issueDateObj, couponsPerYear, horizonStart, horizonEnd) {
-  if (!issueDateObj || !couponsPerYear || couponsPerYear <= 0) return [];
-  const periodMs = (365.25 / couponsPerYear) * 86400000;
-  const dates = [];
-  let cursor = new Date(issueDateObj.getTime());
-  let iterations = 0;
-  while (cursor < horizonStart && iterations < 2000) {
-    cursor = new Date(cursor.getTime() + periodMs);
-    iterations++;
-  }
-  while (cursor <= horizonEnd && iterations < 4000) {
-    dates.push(new Date(cursor.getTime()));
-    cursor = new Date(cursor.getTime() + periodMs);
-    iterations++;
-  }
-  return dates;
-}
-
-function loadBondCalendarAmounts() {
-  try { return JSON.parse(localStorage.getItem(BOND_CALENDAR_AMOUNTS_KEY) || '{}'); }
-  catch(e) { return {}; }
-}
-function saveBondCalendarAmounts(obj) {
-  localStorage.setItem(BOND_CALENDAR_AMOUNTS_KEY, JSON.stringify(obj));
-}
-
-/* Renders one "Сумма в облигациях (<CUR>)" input per currency present among pfBondAll,
-   persisted to localStorage — used to split each currency's amount across its bonds
-   proportionally to their in-portfolio weight (renormalized within the currency group). */
-function renderBondAmountInputs(pfBondAll) {
-  const box = document.getElementById('pfBondAmountsRow');
-  if (!box) return;
-  const currencies = [...new Set(pfBondAll.map(p => p.live.currency || '—'))].sort();
-  const amounts = loadBondCalendarAmounts();
-  box.innerHTML = '';
-  currencies.forEach(cur => {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;align-items:center;gap:6px;';
-    const label = document.createElement('span');
-    label.style.cssText = 'font-size:0.8rem;color:#6B7280;';
-    label.textContent = 'Сумма в облигациях (' + cur + '):';
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.min = '0';
-    input.placeholder = '0';
-    input.style.cssText = 'width:130px;padding:4px 6px;border:1px solid #C6CEC8;border-radius:4px;font-size:0.8rem;font-family:Manrope,sans-serif;';
-    input.value = amounts[cur] != null ? amounts[cur] : '';
-    input.oninput = () => {
-      const a = loadBondCalendarAmounts();
-      const v = parseFloat(input.value);
-      a[cur] = isNaN(v) ? 0 : v;
-      saveBondCalendarAmounts(a);
-      const calArea = document.getElementById('couponCalendarArea');
-      if (calArea && calArea.style.display !== 'none') renderCouponCalendar();
-    };
-    wrap.appendChild(label);
-    wrap.appendChild(input);
-    box.appendChild(wrap);
-  });
-}
-
-/* Splits each currency's entered amount across its bonds proportionally to
-   their portfolio weight, renormalized within that currency's subgroup
-   (weights on pfBondAll sum to 100 across ALL bonds regardless of currency,
-   so a straight weight% of the currency-specific amount would under-count). */
-function buildInvestedPairsForPortfolio(pfBondAll) {
-  const amounts = loadBondCalendarAmounts();
-  const groupWeight = {};
-  pfBondAll.forEach(p => {
-    const cur = p.live.currency || '—';
-    groupWeight[cur] = (groupWeight[cur] || 0) + (p._weight || 0);
-  });
-  return pfBondAll.map(p => {
-    const cur = p.live.currency || '—';
-    const amt = amounts[cur] || 0;
-    const gw = groupWeight[cur] || 0;
-    const invested = gw > 0 ? amt * (p._weight || 0) / gw : 0;
-    return { bond: p.live, invested };
-  });
-}
-
-/* Core matrix builder — shared by the Portfolio tab preview/export and the
-   Model Portfolios PDF export. items: [{ bond, invested }]. */
-function buildCouponMatrix(items, monthsAhead) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const horizonEnd = new Date(today.getFullYear(), today.getMonth() + monthsAhead, today.getDate());
-
-  const months = [];
-  for (let i = 0; i < monthsAhead; i++) {
-    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
-    months.push({ key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), label: RU_MONTHS_SHORT[d.getMonth()] });
-  }
-  const monthIndex = {};
-  months.forEach((m, i) => { monthIndex[m.key] = i; });
-
-  const byCurrency = {};
-  let skippedNoDate = 0;
-
-  items.forEach(({ bond: b, invested }) => {
-    const issueDateObj = parseDate(b.issueDate);
-    if (!issueDateObj || !b.couponsPerYear) { skippedNoDate++; return; }
-    const dates = generateCouponDates(issueDateObj, b.couponsPerYear, today, horizonEnd);
-    if (dates.length === 0) return;
-
-    const cur = b.currency || '—';
-    if (!byCurrency[cur]) {
-      byCurrency[cur] = { months, rows: [], monthTotals: new Array(monthsAhead).fill(0), grandTotal: 0 };
-    }
-    const group = byCurrency[cur];
-    const cells = new Array(monthsAhead).fill(null);
-    let rowTotal = 0;
-    const perPayment = invested > 0 ? invested * (b.coupon || 0) / 100 / b.couponsPerYear : 0;
-    dates.forEach(d => {
-      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-      const idx = monthIndex[key];
-      if (idx == null) return;
-      cells[idx] = (cells[idx] || 0) + perPayment;
-      rowTotal += perPayment;
-      group.monthTotals[idx] += perPayment;
-      group.grandTotal += perPayment;
-    });
-    group.rows.push({ key: bondKey(b), name: b.name, isin: b.isin, cells, total: rowTotal });
-  });
-
-  return { byCurrency, skippedNoDate, totalBonds: items.length };
-}
-
-function fmtMoney(v) {
-  if (!v) return '';
-  return Math.round(v).toLocaleString('ru-RU');
-}
-
-/* headingClass: 'model-table-title' on the live page, 'section-title' inside PDF exports */
-function renderCouponMatrixHTML(byCurrency, headingClass) {
-  let html = '';
-  Object.keys(byCurrency).sort().forEach(cur => {
-    const g = byCurrency[cur];
-    html += `<div class="${headingClass}">Календарь купонных выплат — ${esc(cur)}</div>
-    <table><thead><tr><th>Эмитент</th>`;
-    g.months.forEach(m => { html += `<th style="text-align:center;">${esc(m.label)}</th>`; });
-    html += `<th style="text-align:center;">Год, Итого ${esc(cur)}</th></tr></thead><tbody>`;
-    g.rows.forEach(row => {
-      html += `<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(row.name)}">${esc(row.name)}</td>`;
-      row.cells.forEach(v => { html += `<td style="text-align:right;">${fmtMoney(v)}</td>`; });
-      html += `<td style="text-align:right;font-weight:700;">${fmtMoney(row.total)}</td></tr>`;
-    });
-    html += `<tr style="font-weight:700;"><td>Итого ${esc(cur)}</td>`;
-    g.monthTotals.forEach(v => { html += `<td style="text-align:right;">${fmtMoney(v)}</td>`; });
-    html += `<td style="text-align:right;">${fmtMoney(g.grandTotal)}</td></tr>`;
-    html += `</tbody></table>`;
-  });
-  return html;
-}
-
-function toggleCouponCalendar() {
-  const container = document.getElementById('couponCalendarArea');
-  if (!container) return;
-  if (container.style.display === 'none') {
-    container.style.display = '';
-    renderCouponCalendar();
-  } else {
-    container.style.display = 'none';
-  }
-}
-
-function renderCouponCalendar() {
-  const container = document.getElementById('couponCalendarArea');
-  if (!container) return;
-
-  let pfBondAll = pfVisibleBondData;
-  if (pfBondAll.length === 0) {
-    pfBondAll = getPortfolioData().filter(p => p.assetClass === 'bond');
-  }
-  if (pfBondAll.length === 0) {
-    container.innerHTML = '<div style="padding:16px 0;color:#6B7280;">В портфеле нет облигаций.</div>';
-    return;
-  }
-  calcPortfolioWeights(pfBondAll);
-
-  const investedPairs = buildInvestedPairsForPortfolio(pfBondAll);
-  const { byCurrency, skippedNoDate, totalBonds } = buildCouponMatrix(investedPairs, 12);
-  const currencies = Object.keys(byCurrency);
-
-  let html = '<div style="margin-top:4px;border-top:1px solid #E5E7EB;padding-top:12px;">';
-  if (skippedNoDate > 0) {
-    html += `<div style="padding:0 0 8px;color:#8B6A4E;font-size:0.8rem;">⚠ Пропущено облигаций без даты начала обращения: ${skippedNoDate} из ${totalBonds}</div>`;
-  }
-  if (currencies.length === 0) {
-    html += `<div style="padding:8px 0;color:#6B7280;">Не удалось построить календарь: ни у одной облигации в портфеле не заполнена «Дата начала обращения» в Google Таблице.</div>`;
-  } else {
-    html += renderCouponMatrixHTML(byCurrency, 'model-table-title');
-    html += `<button class="portfolio-btn" style="margin-top:10px;" onclick="downloadCouponCalendarCSV()">📥 Скачать календарь CSV</button>`;
-  }
-  html += '</div>';
-  container.innerHTML = html;
-}
-
-function couponMatrixCSVForCurrency(cur, group) {
-  const headers = ['Эмитент', 'ISIN', ...group.months.map(m => m.label), 'Год, Итого'];
-  let csv = '﻿';
-  csv += headers.join(';') + '\n';
-  group.rows.forEach(row => {
-    const cells = row.cells.map(v => v ? Math.round(v) : '');
-    csv += ['"' + (row.name || '').replace(/"/g, '""') + '"', row.isin || '', ...cells, Math.round(row.total)].join(';') + '\n';
-  });
-  const totalsCells = group.monthTotals.map(v => v ? Math.round(v) : '');
-  csv += ['Итого ' + cur, '', ...totalsCells, Math.round(group.grandTotal)].join(';') + '\n';
-  return csv;
-}
-
-function downloadOneCouponCalendarCSV(cur, group) {
-  const csv = couponMatrixCSVForCurrency(cur, group);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'AGS_Coupon_Calendar_' + cur + '_' + new Date().toISOString().slice(0, 10) + '.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function downloadCouponCalendarCSV() {
-  let pfBondAll = pfVisibleBondData;
-  if (pfBondAll.length === 0) pfBondAll = getPortfolioData().filter(p => p.assetClass === 'bond');
-  if (pfBondAll.length === 0) { showToast('В портфеле нет облигаций'); return; }
-  calcPortfolioWeights(pfBondAll);
-  const investedPairs = buildInvestedPairsForPortfolio(pfBondAll);
-  const { byCurrency, skippedNoDate, totalBonds } = buildCouponMatrix(investedPairs, 12);
-  const currencies = Object.keys(byCurrency);
-  if (currencies.length === 0) {
-    showToast('Нет данных для календаря — заполните «Дата начала обращения» (пропущено ' + skippedNoDate + ' из ' + totalBonds + ')');
-    return;
-  }
-  currencies.forEach(cur => downloadOneCouponCalendarCSV(cur, byCurrency[cur]));
-  showToast('Календарь скачан' + (currencies.length > 1 ? ' (' + currencies.length + ' файла)' : ''));
-}
-
-/* ===========================================================================
    PORTFOLIO ACTIONS
    =========================================================================== */
 function downloadPortfolioCSV() {
   // Use currently visible (filtered) portfolio
-  let pfStocks = pfVisibleData;
-  let pfBonds = pfVisibleBondData;
-  if (pfStocks.length === 0 && pfBonds.length === 0) {
-    const all = getPortfolioData();
-    pfStocks = all.filter(p => p.assetClass !== 'bond');
-    pfBonds = all.filter(p => p.assetClass === 'bond');
-  }
-  if (pfStocks.length === 0 && pfBonds.length === 0) { showToast('Портфель пуст'); return; }
+  const pfData = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
+  if (pfData.length === 0) { showToast('Портфель пуст'); return; }
 
-  calcPortfolioWeights(pfStocks);
-  calcPortfolioWeights(pfBonds);
+  const headers = ['Тикер','ISIN','Компания','Сектор','Страна','Валюта','Цена входа','Текущая цена','Целевая цена','Downside','Upside %','Доходность %','Доля %','Риск','Источник','Дата добавления'];
 
-  const headers = ['Класс','Тикер/ISIN','Название','Сектор','Страна','Валюта','Цена входа','Текущая цена','Целевая/Купон','Downside/Дюрация','Upside %/YTM %','Доходность %','Доля %','Риск/Рейтинг','Источник','Дата добавления'];
+  calcPortfolioWeights(pfData);
 
   let csv = '﻿'; // BOM for Excel
   csv += headers.join(';') + '\n';
 
-  pfStocks.forEach(p => {
+  pfData.forEach(p => {
     const item = p.live;
     const potVal = item.status === 'CLOSED' ? item.perf : item.potential;
     const row = [
-      'Акция',
       item.ticker,
+      item.isin || '',
       '"' + (item.company||'').replace(/"/g,'""') + '"',
       item.sector || '',
       item.country || '',
@@ -3721,29 +2377,6 @@ function downloadPortfolioCSV() {
     csv += row.join(';') + '\n';
   });
 
-  pfBonds.forEach(p => {
-    const b = p.live;
-    const row = [
-      'Облигация',
-      b.isin || '',
-      '"' + (b.name||'').replace(/"/g,'""') + '"',
-      b.sectorRu || b.sector || '',
-      b.countryRu || b.country || '',
-      b.currency || '',
-      p.entryPrice || '',
-      b.price || '',
-      b.coupon != null ? b.coupon.toFixed(2) : '',
-      b.duration != null ? b.duration.toFixed(2) : '',
-      b.ytm != null ? b.ytm.toFixed(2) : '',
-      '',
-      p._weight != null ? p._weight.toFixed(1) : '',
-      b.rating || '',
-      '',
-      p.addedAt || ''
-    ];
-    csv += row.join(';') + '\n';
-  });
-
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -3751,73 +2384,26 @@ function downloadPortfolioCSV() {
   a.download = 'AGS_Portfolio_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
-
-  let toastMsg = 'Портфель скачан';
-  if (document.getElementById('pfIncludeCouponCalendar')?.checked && pfBonds.length > 0) {
-    const investedPairs = buildInvestedPairsForPortfolio(pfBonds);
-    const { byCurrency, skippedNoDate, totalBonds } = buildCouponMatrix(investedPairs, 12);
-    const currencies = Object.keys(byCurrency);
-    if (currencies.length > 0) {
-      currencies.forEach(cur => downloadOneCouponCalendarCSV(cur, byCurrency[cur]));
-    } else {
-      toastMsg = 'Портфель скачан. Календарь не добавлен — заполните «Дата начала обращения» (пропущено ' + skippedNoDate + ' из ' + totalBonds + ')';
-    }
-  }
-
-  showToast(toastMsg);
+  showToast('Портфель скачан');
 }
 
 function downloadPortfolioHTML() {
   // Use currently visible (filtered) portfolio
-  let pfData = pfVisibleData;
-  let pfBonds = pfVisibleBondData;
-  if (pfData.length === 0 && pfBonds.length === 0) {
-    const all = getPortfolioData();
-    pfData = all.filter(p => p.assetClass !== 'bond');
-    pfBonds = all.filter(p => p.assetClass === 'bond');
-  }
-  if (pfData.length === 0 && pfBonds.length === 0) { showToast('Портфель пуст'); return; }
+  const pfData = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
+  if (pfData.length === 0) { showToast('Портфель пуст'); return; }
 
   calcPortfolioWeights(pfData);
-  calcPortfolioWeights(pfBonds);
   const weightedUpside = calcWeightedUpside(pfData);
 
   const clientName = document.getElementById('clientName')?.value || 'Клиент';
   const clientAmount = document.getElementById('clientAmount')?.value || '';
   const clientCurrency = document.getElementById('clientCurrency')?.value || 'USD';
 
-  // Sector / country breakdown across the WHOLE portfolio (stocks + bonds),
-  // built fresh here rather than read off the on-screen donut, which only
-  // ever reflects the stock sleeve.
-  const sectorMap = {};
-  pfData.forEach(p => {
-    const k = p.live.sector || 'Другое';
-    sectorMap[k] = (sectorMap[k] || 0) + (p._weight || 0);
-  });
-  pfBonds.forEach(p => {
-    const k = p.live.sectorRu || p.live.sector || 'Другое';
-    sectorMap[k] = (sectorMap[k] || 0) + (p._weight || 0);
-  });
-  const countryMap = {};
-  pfData.forEach(p => {
-    const k = p.live.country || 'Другое';
-    countryMap[k] = (countryMap[k] || 0) + (p._weight || 0);
-  });
-  pfBonds.forEach(p => {
-    const k = p.live.countryRu || p.live.country || 'Другое';
-    countryMap[k] = (countryMap[k] || 0) + (p._weight || 0);
-  });
-  const totalPos = pfData.length + pfBonds.length;
-  const sectorChart = buildDonutHTML(sectorMap, totalPos + ' поз.');
-  const countryChart = buildDonutHTML(countryMap, totalPos + ' поз.');
-
-  // Bond-only stats
-  const bondYtm = weightedAvg(pfBonds, p => p.live.ytm);
-  const bondDuration = weightedAvg(pfBonds, p => p.live.duration);
-  const bondRating = pfBonds.length ? avgRating(pfBonds.map(p => p.live)) : '—';
-  const ratingBarsHTML = pfBonds.length
-    ? buildRatingBarsHTML(pfBonds.map(p => ({ rating: p.live.rating, _weight: p._weight })))
-    : '';
+  // Get the SVG chart
+  const svgEl = document.getElementById('sectorDonut');
+  const legendEl = document.getElementById('sectorLegend');
+  const svgHTML = svgEl ? svgEl.outerHTML : '';
+  const legendHTML = legendEl ? legendEl.innerHTML : '';
 
   let tableRows = '';
   pfData.forEach(p => {
@@ -3837,40 +2423,6 @@ function downloadPortfolioHTML() {
       <td style="text-align:center">${p._weight.toFixed(1)}%</td>
     </tr>`;
   });
-
-  let bondTableRows = '';
-  pfBonds.forEach(p => {
-    const b = p.live;
-    bondTableRows += `<tr>
-      <td>${esc(b.isin) || '—'}</td>
-      <td style="font-size:11px;">${esc(b.name)}</td>
-      <td>${esc(b.sectorRu || b.sector) || ''}</td>
-      <td>${esc(b.countryRu || b.country) || '—'}</td>
-      <td style="text-align:center">${esc(b.currency) || '—'}</td>
-      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
-      <td style="text-align:right">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:right">${b.duration != null ? b.duration.toFixed(2) : '—'}</td>
-      <td style="text-align:center">${p._weight.toFixed(1)}%</td>
-    </tr>`;
-  });
-  const bondTableBlock = pfBonds.length > 0 ? `
-    <div class="section-title">Облигации</div>
-    <table>
-      <thead><tr>
-        <th>ISIN</th><th>Название</th><th>Сектор</th><th>Страна</th><th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th><th style="text-align:right">YTM</th><th style="text-align:right">Дюрация</th><th style="text-align:center">Доля</th>
-      </tr></thead>
-      <tbody>${bondTableRows}</tbody>
-    </table>` : '';
-
-  // Coupon calendar — optional separate page, only when the checkbox is on
-  let calendarPage = '';
-  if (document.getElementById('pfIncludeCouponCalendar')?.checked && pfBonds.length > 0) {
-    const investedPairs = buildInvestedPairsForPortfolio(pfBonds);
-    const { byCurrency } = buildCouponMatrix(investedPairs, 12);
-    if (Object.keys(byCurrency).length > 0) {
-      calendarPage = `<div class="page-break"></div>` + renderCouponMatrixHTML(byCurrency, 'section-title');
-    }
-  }
 
   const amountLine = clientAmount ? `<p>Сумма инвестирования: <strong>${Number(clientAmount).toLocaleString()} ${esc(clientCurrency)}</strong></p>` : '';
 
@@ -3893,17 +2445,8 @@ function downloadPortfolioHTML() {
     infoRows += `<span class="info-label">Сумма:</span><span class="info-value">${Number(rawAmount).toLocaleString()} ${esc(clientCurrency)}</span>`;
   }
   infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
-
-  let statRows = '';
-  statRows += `<span class="info-label">Позиций:</span><span class="info-value">${pfData.length + pfBonds.length}</span>`;
-  if (pfData.length) {
-    statRows += `<span class="info-label">Ср. Upside (акции):</span><span class="info-value accent">${upsideStr}</span>`;
-  }
-  if (pfBonds.length) {
-    statRows += `<span class="info-label">Средняя доходность к погашению:</span><span class="info-value accent">${bondYtm != null ? bondYtm.toFixed(2) + '%' : '—'}</span>`;
-    statRows += `<span class="info-label">Средняя дюрация:</span><span class="info-value">${bondDuration != null ? bondDuration.toFixed(2) + ' лет' : '—'}</span>`;
-    statRows += `<span class="info-label">Средний кредитный рейтинг:</span><span class="info-value">${esc(bondRating)}</span>`;
-  }
+  infoRows += `<span class="info-label">Позиций:</span><span class="info-value">${pfData.length}</span>`;
+  infoRows += `<span class="info-label">Ср. Upside:</span><span class="info-value accent">${upsideStr}</span>`;
 
   const html = `<!DOCTYPE html>
 <html lang="ru">
@@ -3930,21 +2473,18 @@ function downloadPortfolioHTML() {
   /* Main content */
   .content { padding: 24px 36px; }
 
-  /* Info + stats row */
-  .info-row { display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 22px; }
-  .info-block { flex: 1 1 240px; }
+  /* Info + chart row */
+  .info-chart-row { display: flex; gap: 32px; align-items: flex-start; margin-bottom: 24px; }
+  .info-block { flex: 1; }
   .info-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
   .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12px; }
   .info-label { color: #6B7280; }
   .info-value { font-weight: 600; }
   .info-value.accent { color: #8B6A4E; font-size: 14px; }
 
-  /* Charts row */
-  .charts-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 10px; }
-  .chart-block { flex: 1 1 260px; }
-  .chart-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .chart-area { display: flex; align-items: center; gap: 10px; }
-  .chart-legend { font-size: 10px; text-align: left; flex: 1; }
+  .chart-block { flex-shrink: 0; text-align: center; }
+  .chart-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-area { display: flex; align-items: center; gap: 16px; }
 
   /* Table */
   .section-title { font-size: 13px; color: #8B6A4E; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -3958,9 +2498,12 @@ function downloadPortfolioHTML() {
   /* Footer */
   .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
 
-  .page-break { height: 0; }
-
-  ${REPORT_PRINT_CSS}
+  @media print {
+    body { max-width: 100%; }
+    .banner { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
 </style>
 </head>
 <body>
@@ -3971,42 +2514,29 @@ function downloadPortfolioHTML() {
   </div>
 
   <div class="content">
-    <!-- Client info + portfolio stats -->
-    <div class="info-row">
+    <!-- Client info + chart in one row -->
+    <div class="info-chart-row">
       <div class="info-block">
         <h2>Информация</h2>
         <div class="info-grid">${infoRows}</div>
       </div>
-      <div class="info-block">
-        <h2>Показатели</h2>
-        <div class="info-grid">${statRows}</div>
-      </div>
-    </div>
-
-    <!-- Sector / country charts -->
-    <div class="charts-row">
-      <div class="chart-block">
-        <h2>По странам</h2>
-        <div class="chart-area">${countryChart.svg}<div class="chart-legend">${countryChart.legend}</div></div>
-      </div>
       <div class="chart-block">
         <h2>По секторам</h2>
-        <div class="chart-area">${sectorChart.svg}<div class="chart-legend">${sectorChart.legend}</div></div>
+        <div class="chart-area">
+          ${svgHTML}
+          <div style="font-size:11px;text-align:left;">${legendHTML}</div>
+        </div>
       </div>
     </div>
-    ${ratingBarsHTML}
 
-    <!-- Portfolio table(s) -->
-    ${pfData.length > 0 ? `
-    <div class="section-title">${pfBonds.length > 0 ? 'Акции' : 'Состав портфеля'}</div>
+    <!-- Portfolio table -->
+    <div class="section-title">Состав портфеля</div>
     <table>
       <thead><tr>
         <th>Тикер</th><th>ISIN</th><th>Компания</th><th>Сектор</th><th>Страна</th><th style="text-align:center">Вал.</th><th style="text-align:right">Цена</th><th style="text-align:right">Цель</th><th style="text-align:right">Upside</th><th style="text-align:center">Доля</th>
       </tr></thead>
       <tbody>${tableRows}</tbody>
-    </table>` : ''}
-    ${bondTableBlock}
-    ${calendarPage}
+    </table>
 
     <div class="footer">
       Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
@@ -4018,138 +2548,11 @@ function downloadPortfolioHTML() {
 </body>
 </html>`;
 
-  openReportWindow(html);
-  showToast('Откроется окно печати — выберите «Сохранить как PDF»');
-}
-
-/* ---------------------------------------------------------------------------
-   PRINTABLE IDEAS SUMMARY — «Описания идей»
-   source: 'ideas' (current filter) | 'portfolio' (visible portfolio)
-   --------------------------------------------------------------------------- */
-function downloadIdeasSummary(source) {
-  let items;
-  if (source === 'portfolio') {
-    const pf = pfVisibleData.length > 0 ? pfVisibleData : getPortfolioData();
-    items = pf.map(p => p.live);
-  } else if (source === 'model') {
-    // Акции из собранного модельного портфеля
-    items = modelState.stocks.slice();
-  } else {
-    items = filteredData.slice();
-  }
-  if (!items.length) { showToast('Нет идей для выгрузки'); return; }
-
-  const dateStr = new Date().toLocaleDateString('ru-RU');
-
-  const logoURL = window.location.href.includes('github.io')
-    ? 'https://finzilla.github.io/ags-ideas/assets/logo-light.png'
-    : 'assets/logo-light.png';
-
-  let cards = '';
-  items.forEach(item => {
-    const upVal = item.status === 'CLOSED' ? item.perf : item.potential;
-
-    let metrics = '';
-    if (item.price != null)  metrics += `<span>Цена: <b>${fmtPrice(item.price)}</b></span>`;
-    if (item.target != null) metrics += `<span>Цель: <b>${fmtPrice(item.target)}</b></span>`;
-    if (upVal != null)       metrics += `<span>Upside: <b class="${pctClass(upVal)==='positive'?'pos':'neg'}">${fmtPct(upVal)}</b></span>`;
-
-    const badges = [item.sector, item.country, item.currency].filter(Boolean).map(esc).join(' · ');
-
-    const docLine = '';
-
-    cards += `<div class="idea-card">
-      <div class="idea-head">
-        <div class="idea-ticker">${esc(item.ticker)}</div>
-        <div class="idea-company">${esc(item.company)}</div>
-        <div class="idea-badges">${badges}</div>
-      </div>
-      <div class="idea-metrics">${metrics}</div>
-      ${item.comment ? `<div class="idea-text">${esc(item.comment)}</div>` : ''}
-      ${docLine}
-    </div>`;
-  });
-
-  const sourceLine = source === 'portfolio'
-    ? `<span class="info-label">Источник:</span><span class="info-value">портфель клиента</span>`
-    : '';
-
-  let infoRows = '';
-  infoRows += `<span class="info-label">Идей в подборке:</span><span class="info-value accent">${items.length}</span>`;
-  infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
-  infoRows += sourceLine;
-
-  const html = `<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<title>Инвестиционные идеи — AGS</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Manrope', sans-serif; color: #0A1638; max-width: 960px; margin: 0 auto; }
-
-  .banner {
-    background: linear-gradient(135deg, #A0785A 0%, #B8956E 30%, #A07858 50%, #C4A882 70%, #A89070 100%);
-    padding: 28px 36px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 0 0 12px 12px;
-  }
-  .banner img { height: 36px; }
-  .banner-text { color: rgba(255,255,255,0.7); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
-
-  .content { padding: 24px 36px; }
-
-  .section-title { font-size: 13px; color: #8B6A4E; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .section-title:first-child { margin-top: 0; }
-  .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12px; margin-bottom: 20px; max-width: 340px; }
-  .info-label { color: #6B7280; }
-  .info-value { font-weight: 600; }
-  .info-value.accent { color: #8B6A4E; }
-
-  .idea-card { border: 1px solid #E5E7EB; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; page-break-inside: avoid; }
-  .idea-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #F3F4F6; }
-  .idea-ticker { font-size: 15px; font-weight: 700; color: #0A1638; }
-  .idea-company { font-size: 13px; color: #0A1638; }
-  .idea-badges { font-size: 10px; color: #8B6A4E; margin-left: auto; text-transform: uppercase; letter-spacing: 0.4px; }
-  .idea-metrics { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: #6B7280; margin-bottom: 8px; }
-  .idea-metrics b { color: #0A1638; }
-  .idea-metrics .pos { color: #16A34A; }
-  .idea-metrics .neg { color: #DC2626; }
-  .idea-text { font-size: 11.5px; line-height: 1.55; color: #1F2937; white-space: pre-wrap; }
-  .idea-doc { margin-top: 8px; font-size: 10.5px; color: #8B6A4E; }
-  .idea-doc a { color: #8B6A4E; }
-
-  .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
-
-  ${REPORT_PRINT_CSS}
-</style>
-</head>
-<body>
-  <div class="banner">
-    <img src="${logoURL}" alt="AGS" onerror="this.parentElement.innerHTML='<div style=\\'color:white;font-size:24px;font-weight:700;\\'>AGS</div><div class=\\'banner-text\\'>Abylai Global Solutions</div>'">
-    <div class="banner-text">Инвестиционные идеи</div>
-  </div>
-
-  <div class="content">
-    <div class="section-title">Инвестиционные идеи</div>
-    <div class="info-grid">${infoRows}</div>
-
-    ${cards}
-
-    <div class="footer">
-      Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
-      Документ подготовлен автоматически и не является индивидуальной инвестиционной рекомендацией.
-      Инвестирование сопряжено с рисками, включая риск частичной или полной потери капитала.
-    </div>
-  </div>
-
-</body>
-</html>`;
-
-  openReportWindow(html);
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  // Auto-trigger print dialog for PDF save
+  setTimeout(function() { try { w.print(); } catch(e) {} }, 800);
   showToast('Откроется окно печати — выберите «Сохранить как PDF»');
 }
 
@@ -4164,10 +2567,9 @@ function addFilteredToPortfolio() {
   let added = 0;
   const today = new Date().toISOString().slice(0, 10);
   activeFiltered.forEach(item => {
-    if (!pf.some(p => p.assetClass === 'stock' && p.id === item.ticker)) {
+    if (!pf.some(p => p.ticker === item.ticker)) {
       pf.push({
-        assetClass: 'stock',
-        id: item.ticker,
+        ticker: item.ticker,
         addedAt: today,
         entryPrice: item.open != null ? item.open : item.price,
         manualWeight: null,
@@ -4200,8 +2602,7 @@ function toggleRebalancePanel() {
 }
 
 function renderRebalancePanel() {
-  // Rebalance logic (stoploss/target/closed) is stock-specific — bonds have no .target/.downside/.status
-  const pfData = getPortfolioData().filter(p => p.assetClass !== 'bond');
+  const pfData = getPortfolioData();
   const content = document.getElementById('rebalanceContent');
   const actions = document.getElementById('rebalanceActions');
   let items = [];
@@ -4249,13 +2650,16 @@ function renderRebalancePanel() {
 
 function applyRebalance() {
   const checkboxes = document.querySelectorAll('#rebalanceContent input[type="checkbox"]:checked');
-  const tickers = new Set();
-  checkboxes.forEach(cb => { if (cb.dataset.ticker) tickers.add(cb.dataset.ticker); });
-  let pf = loadPortfolio();
-  const before = pf.length;
-  pf = pf.filter(p => !(p.assetClass === 'stock' && tickers.has(p.id)));
-  const removed = before - pf.length;
-  savePortfolio(pf);
+  let removed = 0;
+  checkboxes.forEach(cb => {
+    const ticker = cb.dataset.ticker;
+    if (ticker) {
+      let pf = loadPortfolio();
+      pf = pf.filter(p => p.ticker !== ticker);
+      savePortfolio(pf);
+      removed++;
+    }
+  });
   showToast('Убрано из портфеля: ' + removed + ' позиций');
   document.getElementById('rebalancePanel').style.display = 'none';
   renderPortfolio();
@@ -4264,1102 +2668,10 @@ function applyRebalance() {
 }
 
 /* ===========================================================================
-   MODEL PORTFOLIOS
-   =========================================================================== */
-let modelState = { type: 'balanced', stockShare: 40, currency: 'all', bondCount: 10, stockCount: 10, excludeStocks: false, excludeETF: false, bonds: [], stocks: [] };
-let modelBuilt = false;
-
-const MODEL_TYPE_LABELS = {
-  conservative: 'Консервативный',
-  balanced: 'Сбалансированный',
-  aggressive: 'Агрессивный'
-};
-
-/* ---- Client info for the models tab ---- */
-const MDL_CLIENT_KEY = 'ags_model_client';
-function saveModelClientInfo() {
-  const info = {
-    name: document.getElementById('mdlClientName')?.value || '',
-    amount: document.getElementById('mdlClientAmount')?.value || '',
-    currency: document.getElementById('mdlClientCurrency')?.value || 'USD'
-  };
-  localStorage.setItem(MDL_CLIENT_KEY, JSON.stringify(info));
-  updatePoolInfo();
-}
-function loadModelClientInfo() {
-  try {
-    const info = JSON.parse(localStorage.getItem(MDL_CLIENT_KEY) || '{}');
-    if (info.name) document.getElementById('mdlClientName').value = info.name;
-    if (info.amount) document.getElementById('mdlClientAmount').value = info.amount;
-    if (info.currency) document.getElementById('mdlClientCurrency').value = info.currency;
-  } catch(e) {}
-}
-
-/* ---- Configurator handlers ---- */
-function setModelType(type) {
-  modelState.type = type;
-  ['conservative','balanced','aggressive'].forEach(t => {
-    const btn = document.getElementById('mdlType' + t.charAt(0).toUpperCase() + t.slice(1));
-    if (btn) btn.classList.toggle('active', t === type);
-  });
-  updateModelConfigVisibility();
-  updatePoolInfo();
-}
-
-function updateModelConfigVisibility() {
-  const shareGroup = document.getElementById('mdlShareGroup');
-  if (shareGroup) shareGroup.style.display = modelState.type === 'balanced' ? '' : 'none';
-  const bondGroup = document.getElementById('mdlBondCount')?.parentElement;
-  const stockGroup = document.getElementById('mdlStockCount')?.parentElement;
-  const currGroup = document.getElementById('mdlCurrency')?.parentElement;
-  if (bondGroup) bondGroup.style.display = modelState.type === 'aggressive' ? 'none' : '';
-  if (currGroup) currGroup.style.display = modelState.type === 'aggressive' ? 'none' : '';
-  if (stockGroup) stockGroup.style.display = modelState.type === 'conservative' ? 'none' : '';
-  // Исключения акции/ETF не нужны в консервативном (там нет долевых)
-  const excGroup = document.getElementById('mdlExcludeGroup');
-  if (excGroup) excGroup.style.display = modelState.type === 'conservative' ? 'none' : '';
-}
-
-function onStockShareChange(val) {
-  modelState.stockShare = parseInt(val, 10) || 0;
-  const lbl = document.getElementById('mdlShareLabel');
-  if (lbl) lbl.textContent = 'Доля акций: ' + modelState.stockShare + '%';
-  updatePoolInfo();
-}
-
-function onModelCurrencyChange(val) { modelState.currency = val; updatePoolInfo(); }
-
-/* Исключение классов долевых инструментов: акции / ETF */
-function onExcludeChange() {
-  const exS = document.getElementById('mdlExcludeStocks');
-  const exE = document.getElementById('mdlExcludeETF');
-  modelState.excludeStocks = !!(exS && exS.checked);
-  modelState.excludeETF = !!(exE && exE.checked);
-
-  // Нельзя исключить оба — снимаем последнюю поставленную галочку
-  if (modelState.excludeStocks && modelState.excludeETF) {
-    showToast('Нельзя исключить и акции, и ETF одновременно');
-    if (exE) { exE.checked = false; modelState.excludeETF = false; }
-  }
-  updatePoolInfo();
-}
-
-/* Применяет исключения акции/ETF к списку долевых бумаг */
-function applyEquityExclusions(list) {
-  if (modelState.excludeStocks && !modelState.excludeETF) return list.filter(s => isETF(s));
-  if (modelState.excludeETF && !modelState.excludeStocks) return list.filter(s => !isETF(s));
-  return list;
-}
-
-function onModelCountChange() {
-  const bc = parseInt(document.getElementById('mdlBondCount')?.value, 10);
-  const sc = parseInt(document.getElementById('mdlStockCount')?.value, 10);
-  modelState.bondCount = isNaN(bc) ? 10 : Math.max(0, Math.min(50, bc));
-  modelState.stockCount = isNaN(sc) ? 10 : Math.max(0, Math.min(50, sc));
-  updatePoolInfo();
-}
-
-/* Показывает, сколько бумаг доступно в пуле под текущий тип/валюту */
-function updatePoolInfo() {
-  const el = document.getElementById('mdlPoolInfo');
-  if (!el) return;
-  const t = modelState.type;
-
-  let bondPool = allBonds.filter(b => fitsModel(b.passFilter, t));
-  if (modelState.currency !== 'all') bondPool = bondPool.filter(b => b.currency === modelState.currency);
-  if (bondFdapExemptOnly) bondPool = bondPool.filter(isFdapExempt);
-  const bondsBeforeLot = bondPool.length;
-
-  // Учитываем мин. лот, если задана сумма
-  const amount = getModelAmount();
-  if (amount > 0 && t !== 'aggressive') {
-    const bondShareForLot = t === 'conservative' ? 100 : 100 - modelState.stockShare;
-    const perPosition = (amount * bondShareForLot / 100) / Math.max(1, modelState.bondCount);
-    bondPool = bondPool.filter(b => {
-      const cost = bondMinCost(b);
-      return cost == null || cost <= perPosition;
-    });
-  }
-
-  const stockPool = applyEquityExclusions(
-    allData.filter(d => d.status === 'ACTIVE' && fitsModel(d.model, t))
-  );
-
-  const parts = [];
-  if (t !== 'aggressive') {
-    const dropped = bondsBeforeLot - bondPool.length;
-    parts.push('облигаций: ' + bondPool.length + (dropped > 0 ? ' (−' + dropped + ' по лоту)' : ''));
-  }
-  if (t !== 'conservative') {
-    let lbl = 'акций';
-    if (modelState.excludeStocks) lbl = 'ETF';
-    else if (modelState.excludeETF) lbl = 'акций (без ETF)';
-    parts.push(lbl + ': ' + stockPool.length);
-  }
-  el.textContent = parts.join(' · ') || '—';
-}
-
-/* ===========================================================================
-   МЕТОДОЛОГИЯ ОТБОРА — единая для акций и облигаций
-   Цифра в таблице определяет, в какие портфели годится бумага:
-     1 — консервативный
-     2 — сбалансированный
-     3 — агрессивный
-   Можно указать несколько: "1,2" или "2 3" или "1;2;3"
-   Облигации — колонка «Проходит фильтр», акции — колонка «Model»
-   =========================================================================== */
-const MODEL_TYPE_CODE = { conservative: 1, balanced: 2, aggressive: 3 };
-
-/* Разбирает значение ячейки в набор цифр: "1,2" → [1,2] */
-function parseModelCodes(val) {
-  if (val == null || val === '') return [];
-  return String(val)
-    .split(/[^0-9]+/)
-    .map(s => parseInt(s, 10))
-    .filter(n => !isNaN(n) && n >= 1 && n <= 3);
-}
-
-/* Годится ли бумага для выбранного типа портфеля */
-function fitsModel(val, type) {
-  const codes = parseModelCodes(val);
-  if (codes.length === 0) return false;  // пусто — не участвует
-  return codes.indexOf(MODEL_TYPE_CODE[type]) !== -1;
-}
-
-/* ---- Portfolio construction ---- */
-function buildModelPortfolio() {
-  onModelCountChange();
-  const t = modelState.type;
-
-  // --- BONDS selection — по цифрам в «Проходит фильтр» ---
-  let bondPool = allBonds.filter(b => fitsModel(b.passFilter, t));
-  if (modelState.currency !== 'all') bondPool = bondPool.filter(b => b.currency === modelState.currency);
-  if (bondFdapExemptOnly) bondPool = bondPool.filter(isFdapExempt);
-
-  // Фильтр по минимальному лоту: сумма на одну позицию должна покрывать лот
-  const amount = getModelAmount();
-  let lotDropped = 0;
-  if (amount > 0) {
-    const bondShareForLot = t === 'conservative' ? 100 : (t === 'aggressive' ? 0 : 100 - modelState.stockShare);
-    const perPosition = (amount * bondShareForLot / 100) / Math.max(1, modelState.bondCount);
-    const beforeLot = bondPool.length;
-    bondPool = bondPool.filter(b => {
-      const cost = bondMinCost(b);
-      return cost == null || cost <= perPosition;
-    });
-    lotDropped = beforeLot - bondPool.length;
-  }
-
-  bondPool.sort((a,b) => {
-    const ra = a.rank != null ? a.rank : 999;
-    const rb = b.rank != null ? b.rank : 999;
-    if (ra !== rb) return ra - rb;
-    return (b.ytm||0) - (a.ytm||0);
-  });
-
-  // --- STOCKS selection — по цифрам в «Model» ---
-  let stockPool = allData.filter(d => {
-    if (d.status !== 'ACTIVE') return false;
-    return fitsModel(d.model, t);
-  });
-  stockPool = applyEquityExclusions(stockPool);
-  stockPool.sort((a,b) => (b.potential||0) - (a.potential||0));
-
-  // --- Целевые доли классов ---
-  let stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
-  let bondShare = 100 - stockShare;
-
-  // Класс полностью исключается, если его доля = 0 ИЛИ количество бумаг = 0
-  const wantStocks = t !== 'conservative' && stockShare > 0 && modelState.stockCount > 0;
-  const wantBonds  = t !== 'aggressive'   && bondShare  > 0 && modelState.bondCount  > 0;
-
-  // Если один класс выпал — второй забирает все 100%
-  if (!wantStocks && wantBonds) { bondShare = 100; stockShare = 0; }
-  if (!wantBonds && wantStocks) { stockShare = 100; bondShare = 0; }
-
-  // --- Compose ---
-  modelState.bonds  = wantBonds  ? bondPool.slice(0, modelState.bondCount)   : [];
-  modelState.stocks = wantStocks ? stockPool.slice(0, modelState.stockCount) : [];
-
-  // Предупреждаем, если в пуле меньше бумаг, чем запрошено
-  const shortfall = [];
-  if (lotDropped > 0) {
-    shortfall.push('отсеяно по мин. лоту: ' + lotDropped);
-  }
-  if (wantBonds && bondPool.length < modelState.bondCount) {
-    shortfall.push('облигаций доступно ' + bondPool.length + ' из ' + modelState.bondCount);
-  }
-  if (wantStocks && stockPool.length < modelState.stockCount) {
-    shortfall.push('акций доступно ' + stockPool.length + ' из ' + modelState.stockCount);
-  }
-  if (shortfall.length) showToast('Внимание: ' + shortfall.join(', '));
-
-  // Copy items so manual edits don't mutate the source pools
-  modelState.bonds = modelState.bonds.map(b => ({ ...b }));
-  modelState.stocks = modelState.stocks.map(s => ({ ...s }));
-
-  distributeModelWeights(modelState.bonds, bondShare);
-  distributeModelWeights(modelState.stocks, stockShare);
-
-  // Убираем позиции с нулевой долей и перераспределяем остаток
-  if (pruneZeroWeights() > 0) {
-    distributeModelWeights(modelState.bonds, bondShare);
-    distributeModelWeights(modelState.stocks, stockShare);
-  }
-
-  modelBuilt = true;
-
-  if (modelState.bonds.length === 0 && modelState.stocks.length === 0) {
-    showToast('Нет инструментов, подходящих под заданные параметры');
-  }
-
-  renderModels();
-}
-
-/* ---- Weight distribution with manual/sheet overrides ----
-   Priority: manual (locked on site) > sheetWeight (Google Sheets "Доля") > equal split */
-function distributeModelWeights(items, totalShare) {
-  if (!items.length) return;
-
-  let fixedSum = 0;
-  let freeCount = 0;
-
-  items.forEach(it => {
-    const fixed = (it._lockedWeight && it._manualWeight != null)
-      ? it._manualWeight
-      : (it.sheetWeight != null && it.sheetWeight > 0 ? it.sheetWeight : null);
-    if (fixed != null) { it._fixed = fixed; fixedSum += fixed; }
-    else { it._fixed = null; freeCount++; }
-  });
-
-  // Если зафиксированные доли превышают лимит — масштабируем их вниз пропорционально
-  if (fixedSum > totalShare && fixedSum > 0) {
-    const k = totalShare / fixedSum;
-    items.forEach(it => { if (it._fixed != null) it._fixed = it._fixed * k; });
-    fixedSum = totalShare;
-  }
-
-  const remaining = Math.max(0, totalShare - fixedSum);
-  const auto = freeCount > 0 ? remaining / freeCount : 0;
-
-  items.forEach(it => {
-    it._weight = it._fixed != null ? it._fixed : auto;
-  });
-
-  // Финальная нормировка — гарантируем ровно totalShare
-  const sum = items.reduce((s, it) => s + (it._weight || 0), 0);
-  if (sum > 0 && Math.abs(sum - totalShare) > 0.01) {
-    const k = totalShare / sum;
-    items.forEach(it => { it._weight = (it._weight || 0) * k; });
-  }
-}
-
-/* ===========================================================================
-   ОТКРЫТИЕ ОТЧЁТОВ
-   Через Blob URL — иначе в колонтитуле печати появляется "about:blank".
-   =========================================================================== */
-function openReportWindow(html, fileTitle) {
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const w = window.open(url, '_blank');
-  if (!w) { showToast('Разрешите всплывающие окна для этого сайта'); return null; }
-  // Имя файла по умолчанию в диалоге печати берётся из <title>
-  setTimeout(function () {
-    try { w.print(); } catch (e) {}
-    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
-  }, 900);
-  return w;
-}
-
-/* Общий блок CSS для печати — сохраняет экранную вёрстку 1:1 */
-const REPORT_PRINT_CSS = `
-  @page { size: A4; margin: 8mm; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  html, body { -webkit-text-size-adjust: none; }
-  @media print {
-    body { max-width: 100% !important; margin: 0 !important; }
-    .banner { border-radius: 0 !important; }
-    /* Ничего не должно разрываться посередине */
-    .info-row, .charts-row, .chart-block, .bars-block,
-    .idea-card, table, thead, tfoot { page-break-inside: avoid; break-inside: avoid; }
-    tr { page-break-inside: avoid; break-inside: avoid; }
-    thead { display: table-header-group; }
-    .page-break { page-break-after: always; break-after: page; }
-    /* Убираем лишние отступы, чтобы влезало на страницу */
-    .content { padding-top: 10px !important; }
-    h2 { margin-top: 10px !important; }
-  }
-`;
-
-/* Сумма инвестирования из поля клиента */
-function getModelAmount() {
-  const raw = (document.getElementById('mdlClientAmount')?.value || '').trim();
-  const n = parseFloat(raw.replace(/\s/g, '').replace(',', '.'));
-  return isNaN(n) || n <= 0 ? 0 : n;
-}
-
-/* Минимальная стоимость покупки облигации = мин. лот × цена (% от номинала) */
-function bondMinCost(b) {
-  if (b.minLot == null || b.minLot <= 0) return null;   // лот не указан — не отсекаем
-  const priceFactor = (b.price != null && b.price > 0) ? b.price / 100 : 1;
-  return b.minLot * priceFactor;
-}
-
-/* Убирает из портфеля позиции с нулевой долей */
-function pruneZeroWeights() {
-  const before = modelState.bonds.length + modelState.stocks.length;
-  modelState.bonds  = modelState.bonds.filter(b => (b._weight || 0) > 0.001);
-  modelState.stocks = modelState.stocks.filter(s => (s._weight || 0) > 0.001);
-  return before - (modelState.bonds.length + modelState.stocks.length);
-}
-
-/* Manual weight edit on the model page */
-function setModelWeight(kind, key, value) {
-  const arr = kind === 'bond' ? modelState.bonds : modelState.stocks;
-  const item = arr.find(x => (kind === 'bond' ? x.isin : x.ticker) === key);
-  if (!item) return;
-  item._manualWeight = Math.max(0, Math.min(100, parseFloat(value) || 0));
-  item._lockedWeight = true;
-  recalcModelWeights();
-}
-
-function toggleModelWeightLock(kind, key, locked) {
-  const arr = kind === 'bond' ? modelState.bonds : modelState.stocks;
-  const item = arr.find(x => (kind === 'bond' ? x.isin : x.ticker) === key);
-  if (!item) return;
-  item._lockedWeight = locked;
-  if (!locked) item._manualWeight = null;
-  recalcModelWeights();
-}
-
-function recalcModelWeights() {
-  const t = modelState.type;
-  const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
-
-  distributeModelWeights(modelState.bonds, 100 - stockShare);
-  distributeModelWeights(modelState.stocks, stockShare);
-
-  // Позиции с нулевой долей удаляем и перераспределяем остаток
-  const removed = pruneZeroWeights();
-  if (removed > 0) {
-    distributeModelWeights(modelState.bonds, 100 - stockShare);
-    distributeModelWeights(modelState.stocks, stockShare);
-    showToast('Убрано позиций с нулевой долей: ' + removed);
-  }
-
-  renderModels();
-}
-
-/* Weight cell HTML with input + lock checkbox */
-function weightCellHTML(kind, key, item) {
-  const locked = !!item._lockedWeight;
-  const fromSheet = !locked && item.sheetWeight != null && item.sheetWeight > 0;
-  const border = locked ? '#8B6A4E' : (fromSheet ? '#C6CEC8' : '#ccc');
-  const bg = locked ? '#F0F2F0' : (fromSheet ? '#FAFBFA' : '#fff');
-  const title = fromSheet ? 'Доля задана в Google Sheets' : 'Зафиксировать долю';
-  return `<div style="display:flex;align-items:center;justify-content:center;gap:2px;">
-    <input type="number" step="0.1" min="0" max="100" value="${(item._weight||0).toFixed(1)}"
-      style="width:48px;padding:2px 4px;font-size:0.8rem;text-align:center;border:1px solid ${border};border-radius:3px;background:${bg};font-family:Manrope,sans-serif;"
-      onchange="setModelWeight('${kind}','${esc(key)}',this.value)">
-    <label style="cursor:pointer;font-size:0.7rem;" title="${title}">
-      <input type="checkbox" ${locked ? 'checked' : ''}
-        onchange="toggleModelWeightLock('${kind}','${esc(key)}',this.checked)"
-        style="width:12px;height:12px;">🔒
-    </label>
-  </div>`;
-}
-
-/* ---- Horizontal bar chart: ratings + asset classes ---- */
-function renderRatingBars(containerId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-
-  const bonds = modelState.bonds;
-  const stocks = modelState.stocks;
-
-  // Build rows: ratings (bonds) + asset class rows
-  const rows = [];
-
-  // Rating breakdown from bonds — sorted best→worst
-  const ratingMap = {};
-  bonds.forEach(b => {
-    const r = b.rating || 'Без рейтинга';
-    ratingMap[r] = (ratingMap[r] || 0) + (b._weight || 0);
-  });
-  Object.entries(ratingMap)
-    .sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]))
-    .forEach(([label, w]) => {
-      const ig = isInvestmentGrade(label);
-      rows.push({ label, weight: w, color: ig ? '#0A1638' : '#8B6A4E', group: 'rating' });
-    });
-
-  // Asset class rows
-  const stockETF = stocks.filter(s => isETF(s)).reduce((sum, s) => sum + (s._weight || 0), 0);
-  const stockEq  = stocks.filter(s => !isETF(s)).reduce((sum, s) => sum + (s._weight || 0), 0);
-  const bondTotal = bonds.reduce((sum, b) => sum + (b._weight || 0), 0);
-
-  if (rows.length > 0) rows.push({ divider: true });
-  if (bondTotal > 0) rows.push({ label: 'Облигации', weight: bondTotal, color: '#1A2D5A', group: 'class' });
-  if (stockEq > 0)   rows.push({ label: 'Акции',      weight: stockEq,   color: '#8B6A4E', group: 'class' });
-  if (stockETF > 0)  rows.push({ label: 'ETF',        weight: stockETF,  color: '#C6CEC8', group: 'class' });
-
-  if (rows.length === 0) { el.innerHTML = '<div style="color:#94A3B8;font-size:0.85rem;">Нет данных</div>'; return; }
-
-  const maxW = Math.max(...rows.filter(r => !r.divider).map(r => r.weight), 1);
-
-  let html = '<div style="display:flex;flex-direction:column;gap:5px;">';
-  rows.forEach(r => {
-    if (r.divider) {
-      html += '<div style="height:1px;background:#E5E7EB;margin:4px 0;"></div>';
-      return;
-    }
-    const pct = (r.weight / maxW) * 100;
-    const isClass = r.group === 'class';
-    html += `<div style="display:flex;align-items:center;gap:10px;">
-      <div style="width:110px;flex-shrink:0;font-size:0.8rem;${isClass ? 'font-weight:600;' : ''}color:#0A1638;text-align:right;">${esc(r.label)}</div>
-      <div style="flex:1;height:${isClass ? 18 : 15}px;background:#F3F4F6;border-radius:3px;overflow:hidden;position:relative;">
-        <div style="width:${pct.toFixed(1)}%;height:100%;background:${r.color};border-radius:3px;transition:width .3s;"></div>
-      </div>
-      <div style="width:52px;flex-shrink:0;font-size:0.8rem;${isClass ? 'font-weight:600;' : ''}color:#0A1638;">${r.weight.toFixed(1)}%</div>
-    </div>`;
-  });
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-/* Detect ETF: sector/name markers or known ETF tickers */
-/* ETF определяется по названию актива: ETF / UCITS / Trust / Fund / Index.
-   Дополнительно — список известных тикеров на случай короткого названия. */
-function isETF(s) {
-  if (!s) return false;
-  const hay = [s.company, s.sector, s.industry, s.country].filter(Boolean).join(' ').toUpperCase();
-  if (/\bETF\b|\bUCITS\b|\bTRUST\b|\bFUND\b|\bINDEX\b/.test(hay)) return true;
-  const knownETF = ['KWEB','IBIT','COPX','ARKG','SPY','QQQ','VOO','IVV','VTI','VXUS',
-                    'GLD','SLV','TLT','IEF','EEM','EFA','XLE','XLF','XLK','XLV','XLP',
-                    'SMH','SOXX','URA','LIT','JETS','ICLN','BITO','FBTC'];
-  return knownETF.indexOf(String(s.ticker || '').toUpperCase()) !== -1;
-}
-
-/* ---- Generic donut renderer ---- */
-function renderDonut(svgId, legendId, dataMap, centerLabel) {
-  const svg = document.getElementById(svgId);
-  const legend = document.getElementById(legendId);
-  if (!svg) return;
-
-  const entries = Object.entries(dataMap).filter(e => e[1] > 0).sort((a,b) => b[1] - a[1]);
-  const total = entries.reduce((s, e) => s + e[1], 0);
-
-  if (entries.length === 0 || total <= 0) {
-    svg.innerHTML = '';
-    if (legend) legend.innerHTML = '<div style="color:#6B7280;">Нет данных</div>';
-    return;
-  }
-
-  const cx = 80, cy = 80, r = 64, inner = 40;
-  let startAngle = -Math.PI / 2;
-  let paths = '';
-  let legendHTML = '';
-
-  entries.forEach(([name, weight], i) => {
-    const pct = weight / total;
-    const angle = pct * 2 * Math.PI;
-    const endAngle = startAngle + angle;
-    const largeArc = angle > Math.PI ? 1 : 0;
-    const color = CHART_COLORS[i % CHART_COLORS.length];
-
-    const x1 = cx + r * Math.cos(startAngle);
-    const y1 = cy + r * Math.sin(startAngle);
-    const x2 = cx + r * Math.cos(endAngle);
-    const y2 = cy + r * Math.sin(endAngle);
-    const x3 = cx + inner * Math.cos(endAngle);
-    const y3 = cy + inner * Math.sin(endAngle);
-    const x4 = cx + inner * Math.cos(startAngle);
-    const y4 = cy + inner * Math.sin(startAngle);
-
-    if (entries.length === 1) {
-      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
-      paths += `<circle cx="${cx}" cy="${cy}" r="${inner}" fill="white"/>`;
-    } else {
-      paths += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${largeArc} 0 ${x4} ${y4} Z" fill="${color}" stroke="white" stroke-width="1.5"/>`;
-    }
-
-    legendHTML += `<div style="display:flex;align-items:center;gap:5px;">
-      <span style="width:9px;height:9px;border-radius:2px;background:${color};flex-shrink:0;"></span>
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(name)}">${esc(name)}</span>
-      <span style="color:#6B7280;margin-left:auto;flex-shrink:0;">${weight.toFixed(1)}%</span>
-    </div>`;
-
-    startAngle = endAngle;
-  });
-
-  paths += `<text x="${cx}" y="${cy+2}" text-anchor="middle" font-size="11" fill="#6B7280" font-family="Manrope, sans-serif">${esc(centerLabel || '')}</text>`;
-
-  svg.innerHTML = paths;
-  if (legend) legend.innerHTML = legendHTML;
-}
-
-/* Same donut math as renderDonut(), but returns markup strings instead of
-   writing into DOM elements — used when building printable reports where
-   the chart has no live on-screen counterpart to read back. */
-function buildDonutHTML(dataMap, centerLabel) {
-  const entries = Object.entries(dataMap).filter(e => e[1] > 0).sort((a,b) => b[1] - a[1]);
-  const total = entries.reduce((s, e) => s + e[1], 0);
-
-  if (entries.length === 0 || total <= 0) {
-    return { svg: '<svg width="160" height="160" viewBox="0 0 160 160"></svg>', legend: '<div style="color:#6B7280;">Нет данных</div>' };
-  }
-
-  const cx = 80, cy = 80, r = 64, inner = 40;
-  let startAngle = -Math.PI / 2;
-  let paths = '';
-  let legendHTML = '';
-
-  entries.forEach(([name, weight], i) => {
-    const pct = weight / total;
-    const angle = pct * 2 * Math.PI;
-    const endAngle = startAngle + angle;
-    const largeArc = angle > Math.PI ? 1 : 0;
-    const color = CHART_COLORS[i % CHART_COLORS.length];
-
-    const x1 = cx + r * Math.cos(startAngle);
-    const y1 = cy + r * Math.sin(startAngle);
-    const x2 = cx + r * Math.cos(endAngle);
-    const y2 = cy + r * Math.sin(endAngle);
-    const x3 = cx + inner * Math.cos(endAngle);
-    const y3 = cy + inner * Math.sin(endAngle);
-    const x4 = cx + inner * Math.cos(startAngle);
-    const y4 = cy + inner * Math.sin(startAngle);
-
-    if (entries.length === 1) {
-      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
-      paths += `<circle cx="${cx}" cy="${cy}" r="${inner}" fill="white"/>`;
-    } else {
-      paths += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${largeArc} 0 ${x4} ${y4} Z" fill="${color}" stroke="white" stroke-width="1.5"/>`;
-    }
-
-    legendHTML += `<div style="display:flex;align-items:center;gap:5px;">
-      <span style="width:9px;height:9px;border-radius:2px;background:${color};flex-shrink:0;"></span>
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(name)}">${esc(name)}</span>
-      <span style="color:#6B7280;margin-left:auto;flex-shrink:0;">${weight.toFixed(1)}%</span>
-    </div>`;
-
-    startAngle = endAngle;
-  });
-
-  paths += `<text x="${cx}" y="${cy+2}" text-anchor="middle" font-size="11" fill="#6B7280" font-family="Manrope, sans-serif">${esc(centerLabel || '')}</text>`;
-
-  return { svg: `<svg width="160" height="160" viewBox="0 0 160 160">${paths}</svg>`, legend: legendHTML };
-}
-
-/* Rating bar chart markup for a printable report — bonds passed as raw live
-   bond objects with a numeric _weight already set on them. */
-function buildRatingBarsHTML(bonds) {
-  const ratingMap = {};
-  bonds.forEach(b => {
-    const r = b.rating || 'Без рейтинга';
-    ratingMap[r] = (ratingMap[r] || 0) + (b._weight || 0);
-  });
-  const entries = Object.entries(ratingMap).sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]));
-  if (!entries.length) return '';
-
-  const maxW = Math.max(...entries.map(e => e[1]), 1);
-  let bars = '<div style="display:flex;flex-direction:column;gap:5px;">';
-  entries.forEach(([label, w]) => {
-    const pct = (w / maxW) * 100;
-    const color = isInvestmentGrade(label) ? '#0A1638' : '#8B6A4E';
-    bars += `<div style="display:flex;align-items:center;gap:10px;">
-      <div style="width:100px;flex-shrink:0;font-size:11px;color:#0A1638;text-align:right;">${esc(label)}</div>
-      <div style="flex:1;height:14px;background:#F3F4F6;border-radius:3px;overflow:hidden;">
-        <div style="width:${pct.toFixed(1)}%;height:100%;background:${color};border-radius:3px;"></div>
-      </div>
-      <div style="width:48px;flex-shrink:0;font-size:11px;color:#0A1638;">${w.toFixed(1)}%</div>
-    </div>`;
-  });
-  bars += '</div>';
-  return `<div class="bars-block" style="margin-top:16px;">
-    <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">По кредитным рейтингам</h2>
-    ${bars}
-  </div>`;
-}
-
-/* ---- Weighted helpers ---- */
-function weightedAvg(items, getter) {
-  let sum = 0, w = 0;
-  items.forEach(it => {
-    const v = getter(it);
-    const wt = it._weight || 0;
-    if (v != null && wt > 0) { sum += v * wt; w += wt; }
-  });
-  return w > 0 ? sum / w : null;
-}
-
-function modelCountryMap() {
-  const m = {};
-  modelState.bonds.forEach(b => {
-    const k = b.countryRu || b.country || 'Другое';
-    m[k] = (m[k] || 0) + (b._weight || 0);
-  });
-  modelState.stocks.forEach(s => {
-    const k = s.country || 'Другое';
-    m[k] = (m[k] || 0) + (s._weight || 0);
-  });
-  return m;
-}
-function modelSectorMap() {
-  const m = {};
-  modelState.bonds.forEach(b => {
-    const k = b.sectorRu || b.sector || 'Другое';
-    m[k] = (m[k] || 0) + (b._weight || 0);
-  });
-  modelState.stocks.forEach(s => {
-    const k = s.sector || 'Другое';
-    m[k] = (m[k] || 0) + (s._weight || 0);
-  });
-  return m;
-}
-function modelRatingMap() {
-  const m = {};
-  modelState.bonds.forEach(b => {
-    const k = b.rating || 'Без рейтинга';
-    m[k] = (m[k] || 0) + (b._weight || 0);
-  });
-  return m;
-}
-
-function fmtNum(v, dec) {
-  if (v == null) return '—';
-  return v.toFixed(dec == null ? 2 : dec);
-}
-
-/* ---- Rendering ---- */
-function renderModels() {
-  loadModelClientInfo();
-  updateModelConfigVisibility();
-  const slider = document.getElementById('mdlStockShare');
-  if (slider) slider.value = modelState.stockShare;
-  onStockShareChange(modelState.stockShare);
-
-  const empty = document.getElementById('mdlEmpty');
-  const chartsRow = document.getElementById('mdlChartsRow');
-  const bondsSection = document.getElementById('mdlBondsSection');
-  const stocksSection = document.getElementById('mdlStocksSection');
-
-  const bonds = modelState.bonds;
-  const stocks = modelState.stocks;
-  const hasAny = bonds.length > 0 || stocks.length > 0;
-
-  if (!modelBuilt || !hasAny) {
-    if (empty) {
-      empty.style.display = '';
-      empty.textContent = modelBuilt
-        ? 'Нет инструментов, подходящих под заданные параметры. Измените фильтры и попробуйте снова.'
-        : 'Настройте параметры и нажмите «🔄 Собрать портфель».';
-    }
-    if (chartsRow) chartsRow.style.display = 'none';
-    if (bondsSection) bondsSection.style.display = 'none';
-    if (stocksSection) stocksSection.style.display = 'none';
-    setModelStats(null);
-    return;
-  }
-
-  if (empty) empty.style.display = 'none';
-
-  setModelStats({
-    count: bonds.length + stocks.length,
-    ytm: weightedAvg(bonds, b => b.ytm),
-    duration: weightedAvg(bonds, b => b.duration),
-    rating: avgRating(bonds),
-    upside: weightedAvg(stocks, s => s.potential)
-  });
-
-  // Charts
-  if (chartsRow) chartsRow.style.display = '';
-  const totalPos = bonds.length + stocks.length;
-  renderDonut('mdlCountryDonut', 'mdlCountryLegend', modelCountryMap(), totalPos + ' поз.');
-  renderDonut('mdlSectorDonut', 'mdlSectorLegend', modelSectorMap(), totalPos + ' поз.');
-  const ratingBox = document.getElementById('mdlRatingBox');
-  if (ratingBox) ratingBox.style.display = '';
-  renderRatingBars('mdlRatingBars');
-
-  // Bonds table
-  if (bonds.length > 0) {
-    bondsSection.style.display = '';
-    document.getElementById('mdlBondsTable').innerHTML = buildBondsTableHTML(bonds);
-  } else {
-    bondsSection.style.display = 'none';
-  }
-
-  // Stocks table
-  if (stocks.length > 0) {
-    stocksSection.style.display = '';
-    document.getElementById('mdlStocksTable').innerHTML = buildStocksTableHTML(stocks);
-  } else {
-    stocksSection.style.display = 'none';
-  }
-}
-
-function setModelStats(s) {
-  const l1 = document.getElementById('mdlStat1Label'), v1 = document.getElementById('mdlStat1');
-  const l2 = document.getElementById('mdlStat2Label'), v2 = document.getElementById('mdlStat2');
-  const l3 = document.getElementById('mdlStat3Label'), v3 = document.getElementById('mdlStat3');
-  const l4 = document.getElementById('mdlStat4Label'), v4 = document.getElementById('mdlStat4');
-  if (!v1) return;
-
-  if (!s) {
-    l1.textContent = 'Позиций'; v1.textContent = '0';
-    l2.textContent = 'Ср. YTM'; v2.textContent = '—';
-    l3.textContent = 'Ср. дюрация'; v3.textContent = '—';
-    l4.textContent = 'Ср. рейтинг'; v4.textContent = '—';
-    return;
-  }
-
-  if (modelState.type === 'aggressive') {
-    l1.textContent = 'Позиций'; v1.textContent = s.count;
-    l2.textContent = 'Ср. Upside'; v2.textContent = s.upside != null ? (s.upside >= 0 ? '+' : '') + s.upside.toFixed(1) + '%' : '—';
-    l3.textContent = '—'; v3.textContent = '—';
-    l4.textContent = '—'; v4.textContent = '—';
-  } else {
-    l1.textContent = 'Позиций'; v1.textContent = s.count;
-    l2.textContent = 'Ср. YTM'; v2.textContent = s.ytm != null ? s.ytm.toFixed(2) + '%' : '—';
-    l3.textContent = 'Ср. дюрация'; v3.textContent = s.duration != null ? s.duration.toFixed(2) : '—';
-    l4.textContent = 'Ср. рейтинг'; v4.textContent = s.rating || '—';
-  }
-}
-
-function buildBondsTableHTML(bonds) {
-  let html = `<div class="portfolio-table-wrapper"><table>
-    <thead><tr>
-      <th>Название</th><th>ISIN</th><th>Страна</th><th>Сектор</th>
-      <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
-      <th style="text-align:center">YTM</th><th style="text-align:center">Купон</th>
-      <th style="text-align:center">Цена</th><th style="text-align:center">Дюрация</th>
-      <th style="text-align:center">Мин. лот</th>
-      <th style="text-align:center">Доля</th>
-    </tr></thead><tbody>`;
-  bonds.forEach(b => {
-    html += `<tr>
-      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.name)}">${esc(b.name)}</td>
-      <td style="font-size:0.75rem;color:#6B7280;">${esc(b.isin) || '—'}</td>
-      <td class="sector-cell" title="${esc(b.countryRu || b.country)}">${esc(b.countryRu || b.country) || '—'}</td>
-      <td class="sector-cell" title="${esc(b.sectorRu || b.sector)}">${esc(b.sectorRu || b.sector) || '—'}</td>
-      <td style="text-align:center;font-size:0.8rem;">${esc(b.currency) || '—'}</td>
-      <td style="text-align:center;font-weight:600;">${esc(b.rating) || '—'}</td>
-      <td style="text-align:center;font-weight:700;color:#16A34A;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:center;">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:center;">${fmtNum(b.price)}</td>
-      <td style="text-align:center;">${fmtNum(b.duration)}</td>
-      <td style="text-align:center;font-size:0.8rem;">${b.minLot != null ? b.minLot.toLocaleString('ru-RU') : '—'}</td>
-      <td style="text-align:center;">${weightCellHTML('bond', b.isin, b)}</td>
-    </tr>`;
-  });
-  html += '</tbody></table></div>';
-  return html;
-}
-
-function buildStocksTableHTML(stocks) {
-  let html = `<div class="portfolio-table-wrapper"><table>
-    <thead><tr>
-      <th>Тикер</th><th>Компания</th><th style="text-align:center">Класс</th><th>Сектор</th><th>Страна</th>
-      <th style="text-align:center">Вал.</th><th style="text-align:center">Цена</th>
-      <th style="text-align:center">Цель</th><th style="text-align:center">Upside</th>
-      <th style="text-align:center">Доля</th>
-    </tr></thead><tbody>`;
-  stocks.forEach(s => {
-    const etf = isETF(s);
-    html += `<tr>
-      <td class="ticker-cell">${esc(s.ticker)}</td>
-      <td class="company-cell">${companyCell(s)}</td>
-      <td style="text-align:center;"><span class="badge" style="background:${etf ? '#C6CEC8' : '#8B6A4E'};color:${etf ? '#0A1638' : '#fff'};">${etf ? 'ETF' : 'Акция'}</span></td>
-      <td class="sector-cell" title="${esc(s.sector)}">${esc(s.sector) || '—'}</td>
-      <td class="sector-cell" title="${esc(s.country)}">${esc(s.country) || '—'}</td>
-      <td style="text-align:center;font-size:0.8rem;">${esc(s.currency) || '—'}</td>
-      <td style="text-align:center;" class="price-cell price-bold">${fmtPrice(s.price)}</td>
-      <td style="text-align:center;" class="price-cell">${fmtPrice(s.target)}</td>
-      <td style="text-align:center;" class="pct ${pctClass(s.potential)}">${fmtPct(s.potential)}</td>
-      <td style="text-align:center;">${weightCellHTML('stock', s.ticker, s)}</td>
-    </tr>`;
-  });
-  html += '</tbody></table></div>';
-  return html;
-}
-
-/* ---- Printable client report ---- */
-function downloadModelHTML() {
-  const bonds = modelState.bonds;
-  const stocks = modelState.stocks;
-  if (bonds.length === 0 && stocks.length === 0) {
-    showToast('Сначала соберите портфель');
-    return;
-  }
-
-  const t = modelState.type;
-  const clientCurrency = document.getElementById('mdlClientCurrency')?.value || 'USD';
-  const rawName = (document.getElementById('mdlClientName')?.value || '').trim();
-  const rawAmount = (document.getElementById('mdlClientAmount')?.value || '').trim();
-  const dateStr = new Date().toLocaleDateString('ru-RU');
-
-  const stockShare = t === 'conservative' ? 0 : (t === 'aggressive' ? 100 : modelState.stockShare);
-  const bondShare = 100 - stockShare;
-
-  const ytm = weightedAvg(bonds, b => b.ytm);
-  const dur = weightedAvg(bonds, b => b.duration);
-  const rating = avgRating(bonds);
-  const upside = weightedAvg(stocks, s => s.potential);
-
-  // Info rows — only filled fields
-  let infoRows = '';
-  if (rawName) infoRows += `<span class="info-label">Клиент:</span><span class="info-value">${esc(rawName)}</span>`;
-  if (rawAmount) infoRows += `<span class="info-label">Сумма:</span><span class="info-value">${Number(rawAmount).toLocaleString()} ${esc(clientCurrency)}</span>`;
-  infoRows += `<span class="info-label">Дата:</span><span class="info-value">${dateStr}</span>`;
-
-  let statRows = '';
-  statRows += `<span class="info-label">Количество позиций:</span><span class="info-value">${bonds.length + stocks.length}</span>`;
-  if (bonds.length) {
-    statRows += `<span class="info-label">Средняя доходность к погашению:</span><span class="info-value accent">${ytm != null ? ytm.toFixed(2) + '%' : '—'}</span>`;
-    statRows += `<span class="info-label">Средняя дюрация:</span><span class="info-value">${dur != null ? dur.toFixed(2) + ' лет' : '—'}</span>`;
-    statRows += `<span class="info-label">Средний кредитный рейтинг:</span><span class="info-value">${esc(rating)}</span>`;
-  }
-  if (stocks.length) {
-    statRows += `<span class="info-label">Средний потенциал роста:</span><span class="info-value accent">${upside != null ? (upside >= 0 ? '+' : '') + upside.toFixed(1) + '%' : '—'}</span>`;
-  }
-  statRows += `<span class="info-label">Доля акций:</span><span class="info-value">${stockShare}%</span>`;
-  statRows += `<span class="info-label">Доля облигаций:</span><span class="info-value">${bondShare}%</span>`;
-
-  // Charts — copy SVG from the page
-  function chartBlock(title, svgId, legendId, show) {
-    if (!show) return '';
-    const svgEl = document.getElementById(svgId);
-    const legEl = document.getElementById(legendId);
-    return `<div class="chart-block">
-      <h2>${title}</h2>
-      <div class="chart-area">
-        ${svgEl ? svgEl.outerHTML : ''}
-        <div class="chart-legend">${legEl ? legEl.innerHTML : ''}</div>
-      </div>
-    </div>`;
-  }
-  const chartsHTML =
-    chartBlock('По странам', 'mdlCountryDonut', 'mdlCountryLegend', true) +
-    chartBlock('По секторам', 'mdlSectorDonut', 'mdlSectorLegend', true);
-
-  // Линейчатая диаграмма по рейтингам (без строк классов активов)
-  let barsHTML = '';
-  if (bonds.length > 0) {
-    const ratingMap = {};
-    bonds.forEach(b => {
-      const r = b.rating || 'Без рейтинга';
-      ratingMap[r] = (ratingMap[r] || 0) + (b._weight || 0);
-    });
-    const entries = Object.entries(ratingMap).sort((a, b) => ratingScore(a[0]) - ratingScore(b[0]));
-    if (entries.length) {
-      const maxW = Math.max(...entries.map(e => e[1]), 1);
-      let bars = '<div style="display:flex;flex-direction:column;gap:5px;">';
-      entries.forEach(([label, w]) => {
-        const pct = (w / maxW) * 100;
-        const color = isInvestmentGrade(label) ? '#0A1638' : '#8B6A4E';
-        bars += `<div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:100px;flex-shrink:0;font-size:11px;color:#0A1638;text-align:right;">${esc(label)}</div>
-          <div style="flex:1;height:14px;background:#F3F4F6;border-radius:3px;overflow:hidden;">
-            <div style="width:${pct.toFixed(1)}%;height:100%;background:${color};border-radius:3px;"></div>
-          </div>
-          <div style="width:48px;flex-shrink:0;font-size:11px;color:#0A1638;">${w.toFixed(1)}%</div>
-        </div>`;
-      });
-      bars += '</div>';
-      barsHTML = `<div class="bars-block" style="margin-top:16px;">
-        <h2 style="font-size:13px;color:#8B6A4E;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">По кредитным рейтингам</h2>
-        ${bars}
-      </div>`;
-    }
-  }
-
-  // Bonds page
-  let bondsPage = '';
-  if (bonds.length > 0) {
-    let rows = '';
-    bonds.forEach(b => {
-      rows += `<tr>
-        <td>${esc(b.name)}</td>
-        <td style="font-size:10px;">${esc(b.isin) || '—'}</td>
-        <td>${esc(b.countryRu || b.country) || '—'}</td>
-        <td>${esc(b.sectorRu || b.sector) || '—'}</td>
-        <td style="text-align:center">${esc(b.currency) || '—'}</td>
-        <td style="text-align:center">${esc(b.rating) || '—'}</td>
-        <td style="text-align:right;color:#16A34A;font-weight:600;">${b.ytm != null ? b.ytm.toFixed(2) + '%' : '—'}</td>
-        <td style="text-align:right">${b.coupon != null ? b.coupon.toFixed(2) + '%' : '—'}</td>
-        <td style="text-align:right">${b.price != null ? b.price.toFixed(2) : '—'}</td>
-        <td style="text-align:right">${b.duration != null ? b.duration.toFixed(2) : '—'}</td>
-        <td style="text-align:center">${b.couponsPerYear != null ? b.couponsPerYear : '—'}</td>
-        <td style="text-align:right">${b.minLot != null ? b.minLot.toLocaleString('ru-RU') : '—'}</td>
-        <td style="text-align:center;font-weight:600;">${(b._weight||0).toFixed(1)}%</td>
-      </tr>`;
-    });
-    bondsPage = `<div class="page-break"></div>
-    <div class="section-title">Облигационная часть портфеля</div>
-    <table>
-      <thead><tr>
-        <th>Название</th><th>ISIN</th><th>Страна</th><th>Сектор</th>
-        <th style="text-align:center">Вал.</th><th style="text-align:center">Рейтинг</th>
-        <th style="text-align:right">YTM</th><th style="text-align:right">Купон</th>
-        <th style="text-align:right">Цена</th><th style="text-align:right">Дюрация</th>
-        <th style="text-align:center">Куп./год</th>
-        <th style="text-align:right">Мин. лот</th>
-        <th style="text-align:center">Доля</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-  }
-
-  // Stocks page
-  let stocksPage = '';
-  if (stocks.length > 0) {
-    let rows = '';
-    stocks.forEach(s => {
-      const pot = s.potential;
-      rows += `<tr>
-        <td>${esc(s.ticker)}</td>
-        <td>${esc(s.company)}</td>
-        <td style="text-align:center">${isETF(s) ? "ETF" : "Акция"}</td>
-        <td>${esc(s.sector) || "—"}</td>
-        <td>${esc(s.country) || '—'}</td>
-        <td style="text-align:center">${esc(s.currency) || '—'}</td>
-        <td style="text-align:right">${s.price != null ? s.price.toFixed(2) : '—'}</td>
-        <td style="text-align:right">${s.target != null ? s.target.toFixed(2) : '—'}</td>
-        <td style="text-align:right;color:${pot != null && pot >= 0 ? '#16A34A' : '#DC2626'};font-weight:600;">${pot != null ? (pot >= 0 ? '+' : '') + pot.toFixed(2) + '%' : '—'}</td>
-        <td style="text-align:center;font-weight:600;">${(s._weight||0).toFixed(1)}%</td>
-      </tr>`;
-    });
-    stocksPage = `<div class="page-break"></div>
-    <div class="section-title">Акционерная часть портфеля</div>
-    <table>
-      <thead><tr>
-        <th>Тикер</th><th>Компания</th><th style="text-align:center">Класс</th><th>Сектор</th><th>Страна</th>
-        <th style="text-align:center">Вал.</th><th style="text-align:right">Цена</th>
-        <th style="text-align:right">Цель</th><th style="text-align:right">Upside</th>
-        <th style="text-align:center">Доля</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-  }
-
-  // Coupon calendar — optional separate page, only when the checkbox is on
-  let calendarPage = '';
-  if (document.getElementById('mdlIncludeCouponCalendar')?.checked && bonds.length > 0) {
-    const amount = getModelAmount();
-    if (amount <= 0) {
-      showToast('Для календаря выплат укажите сумму клиента');
-    } else {
-      const investedPairs = bonds.map(b => ({ bond: b, invested: amount * (b._weight || 0) / 100 }));
-      const { byCurrency } = buildCouponMatrix(investedPairs, 12);
-      if (Object.keys(byCurrency).length > 0) {
-        calendarPage = `<div class="page-break"></div>` + renderCouponMatrixHTML(byCurrency, 'section-title');
-      }
-    }
-  }
-
-  const logoURL = window.location.href.includes('github.io')
-    ? 'https://finzilla.github.io/ags-ideas/assets/logo-light.png'
-    : 'assets/logo-light.png';
-
-  const html = `<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<title>${rawName ? 'Портфель — ' + esc(rawName) : 'Инвестиционный портфель AGS'}</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Manrope', sans-serif; color: #0A1638; max-width: 960px; margin: 0 auto; }
-
-  .banner {
-    background: linear-gradient(135deg, #A0785A 0%, #B8956E 30%, #A07858 50%, #C4A882 70%, #A89070 100%);
-    padding: 28px 36px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 0 0 12px 12px;
-  }
-  .banner img { height: 36px; }
-  .banner-text { color: rgba(255,255,255,0.7); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
-
-  .content { padding: 24px 36px; }
-
-  .info-row { display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 22px; }
-  .info-block { flex: 1 1 240px; }
-  .info-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 12px; }
-  .info-label { color: #6B7280; }
-  .info-value { font-weight: 600; }
-  .info-value.accent { color: #8B6A4E; }
-
-  .charts-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 10px; }
-  .chart-block { flex: 1 1 260px; }
-  .chart-block h2 { font-size: 13px; color: #8B6A4E; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .chart-area { display: flex; align-items: center; gap: 10px; }
-  .chart-legend { font-size: 10px; text-align: left; flex: 1; }
-
-  .section-title { font-size: 13px; color: #8B6A4E; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
-  th { background: #0A1638; color: white; padding: 6px 6px; text-align: left; font-weight: 600; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.3px; }
-  td { padding: 5px 6px; border-bottom: 1px solid #E5E7EB; }
-  tr:nth-child(even) td { background: #F9FAFB; }
-
-  .footer { margin-top: 28px; font-size: 10px; color: #94A3B8; border-top: 1px solid #E5E7EB; padding-top: 10px; line-height: 1.5; }
-
-  .page-break { height: 0; }
-
-  ${REPORT_PRINT_CSS}
-</style>
-</head>
-<body>
-  <div class="banner">
-    <img src="${logoURL}" alt="AGS" onerror="this.parentElement.innerHTML='<div style=\\'color:white;font-size:24px;font-weight:700;\\'>AGS</div><div class=\\'banner-text\\'>Abylai Global Solutions</div>'">
-    <div class="banner-text">Инвестиционный портфель</div>
-  </div>
-
-  <div class="content">
-    <div class="section-title">Структура портфеля</div>
-    <div class="info-row">
-      <div class="info-block">
-        <h2>Информация</h2>
-        <div class="info-grid">${infoRows}</div>
-      </div>
-      <div class="info-block">
-        <h2>Показатели</h2>
-        <div class="info-grid">${statRows}</div>
-      </div>
-    </div>
-
-    <div class="charts-row">${chartsHTML}</div>
-    ${barsHTML}
-
-    ${bondsPage}
-    ${stocksPage}
-    ${calendarPage}
-
-    <div class="footer">
-      Abylai Global Solutions LTD. Частная компания МФЦА «Астана». Лицензия AFSA-A-LA-2023-0001.<br>
-      Документ подготовлен автоматически и не является индивидуальной инвестиционной рекомендацией.
-      Инвестирование сопряжено с рисками, включая риск частичной или полной потери капитала.
-    </div>
-  </div>
-
-</body>
-</html>`;
-
-  openReportWindow(html);
-  showToast('Откроется окно печати — выберите «Сохранить как PDF»');
-}
-
-/* ===========================================================================
    INIT
    =========================================================================== */
 localStorage.removeItem('ags_client_info');
 fetchData();
-populateBondRatingSelects();
-bondFdapExemptOnly = loadFdapExemptOnly();
-FDAP_CHECKBOX_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = bondFdapExemptOnly; });
-fetchBonds().catch(e => console.warn('[AGS] Bonds fetch failed:', e.message));
 </script>
 </body>
 </html>
